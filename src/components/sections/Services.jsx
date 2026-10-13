@@ -12,16 +12,31 @@ import { Link } from 'react-router-dom'
 import { ServiceImage } from '../visuals'
 import { SERVICES, servicePath } from '../../lib/services'
 
+// A filled brand button, so the way into each service page is hard to miss.
 function LearnMore({ s }) {
   return (
     <Link
       to={servicePath(s)}
-      className="group inline-flex items-center gap-2 mt-2 text-sm font-bold text-text"
+      className="group inline-flex items-center justify-center gap-2.5 h-13 px-7 mt-3 rounded-full bg-gradient-brand text-ink text-base font-bold shadow-lg shadow-blue/20 transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-xl hover:shadow-orange/25"
     >
-      More about {s.name}
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" className="transition-transform group-hover:translate-x-1">
-        <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      Explore {s.name}
+      <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden="true" className="transition-transform group-hover:translate-x-1">
+        <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
+    </Link>
+  )
+}
+
+// The illustration links to the service page too.
+function ImageLink({ s }) {
+  return (
+    <Link
+      to={servicePath(s)}
+      aria-label={`Explore ${s.name}`}
+      tabIndex={-1}
+      className="flex justify-center transition-transform duration-500 hover:-translate-y-1"
+    >
+      <ServiceImage name={s.image} alt={s.alt} />
     </Link>
   )
 }
@@ -98,7 +113,7 @@ function StickyStory() {
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               className="flex justify-center"
             >
-              <ServiceImage name={s.image} alt={s.alt} />
+              <ImageLink s={s} />
             </m.div>
           </AnimatePresence>
         </div>
@@ -118,7 +133,7 @@ function Stacked() {
         <LearnMore s={s} />
       </Reveal>
       <Reveal className="flex justify-center" delay={0.1}>
-        <ServiceImage name={s.image} alt={s.alt} />
+        <ImageLink s={s} />
       </Reveal>
     </div>
   ))
