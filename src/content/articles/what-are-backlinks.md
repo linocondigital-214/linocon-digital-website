@@ -1,7 +1,7 @@
 ---
 title: What Are Backlinks, and Does My Business Need Them?
 description: Backlinks explained in plain English, why Google cares about them, and the safe ways for a small business to earn them.
-date: 2026-10-20T09:00:00-07:00
+date: 2026-11-03T09:00:00-08:00
 category: Backlinks
 ---
 
