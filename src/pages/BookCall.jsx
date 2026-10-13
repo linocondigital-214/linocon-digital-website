@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Reveal from '../components/Reveal'
 import { sendLead } from '../lib/leads'
+import { track } from '../lib/analytics'
 
 const CAL_COM_LINK = 'linocondigital/strategy-call'
 
@@ -15,11 +16,15 @@ export default function BookCall() {
     const form = e.target
     // Email the details if forms are set up, but never block the booking on
     // it: the calendar step collects name and email too.
-    await sendLead('New Strategy Call Request — LinoCon Digital', {
+    const delivered = await sendLead('New Strategy Call Request — LinoCon Digital', {
       name: form.name.value,
       email: form.email.value,
       company: form.company.value,
       goal: form.goal.value,
+    })
+    track('generate_lead', {
+      form_name: 'strategy_call',
+      lead_delivery: delivered ? 'web_form' : 'not_delivered',
     })
     setStatus('scheduling')
   }

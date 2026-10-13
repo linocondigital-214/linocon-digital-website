@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Reveal from '../Reveal'
 import { mailtoLink, sendLead } from '../../lib/leads'
+import { track } from '../../lib/analytics'
 
 const SUBJECT = 'Free Website & SEO Audit Request — LinoCon Digital'
 
@@ -13,8 +14,12 @@ export default function Audit() {
     const fields = { website: form.website.value, email: form.email.value }
     setStatus('sending')
     if (await sendLead(SUBJECT, fields)) {
+      track('generate_lead', { form_name: 'free_audit', lead_delivery: 'web_form' })
       setStatus('sent')
     } else {
+      // The visitor still has to press send in their email app, so this is
+      // counted as a lead too, marked so it can be told apart.
+      track('generate_lead', { form_name: 'free_audit', lead_delivery: 'email_app' })
       window.location.href = mailtoLink(SUBJECT, fields)
       setStatus('mailto')
     }
