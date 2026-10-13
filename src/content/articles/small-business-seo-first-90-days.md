@@ -1,7 +1,7 @@
 ---
 title: "SEO for Small Businesses: What to Do in Your First 90 Days"
 description: A simple, month-by-month SEO plan for small businesses that want to show up on Google without wasting money on things that don't matter.
-date: 2026-10-27T09:00:00-07:00
+date: 2026-11-10T09:00:00-08:00
 category: SEO
 ---
 
