@@ -2,9 +2,22 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Logo } from './Logo'
 import { SERVICES, servicePath } from '../lib/services'
+import { LIVE_STEPS, stepPath } from '../lib/process'
+
+const SERVICE_ITEMS = SERVICES.map((s) => ({ to: servicePath(s), name: s.name, menu: s.menu }))
+const STEP_ITEMS = LIVE_STEPS.map((s) => ({ to: stepPath(s), name: `${s.n} ${s.name}`, menu: s.menu }))
+
+// The Services and Process menus. Process only becomes a menu once at least one
+// step has its own page; until then it's a plain link to the homepage section.
+const MENUS = [
+  { label: 'Services', items: SERVICE_ITEMS, allHref: '/#services', allLabel: 'See all services' },
+  ...(STEP_ITEMS.length
+    ? [{ label: 'Process', items: STEP_ITEMS, allHref: '/#process', allLabel: 'See the full process' }]
+    : []),
+]
 
 const LINKS = [
-  { href: '/#process', label: 'Process' },
+  ...(STEP_ITEMS.length ? [] : [{ href: '/#process', label: 'Process' }]),
   { href: '/#work', label: 'Work' },
   { href: '/#audit', label: 'Free audit' },
   { href: '/#faq', label: 'FAQ' },
@@ -26,7 +39,7 @@ function Chevron({ open }) {
 }
 
 // Desktop: opens on hover, or on click / Enter for touch screens and keyboards.
-function ServicesMenu() {
+function DropdownMenu({ menu }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
   // Set when a mouse hover opened the menu, so the click that usually follows
@@ -82,7 +95,7 @@ function ServicesMenu() {
           open ? 'text-text' : 'text-text-secondary hover:text-text'
         }`}
       >
-        Services
+        {menu.label}
         <Chevron open={open} />
       </button>
 
@@ -94,22 +107,22 @@ function ServicesMenu() {
         }`}
       >
         <div className="w-[360px] rounded-2xl border border-border bg-ink/95 backdrop-blur-xl shadow-2xl shadow-black/60 p-2">
-          {SERVICES.map((s) => (
+          {menu.items.map((item) => (
             <Link
-              key={s.slug}
-              to={servicePath(s)}
+              key={item.to}
+              to={item.to}
               className="flex flex-col gap-1 rounded-xl px-4 py-3 hover:bg-white/5 focus-visible:bg-white/5 transition-colors"
             >
-              <span className="text-sm font-bold text-text">{s.name}</span>
-              <span className="text-[13px] leading-snug text-text-secondary">{s.menu}</span>
+              <span className="text-sm font-bold text-text">{item.name}</span>
+              <span className="text-[13px] leading-snug text-text-secondary">{item.menu}</span>
             </Link>
           ))}
           <a
-            href="/#services"
+            href={menu.allHref}
             onClick={() => setOpen(false)}
             className="flex items-center justify-between mt-1 rounded-xl px-4 py-3 border-t border-border text-[13px] font-bold text-text-secondary hover:text-text transition-colors"
           >
-            See all services
+            {menu.allLabel}
             <span aria-hidden="true">&rarr;</span>
           </a>
         </div>
@@ -121,7 +134,8 @@ function ServicesMenu() {
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
-  const [servicesOpen, setServicesOpen] = useState(false)
+  // Which menu is expanded in the phone menu, by label.
+  const [expanded, setExpanded] = useState(null)
   const location = useLocation()
 
   useEffect(() => {
@@ -133,7 +147,7 @@ export default function Nav() {
 
   useEffect(() => {
     setOpen(false)
-    setServicesOpen(false)
+    setExpanded(null)
   }, [location])
 
   const solid = scrolled || open
@@ -152,7 +166,9 @@ export default function Nav() {
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8">
-          <ServicesMenu />
+          {MENUS.map((menu) => (
+            <DropdownMenu key={menu.label} menu={menu} />
+          ))}
           {LINKS.map((l) => (
             <a
               key={l.href}
@@ -198,34 +214,39 @@ export default function Nav() {
 
       {open && (
         <nav className="lg:hidden border-t border-border px-5 pb-6 pt-2 flex flex-col max-h-[calc(100svh-4rem)] overflow-y-auto">
-          <div className="border-b border-border">
-            <button
-              type="button"
-              onClick={() => setServicesOpen((o) => !o)}
-              aria-expanded={servicesOpen}
-              className="w-full flex items-center justify-between py-4 text-lg font-semibold"
-            >
-              Services
-              <Chevron open={servicesOpen} />
-            </button>
-            {servicesOpen && (
-              <div className="flex flex-col pb-3 pl-4 border-l border-white/15 ml-1 mb-2">
-                {SERVICES.map((s) => (
-                  <Link key={s.slug} to={servicePath(s)} className="py-2.5 flex flex-col">
-                    <span className="text-base font-semibold">{s.name}</span>
-                    <span className="text-sm text-text-secondary">{s.menu}</span>
-                  </Link>
-                ))}
-                <a
-                  href="/#services"
-                  onClick={() => setOpen(false)}
-                  className="py-2.5 text-sm font-bold text-text-secondary"
+          {MENUS.map((menu) => {
+            const isOpen = expanded === menu.label
+            return (
+              <div key={menu.label} className="border-b border-border">
+                <button
+                  type="button"
+                  onClick={() => setExpanded(isOpen ? null : menu.label)}
+                  aria-expanded={isOpen}
+                  className="w-full flex items-center justify-between py-4 text-lg font-semibold"
                 >
-                  See all services &rarr;
-                </a>
+                  {menu.label}
+                  <Chevron open={isOpen} />
+                </button>
+                {isOpen && (
+                  <div className="flex flex-col pb-3 pl-4 border-l border-white/15 ml-1 mb-2">
+                    {menu.items.map((item) => (
+                      <Link key={item.to} to={item.to} className="py-2.5 flex flex-col">
+                        <span className="text-base font-semibold">{item.name}</span>
+                        <span className="text-sm text-text-secondary">{item.menu}</span>
+                      </Link>
+                    ))}
+                    <a
+                      href={menu.allHref}
+                      onClick={() => setOpen(false)}
+                      className="py-2.5 text-sm font-bold text-text-secondary"
+                    >
+                      {menu.allLabel} &rarr;
+                    </a>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            )
+          })}
           {LINKS.map((l) => (
             <a
               key={l.href}

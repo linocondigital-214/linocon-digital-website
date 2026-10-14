@@ -9,6 +9,7 @@ const BookCall = lazy(() => import('./pages/BookCall'))
 const Articles = lazy(() => import('./pages/Articles'))
 const Article = lazy(() => import('./pages/Article'))
 const Service = lazy(() => import('./pages/Service'))
+const ProcessStep = lazy(() => import('./pages/ProcessStep'))
 
 function App() {
   return (
@@ -31,6 +32,14 @@ function App() {
             element={
               <Suspense fallback={null}>
                 <Service />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/process/:slug"
+            element={
+              <Suspense fallback={null}>
+                <ProcessStep />
               </Suspense>
             }
           />

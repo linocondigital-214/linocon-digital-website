@@ -1,17 +1,28 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { m, useScroll, useReducedMotion } from 'framer-motion'
+import { Link } from 'react-router-dom'
 import { useScrollRange } from '../../lib/scroll'
 import Reveal from '../Reveal'
 import useMediaQuery from '../../lib/useMediaQuery'
+import { PROCESS_STEPS as STEPS, stepPath } from '../../lib/process'
 
 const img = (name) => `${import.meta.env.BASE_URL}images/${name}`
 
-const STEPS = [
-  { n: '01', image: 'process-audit', title: 'Audit', body: "We review your current site, rankings and competitors to find exactly what's holding you back." },
-  { n: '02', image: 'process-plan', title: 'Plan', body: 'You get a clear plan: the pages, the keywords and the links worth chasing, agreed before work starts.' },
-  { n: '03', image: 'process-build', title: 'Build & launch', body: 'We design and build your site with SEO baked in, then launch it.' },
-  { n: '04', image: 'process-grow', title: 'Grow', body: 'Ongoing SEO and backlinks, with regular reporting, so rankings and enquiries keep climbing.' },
-]
+// Same gradient button as the "Explore" buttons in the Services section.
+function LearnMore({ s }) {
+  return (
+    <Link
+      to={stepPath(s)}
+      aria-label={`Learn more about the ${s.name} step`}
+      className="group self-start inline-flex items-center justify-center gap-2.5 h-12 px-6 mt-auto rounded-full bg-gradient-brand text-ink text-base font-bold shadow-lg shadow-blue/20 transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-xl hover:shadow-orange/25"
+    >
+      Learn more
+      <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden="true" className="transition-transform group-hover:translate-x-1">
+        <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </Link>
+  )
+}
 
 function StepCard({ s }) {
   return (
@@ -40,8 +51,9 @@ function StepCard({ s }) {
       />
       <div className="h-[3px] w-16 rounded-full bg-gradient-brand" />
       <span className="font-display font-bold text-6xl md:text-7xl text-white/25">{s.n}</span>
-      <h3 className="font-display font-bold text-2xl md:text-3xl">{s.title}</h3>
+      <h3 className="font-display font-bold text-2xl md:text-3xl">{s.name}</h3>
       <p className="text-text leading-relaxed md:text-lg max-w-[34ch]">{s.body}</p>
+      {s.hasPage && <LearnMore s={s} />}
     </div>
   )
 }
