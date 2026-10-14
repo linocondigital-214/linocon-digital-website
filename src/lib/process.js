@@ -18,7 +18,8 @@ export const PROCESS_STEPS = [
     name: 'Plan',
     image: 'process-plan',
     body: 'You get a clear plan: the pages, the keywords and the links worth chasing, agreed before work starts.',
-    hasPage: false,
+    hasPage: true,
+    menu: 'Turn insights into a clear roadmap.',
   },
   {
     slug: 'build-and-launch',
