@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import Nav from './components/Nav'
 import CursorGlow from './components/CursorGlow'
 import Footer from './components/sections/Footer'
@@ -10,12 +10,21 @@ const Articles = lazy(() => import('./pages/Articles'))
 const Article = lazy(() => import('./pages/Article'))
 const Service = lazy(() => import('./pages/Service'))
 const ProcessStep = lazy(() => import('./pages/ProcessStep'))
+const ClientProgress = lazy(() => import('./pages/ClientProgress'))
+const Clients = lazy(() => import('./pages/Clients'))
+const ClientEdit = lazy(() => import('./pages/ClientEdit'))
+
+// Client progress pages are private: no site menu or footer.
+const isPrivatePath = (path) => /^\/(progress|clients)(\/|$)/.test(path)
 
 function App() {
+  const { pathname } = useLocation()
+  const isPrivate = isPrivatePath(pathname)
+
   return (
     <>
       <CursorGlow />
-      <Nav />
+      {!isPrivate && <Nav />}
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -52,6 +61,30 @@ function App() {
             }
           />
           <Route
+            path="/progress/:id"
+            element={
+              <Suspense fallback={null}>
+                <ClientProgress />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/clients"
+            element={
+              <Suspense fallback={null}>
+                <Clients />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/clients/:id"
+            element={
+              <Suspense fallback={null}>
+                <ClientEdit />
+              </Suspense>
+            }
+          />
+          <Route
             path="/articles/:slug"
             element={
               <Suspense fallback={null}>
@@ -61,7 +94,7 @@ function App() {
           />
         </Routes>
       </main>
-      <Footer />
+      {!isPrivate && <Footer />}
     </>
   )
 }
