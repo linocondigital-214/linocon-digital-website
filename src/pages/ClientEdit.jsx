@@ -3,6 +3,8 @@ import PrivateShell from '../components/progress/PrivateShell'
 import AdminClientGate from '../components/progress/AdminClientGate'
 import ProgressBoard from '../components/progress/ProgressBoard'
 import CopyLinkButton from '../components/progress/CopyLinkButton'
+import { WorkLogForm, WorkLogList } from '../components/progress/WorkLog'
+import { logEntries } from '../lib/clientOverview'
 import { removeClient } from '../lib/clientProgress'
 import useAdminClient, { SAVING_TEXT } from '../lib/useAdminClient'
 import usePageMeta from '../lib/usePageMeta'
@@ -34,6 +36,9 @@ export default function ClientEdit() {
             <Link to="/clients" className="text-sm font-semibold text-text-secondary! hover:text-text! mr-auto">
               &larr; All clients
             </Link>
+            <a href="#worklog" className="h-11 px-5 rounded-full border border-border text-sm font-semibold flex items-center hover:border-text-tertiary">
+              Work log
+            </a>
             <CopyLinkButton id={id} />
             <a
               href={`/progress/${id}`}
@@ -48,6 +53,16 @@ export default function ClientEdit() {
             </button>
           </div>
           <ProgressBoard client={state.client} editable onChange={onChange} docBase={`/clients/${id}`} />
+          <section id="worklog" className="mt-16 pt-10 border-t border-border scroll-mt-24" aria-labelledby="worklog-heading">
+            <h2 id="worklog-heading" className="font-display font-bold text-2xl md:text-3xl">
+              Work log
+            </h2>
+            <p className="text-text-secondary mt-1 mb-5">Dated notes on what you did for this client. Only you see this.</p>
+            <WorkLogForm onAdd={(_, changes) => onChange(changes)} />
+            <div className="mt-6">
+              <WorkLogList entries={state.client ? logEntries([state.client]) : []} onDelete={(_, changes) => onChange(changes)} />
+            </div>
+          </section>
         </>
       </AdminClientGate>
     </PrivateShell>
