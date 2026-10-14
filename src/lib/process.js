@@ -27,7 +27,8 @@ export const PROCESS_STEPS = [
     name: 'Build & launch',
     image: 'process-build',
     body: 'We design and build your site with SEO baked in, then launch it.',
-    hasPage: false,
+    hasPage: true,
+    menu: 'Turn strategy into a high-performing website.',
   },
   {
     slug: 'grow',

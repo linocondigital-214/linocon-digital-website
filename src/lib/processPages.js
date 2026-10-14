@@ -455,4 +455,196 @@ export const PROCESS_PAGES = {
       body: "Book a strategy call and we'll talk through what your website, SEO and content should be doing for your business.",
     },
   },
+  'build-and-launch': {
+    metaTitle: 'Website Build & Launch for Small Businesses',
+    metaDescription:
+      'We design, develop, test and launch your website around the plan, with performance, SEO, user experience and conversion built in from the first layout to the final launch check.',
+    headline: 'Turn strategy into a high-performing website.',
+    accent: 'high-performing website',
+    intro:
+      'The strategy is ready. Now we build it. We design and develop your website around the plan, with performance, SEO, user experience and conversion built into the process from the beginning.',
+    image: 'process-page-build',
+    imageSize: [1080, 688],
+    imageAlt:
+      'A laptop showing a modern business website, beside design, development, SEO, conversion and launch steps and a rocket lifting off',
+    sections: [
+      {
+        type: 'text',
+        eyebrow: 'Strategy-led building',
+        heading: "We don't just make a website look good.",
+        body: [
+          'From the first layout to the final launch check, every part of the website has a purpose. We build the pages your customers need, implement the SEO foundation, create clear enquiry paths and test the experience before it goes live.',
+          'We build it to perform, communicate your value, support search visibility and make it easy for the right visitor to take action.',
+        ],
+      },
+      {
+        type: 'cards',
+        eyebrow: 'What we build',
+        heading: 'Every part of the build answers one practical question.',
+        items: [
+          {
+            title: 'Design and UX',
+            body: 'Will visitors understand and trust the business? We create the visual system and the user experience.',
+          },
+          {
+            title: 'Website development',
+            body: 'Will the website be fast, stable and usable? We build the responsive technical foundation.',
+          },
+          {
+            title: 'SEO implementation',
+            body: 'Can search engines understand the website? We apply the SEO strategy during the build.',
+          },
+          {
+            title: 'Content implementation',
+            body: 'Does each page do its job? We place and structure your approved content.',
+          },
+          {
+            title: 'Conversion setup',
+            body: 'Can visitors easily become leads? We build the enquiry paths and calls to action.',
+          },
+          {
+            title: 'Testing and launch',
+            body: 'Does everything work, and is the site ready? We check the whole site, then move it live safely.',
+          },
+        ],
+      },
+      {
+        type: 'checklist',
+        eyebrow: 'Design and UX',
+        heading: 'Design that makes you easier to understand and easier to choose.',
+        intro: 'Visual polish matters, but it has to support hierarchy, trust and action. Design follows the strategy, not the other way around.',
+        items: [
+          'Consistent typography, spacing, imagery and brand',
+          'A clear hierarchy, so visitors see what matters first',
+          'Layouts designed for desktop, tablet and phone',
+          'Services presented so they are easy to understand',
+          'Trust elements around important decision points',
+          'An accessible, readable and uncluttered interface',
+        ],
+      },
+      {
+        type: 'checklist',
+        eyebrow: 'Website development',
+        heading: 'Fast, stable and built to grow.',
+        intro: 'Development turns the approved design and structure into a working website, built for phones, speed and usability.',
+        items: [
+          'Works on every modern screen size',
+          'Performance-conscious code and page assets',
+          'Clean, well-structured page code',
+          'Secure forms and sensible technical protections',
+          'Reliable navigation, buttons, forms and integrations',
+          'Room to add pages and content later without rebuilding',
+        ],
+      },
+      {
+        type: 'checklist',
+        eyebrow: 'SEO implementation',
+        heading: 'SEO built in, not bolted on.',
+        intro:
+          'SEO is implemented while the website is being built. That avoids the common problem of launching first and discovering later that important search fundamentals were missed.',
+        items: [
+          'Page titles and meta descriptions',
+          'Heading hierarchy and page structure',
+          'Each page matched to its keywords from the Plan',
+          'Internal links between related pages',
+          'Optimized images with meaningful alt text',
+          'Canonical and indexing settings where needed',
+          'XML sitemap and robots configuration',
+          'Structured data (schema) where relevant',
+          'Search Console and analytics setup where included',
+        ],
+      },
+      {
+        type: 'checklist',
+        eyebrow: 'Content implementation',
+        heading: 'Content that does its job on every page.',
+        intro:
+          'Your approved copy is structured around the purpose of each page: easy to scan, with enough detail to answer customer questions and match what people search for.',
+        items: [
+          "Lead with the customer's problem and the outcome they want",
+          'Explain services in plain business language',
+          'Headings, short sections and supporting visuals',
+          'Proof and trust where they reduce uncertainty',
+          'One clear main action on every page',
+          'Consistency across service, location and supporting pages',
+        ],
+      },
+      {
+        type: 'checklist',
+        eyebrow: 'Conversion setup',
+        heading: 'Every important page answers: what should the visitor do next?',
+        intro: 'Conversion setup turns the strategy into practical enquiry paths, so qualified visitors always have a clear next step.',
+        items: [
+          'A main call to action for each important page',
+          'Quote and request forms with the right fields',
+          'Click-to-call and contact actions where relevant',
+          'Trust signals near decision points',
+          'Clear expectations about what happens after an enquiry',
+          'Softer next steps for visitors still researching',
+          'Consistent call to action wording across the site',
+        ],
+      },
+      {
+        type: 'groups',
+        eyebrow: 'Testing and launch',
+        heading: 'We catch problems before your customers do.',
+        intro: 'Before launch, the site goes through a structured quality check. Then launch is a controlled, checked transition, not just a button press.',
+        groups: [
+          {
+            title: 'Quality check before launch',
+            items: [
+              'Desktop, tablet and phone layouts',
+              'Navigation and every important link',
+              'Forms, confirmation messages and notifications',
+              'Call to action buttons and contact methods',
+              'Page titles, headings and metadata',
+              'Images, alt text and loading behavior',
+              'Missing pages, redirects and broken links',
+              'Performance and technical checks',
+              'Analytics and Search Console tracking',
+              'Indexing settings and launch configuration',
+            ],
+          },
+          {
+            title: 'Launch sequence',
+            items: [
+              'Final backup and review before launch',
+              'Domain, DNS or hosting setup as needed',
+              'SSL and security checks',
+              'Moving the site live',
+              'Testing pages and forms again once live',
+              'Checking search engines can access and index the site',
+              'Verifying analytics and tracking',
+              'Monitoring the site after launch for unexpected issues',
+            ],
+          },
+        ],
+      },
+      {
+        type: 'checklist',
+        eyebrow: 'What you get',
+        heading: 'A finished website, ready for customers and search engines.',
+        items: [
+          'An approved design direction',
+          'A responsive website for every screen',
+          'Core service and supporting pages',
+          'The SEO foundation across priority pages',
+          'Enquiry paths, forms and calls to action',
+          'Analytics and Search Console setup where included',
+          'Testing and quality checks before launch',
+          'A checked launch and post-launch verification',
+        ],
+      },
+      {
+        type: 'note',
+        eyebrow: 'How it connects',
+        heading: 'The website is the foundation, not the finish line.',
+        body: 'Build & Launch turns the strategy into a fast, search-ready, conversion-focused website. From there, Grow keeps improving your visibility, authority and performance.',
+      },
+    ],
+    cta: {
+      heading: 'Start your website project.',
+      body: "Book a strategy call and we'll talk through what your new website needs to do for your business.",
+    },
+  },
 }
