@@ -112,7 +112,7 @@ export default function ClientEdit() {
       {state.status === 'ready' && (
         <>
           <div className="flex flex-wrap items-center gap-3 mb-10 pb-6 border-b border-border">
-            <Link to="/clients" className="text-sm font-semibold text-text-secondary hover:text-text mr-auto">
+            <Link to="/clients" className="text-sm font-semibold text-text-secondary! hover:text-text! mr-auto">
               &larr; All clients
             </Link>
             <CopyLinkButton id={id} />

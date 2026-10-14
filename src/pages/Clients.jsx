@@ -129,7 +129,9 @@ function ClientList({ clients, password, onAdded }) {
                 <div className="h-full bg-gradient-brand" style={{ width: `${p}%` }} />
               </div>
               <div className="flex flex-wrap gap-3">
-                <Link to={`/clients/${c.id}`} className="h-11 px-5 rounded-full bg-text text-ink text-sm font-bold flex items-center">
+                {/* `!` because the site-wide `a { color: inherit }` rule in index.css
+                    sits outside Tailwind's layers and would otherwise win. */}
+                <Link to={`/clients/${c.id}`} className="h-11 px-5 rounded-full bg-text text-ink! text-sm font-bold flex items-center">
                   Update progress
                 </Link>
                 <CopyLinkButton id={c.id} />
