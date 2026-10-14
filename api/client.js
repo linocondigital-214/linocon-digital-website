@@ -3,7 +3,7 @@
 // admin password.
 import { route, isAdmin } from './_lib/http.js'
 import { deleteClient, getClient, isClientId, saveClient } from './_lib/store.js'
-import { applyChanges, BadRequest } from './_lib/client.js'
+import { applyChanges, BadRequest, publicView } from './_lib/client.js'
 
 export default route(async (req) => {
   const { id } = req.query
@@ -11,7 +11,9 @@ export default route(async (req) => {
 
   if (req.method === 'GET') {
     const client = await getClient(id)
-    return client ? [200, { client }] : [404, { error: 'not-found' }]
+    if (!client) return [404, { error: 'not-found' }]
+    if (!req.headers['x-admin-password']) return [200, { client: publicView(client) }]
+    return isAdmin(req) ? [200, { client }] : [401, { error: 'password' }]
   }
 
   if (!isAdmin(req)) return [401, { error: 'password' }]

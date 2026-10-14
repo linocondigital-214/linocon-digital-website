@@ -118,7 +118,7 @@ export default function CursorGlow() {
   if (reduce) return null
 
   return (
-    <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div aria-hidden="true" className="no-print pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       <div
         ref={glowRef}
         className="cursor-glow absolute top-0 left-0 rounded-full opacity-0 will-change-transform"

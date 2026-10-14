@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { INTAKE, GROW_SETUP, GROW_MONTHLY, GROW_QUARTERLY } from '../../lib/clientChecklist'
 import {
   STAGES,
@@ -19,11 +20,12 @@ import {
   dateLabel,
   today,
 } from '../../lib/clientProgress'
+import { DOCS, docState, isShared, statusLabel } from '../../lib/clientDocs'
 
 // The client's progress across Audit, Plan, Build & Launch and Grow.
 // Read-only on the client's private link; with `editable`, Lino ticks items
 // and every change goes through `onChange([{ path, value }])`.
-export default function ProgressBoard({ client, editable = false, onChange }) {
+export default function ProgressBoard({ client, editable = false, onChange, docBase }) {
   const [selected, setSelected] = useState(() => currentStage(client).key)
   const stage = STAGES.find((s) => s.key === selected)
   const ctx = { client, editable, onChange }
@@ -33,6 +35,7 @@ export default function ProgressBoard({ client, editable = false, onChange }) {
       <Header client={client} />
 
       <div className="mt-10 flex flex-col gap-6">
+        {docBase && <Documents client={client} editable={editable} docBase={docBase} />}
         <StartingPoint {...ctx} />
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {STAGES.map((s) => (
@@ -94,6 +97,42 @@ function Header({ client }) {
           <p className="text-sm text-text-secondary mt-1">Audit to launch: {overall}% complete</p>
         </div>
       </div>
+    </div>
+  )
+}
+
+// The proposal and service agreement. The client only sees them once sent.
+function Documents({ client, editable, docBase }) {
+  const docs = Object.values(DOCS).filter((d) => editable || isShared(client, d.key))
+  if (!docs.length) return null
+
+  return (
+    <div className="grid sm:grid-cols-2 gap-3 md:gap-4">
+      {docs.map((d) => {
+        const state = docState(client, d.key)
+        const status = state.status || 'draft'
+        const when = status === 'signed' ? state.signedAt : status === 'sent' ? state.sentAt : null
+        return (
+          <Link
+            key={d.key}
+            to={`${docBase}/${d.key}`}
+            className="rounded-2xl border border-border bg-surface p-5 flex items-center gap-4 hover:border-text-tertiary"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0 text-text-secondary">
+              <path d="M7 3h7l5 5v13H7z M14 3v5h5 M10 13h6 M10 17h6" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+            </svg>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold">{d.name}</p>
+              <p className="text-sm text-text-secondary">
+                {statusLabel(d.key, status)}
+                {when && ` ${dateLabel(when)}`}
+                {editable && status === 'draft' && ' · only you can see it'}
+              </p>
+            </div>
+            <span className="text-sm font-semibold text-text-secondary">{editable ? 'Open' : 'View'} &rarr;</span>
+          </Link>
+        )
+      })}
     </div>
   )
 }
