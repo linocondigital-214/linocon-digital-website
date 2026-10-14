@@ -647,4 +647,193 @@ export const PROCESS_PAGES = {
       body: "Book a strategy call and we'll talk through what your new website needs to do for your business.",
     },
   },
+  grow: {
+    metaTitle: 'Ongoing SEO & Website Growth for Small Businesses',
+    metaDescription:
+      'After launch, we keep improving your website with ongoing SEO, content, backlinks, performance tracking and conversion improvements, guided by real data.',
+    headline: 'Keep improving. Keep getting found.',
+    accent: 'Keep getting found',
+    intro:
+      'Launching your website is only the beginning. We keep working on the system with ongoing SEO, content, backlinks, performance tracking and conversion improvements, so your online presence can become stronger over time.',
+    image: 'process-page-grow',
+    imageSize: [1080, 1018],
+    imageAlt:
+      'A laptop showing a rising growth chart, beside SEO growth, backlink building, content growth, performance tracking and continuous optimization steps',
+    sections: [
+      {
+        type: 'text',
+        eyebrow: 'Why growth never stops',
+        heading: "We don't disappear after launch.",
+        body: [
+          'We use performance data to find opportunities, prioritize the next improvements and keep your website moving forward.',
+          'Launch is not the finish line. SEO is an ongoing process, not a one-time installation, so we keep improving the system to make it more visible, more competitive and better at generating enquiries.',
+        ],
+      },
+      {
+        type: 'cards',
+        eyebrow: 'What we keep improving',
+        heading: 'Every part of growth answers one practical question.',
+        items: [
+          {
+            title: 'SEO growth',
+            body: 'How do we keep improving search visibility? We build on what the search data shows.',
+          },
+          {
+            title: 'Backlink building',
+            body: "How do we strengthen the site's authority? We build relevant authority over time.",
+          },
+          {
+            title: 'Content growth',
+            body: 'How do we create new opportunities? We publish useful content that reaches more searches.',
+          },
+          {
+            title: 'Performance tracking',
+            body: 'What is happening, and what does the data tell us? We measure visibility, traffic and enquiries.',
+          },
+          {
+            title: 'Conversion optimization',
+            body: 'How do we get more from existing traffic? We help more visitors take action.',
+          },
+          {
+            title: 'Continuous optimization',
+            body: 'What should we improve next? We turn each insight into the next improvement.',
+          },
+        ],
+      },
+      {
+        type: 'checklist',
+        eyebrow: 'SEO growth',
+        heading: 'Informed improvements, not constant changes.',
+        intro:
+          "Ongoing SEO focuses on the opportunities real performance data reveals. The goal isn't to change things constantly; it's to make informed improvements that strengthen your search visibility.",
+        items: [
+          'Monitor priority keywords and search visibility',
+          'Spot pages gaining traction and pages that need work',
+          'Refresh or expand key service pages when the data supports it',
+          'Improve internal linking as the site grows',
+          'Fix new technical SEO issues as they appear',
+          'Find new service, location and question-based searches',
+          'Let Search Console and analytics data guide priorities',
+        ],
+      },
+      {
+        type: 'checklist',
+        eyebrow: 'Backlink building',
+        heading: 'Authority that is deliberate, relevant and sustainable.',
+        intro:
+          "We earn quality signals that support your topical and local authority, rather than chasing link volume for its own sake.",
+        items: [
+          'Research relevant industry and local opportunities',
+          'Find competitor link gaps and useful referring sites',
+          'Build relationships and placements where they fit',
+          'Create resources worth linking to when useful',
+          'Strengthen local citations and business listings',
+          'Review the quality and relevance of new links',
+          'Track authority-building progress over time',
+        ],
+      },
+      {
+        type: 'checklist',
+        eyebrow: 'Content growth',
+        heading: 'More useful ways for customers to find you.',
+        intro: 'Content growth is tied to what people search for, your services and real customer questions.',
+        items: [
+          'New articles answering relevant questions',
+          'Supporting content for priority service pages',
+          'Location or service-area content where it adds real value',
+          'FAQs and problem-solving resources',
+          'Refreshing pages that have lost relevance or momentum',
+          'Better links between related topics',
+          'Ideas drawn from searches, competitors and customer questions',
+        ],
+      },
+      {
+        type: 'checklist',
+        eyebrow: 'Performance tracking',
+        heading: 'Measurement that leads to better decisions.',
+        intro:
+          "The point of tracking isn't impressive dashboards. It's understanding what is changing so we can make better decisions.",
+        note: 'No single number proves success. Rankings, traffic, enquiries and authority are read together, against your actual business goals.',
+        items: [
+          'Search visibility and priority keyword movement',
+          'Organic traffic and landing page performance',
+          'Search impressions and click-through rates',
+          'Enquiries and conversion trends',
+          'Top-performing and underperforming pages',
+          'New backlinks and referring sites',
+          'Technical health and notable site issues',
+        ],
+      },
+      {
+        type: 'checklist',
+        eyebrow: 'Conversion optimization',
+        heading: 'More value from the visitors you already have.',
+        intro:
+          "More traffic isn't automatically better if the website doesn't turn qualified visitors into enquiries. So growth includes improving the experience after visitors arrive.",
+        items: [
+          'Call to action placement and clarity',
+          'Landing page messaging and relevance',
+          'Forms and enquiry friction',
+          'Trust signals and proof',
+          'The enquiry experience on phones',
+          'Clear service pages',
+          'Testing and improving key enquiry paths',
+        ],
+      },
+      {
+        type: 'process',
+        eyebrow: 'The growth loop',
+        heading: 'A repeating cycle, not a list of disconnected tasks.',
+        steps: [
+          { title: 'Measure', body: 'Review performance and search data, to understand what changed.' },
+          { title: 'Diagnose', body: 'Find the reason behind the change, so nothing is a guess.' },
+          { title: 'Prioritize', body: 'Choose the highest-value opportunity, to focus the effort.' },
+          { title: 'Improve', body: 'Make the chosen change, aiming for a measurable improvement.' },
+          { title: 'Monitor', body: 'Give the change time to show evidence, then evaluate its impact.' },
+          { title: 'Repeat', body: 'Feed what we learned into the next cycle, so progress compounds.' },
+        ],
+      },
+      {
+        type: 'checklist',
+        eyebrow: 'Reporting',
+        heading: "Reports that explain what happened and what's next.",
+        intro:
+          'Reporting should help you understand what happened, why it matters, what we changed and what we recommend next. A regular report can include:',
+        items: [
+          'Key visibility and traffic changes',
+          'Important ranking and search developments',
+          'Pages and content improved or created',
+          'Authority and backlink activity',
+          'Enquiry observations where data is available',
+          'Technical issues addressed',
+          'Next priorities and recommended actions',
+        ],
+      },
+      {
+        type: 'checklist',
+        eyebrow: 'What you get',
+        heading: 'A clear system of measuring, prioritizing and improving.',
+        items: [
+          'Ongoing SEO recommendations and implementation',
+          'Monitoring of priority keywords and pages',
+          'Content opportunities and planned updates',
+          'Backlink and authority-building activity',
+          'Performance monitoring and reporting',
+          'Conversion improvement recommendations',
+          'Technical and on-page optimization as needed',
+          'A prioritized list of next growth opportunities',
+        ],
+      },
+      {
+        type: 'note',
+        eyebrow: 'How it connects',
+        heading: 'Audit. Plan. Build. Grow. Then keep going.',
+        body: 'Audit understands, Plan decides, Build & Launch executes and Grow compounds. Your original Audit and Plan become the baseline, so you can see progress over time, and every growth cycle starts from what the last one taught us.',
+      },
+    ],
+    cta: {
+      heading: 'Keep your website growing.',
+      body: "Book a strategy call and we'll talk through where your website can grow next.",
+    },
+  },
 }

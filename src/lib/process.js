@@ -36,7 +36,8 @@ export const PROCESS_STEPS = [
     name: 'Grow',
     image: 'process-grow',
     body: 'Ongoing SEO and backlinks, with regular reporting, so rankings and enquiries keep climbing.',
-    hasPage: false,
+    hasPage: true,
+    menu: 'Keep improving. Keep getting found.',
   },
 ]
 
