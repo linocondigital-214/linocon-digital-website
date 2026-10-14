@@ -3,8 +3,9 @@
 //
 // Each page is a hero (`accent` is the part of the headline shown in the brand
 // gradient, as in the banner image), then `sections` rendered in order by
-// src/pages/Service.jsx. Section types: cards, checklist, flow, text, pair (two
-// sections side by side), process, proof (our real projects) and note.
+// src/components/PageSections.jsx. Section types: cards, checklist, flow, text,
+// pair (two sections side by side), process, proof (our real projects), note
+// and groups (several titled lists).
 export const SERVICE_PAGES = {
   'website-creation': {
     headline: 'Sites built to convert, not just exist.',
