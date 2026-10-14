@@ -8,11 +8,22 @@
 //   signoff: { audit | plan | build: 'YYYY-MM-DD' }
 //   numbers: { baseline: { <metric>: value }, now: { <metric>: value } }
 //   months:  { 'YYYY-MM': { done: { <item id>: true }, log: { saw, why, improved, next } } }
+//   docs:    { proposal | agreement: { status: 'draft' | 'sent' | 'signed', sentAt, signedAt,
+//              fields: { <field>: text }, text: { <section id>: text } } }
 // }
+
+// What the client's own page may see: proposal and agreement drafts stay
+// private until Lino marks them as sent.
+export function publicView(client) {
+  const docs = Object.fromEntries(
+    Object.entries(client.docs ?? {}).filter(([, d]) => d?.status === 'sent' || d?.status === 'signed'),
+  )
+  return { ...client, docs }
+}
 
 const DETAIL_FIELDS = ['name', 'website', 'contact', 'email', 'serviceArea', 'startDate']
 const SERVICES = ['website', 'seo', 'backlinks', 'grow']
-const EDITABLE = new Set(['details', 'has', 'done', 'na', 'signoff', 'numbers', 'months'])
+const EDITABLE = new Set(['details', 'has', 'done', 'na', 'signoff', 'numbers', 'months', 'docs'])
 const FORBIDDEN = new Set(['__proto__', 'constructor', 'prototype'])
 const MAX_SIZE = 200_000
 

@@ -13,6 +13,8 @@ const ProcessStep = lazy(() => import('./pages/ProcessStep'))
 const ClientProgress = lazy(() => import('./pages/ClientProgress'))
 const Clients = lazy(() => import('./pages/Clients'))
 const ClientEdit = lazy(() => import('./pages/ClientEdit'))
+const ClientDocEdit = lazy(() => import('./pages/ClientDoc').then((m) => ({ default: m.ClientDocEdit })))
+const ClientDocView = lazy(() => import('./pages/ClientDoc').then((m) => ({ default: m.ClientDocView })))
 
 // Client progress pages are private: no site menu or footer.
 const isPrivatePath = (path) => /^\/(progress|clients)(\/|$)/.test(path)
@@ -81,6 +83,22 @@ function App() {
             element={
               <Suspense fallback={null}>
                 <ClientEdit />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/clients/:id/:doc"
+            element={
+              <Suspense fallback={null}>
+                <ClientDocEdit />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/progress/:id/:doc"
+            element={
+              <Suspense fallback={null}>
+                <ClientDocView />
               </Suspense>
             }
           />

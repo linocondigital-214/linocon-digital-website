@@ -30,7 +30,7 @@ export default function ClientProgress() {
           <p>Please refresh the page in a moment.</p>
         </Notice>
       )}
-      {state.status === 'ready' && <ProgressBoard client={state.client} />}
+      {state.status === 'ready' && <ProgressBoard client={state.client} docBase={`/progress/${id}`} />}
     </PrivateShell>
   )
 }

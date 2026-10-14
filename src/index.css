@@ -180,3 +180,49 @@ a {
     );
   }
 }
+
+/* Printing a client proposal or agreement (src/components/progress/DocumentView.jsx):
+   only the white page prints, with no site chrome. */
+.print-only {
+  display: none;
+}
+@media print {
+  @page {
+    margin: 16mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: inline-block;
+  }
+  .print-main {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+  .print-paper {
+    max-width: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+  }
+  /* The header already carries the brand and contact details; a footer on
+     its own often spilled onto an extra page. */
+  .print-paper footer {
+    display: none;
+  }
+  .print-paper h2 {
+    break-after: avoid;
+  }
+  .print-paper p,
+  .print-paper li,
+  .print-paper tr,
+  .print-keep {
+    break-inside: avoid;
+  }
+}

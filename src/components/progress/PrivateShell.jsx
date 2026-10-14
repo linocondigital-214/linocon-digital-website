@@ -7,13 +7,13 @@ export default function PrivateShell({ children, actions }) {
   useNoIndex()
   return (
     <div className="min-h-screen">
-      <header className="max-w-6xl mx-auto px-4 md:px-10 pt-6 md:pt-8 flex items-center justify-between gap-4">
+      <header className="no-print max-w-6xl mx-auto px-4 md:px-10 pt-6 md:pt-8 flex items-center justify-between gap-4">
         <Link to="/" aria-label="LinoCon Digital home">
           <Logo />
         </Link>
         {actions}
       </header>
-      <div className="max-w-6xl mx-auto px-4 md:px-10 pt-10 md:pt-14 pb-24">{children}</div>
+      <div className="print-main max-w-6xl mx-auto px-4 md:px-10 pt-10 md:pt-14 pb-24">{children}</div>
     </div>
   )
 }
