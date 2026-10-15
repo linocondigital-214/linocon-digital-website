@@ -3,6 +3,7 @@ import Hero from '../components/sections/Hero'
 import Benefits from '../components/sections/Benefits'
 import Statement from '../components/sections/Statement'
 import Services from '../components/sections/Services'
+import Bundles from '../components/sections/Bundles'
 import Work from '../components/sections/Work'
 import Included from '../components/sections/Included'
 import Process from '../components/sections/Process'
@@ -24,6 +25,7 @@ export default function Home() {
       <Benefits />
       <Statement />
       <Services />
+      <Bundles />
       <Included />
       <Process />
       <Work />
