@@ -21,6 +21,7 @@ import {
   today,
 } from '../../lib/clientProgress'
 import { DOCS, docState, isShared, statusLabel } from '../../lib/clientDocs'
+import PaymentCard from './PaymentCard'
 
 // The client's progress across Audit, Plan, Build & Launch and Grow.
 // Read-only on the client's private link; with `editable`, Lino ticks items
@@ -36,6 +37,7 @@ export default function ProgressBoard({ client, editable = false, onChange, docB
 
       <div className="mt-10 flex flex-col gap-6">
         {docBase && <Documents client={client} editable={editable} docBase={docBase} />}
+        <PaymentCard {...ctx} />
         <StartingPoint {...ctx} />
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {STAGES.map((s) => (
