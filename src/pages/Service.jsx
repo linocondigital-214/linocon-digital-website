@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
 import Reveal from '../components/Reveal'
+import Bundles from '../components/sections/Bundles'
 import { Arrow, Eyebrow, Heading, PageCTA, PageHero, PageSections } from '../components/PageSections'
 import { SERVICES, getService, servicePath } from '../lib/services'
 import { SERVICE_PAGES } from '../lib/servicePages'
@@ -27,6 +28,7 @@ export default function Service() {
     <>
       <PageHero id={s.slug} kicker={s.kicker} page={page} />
       <PageSections sections={page.sections} />
+      <Bundles />
 
       <section className="py-20 md:py-28 border-t border-border">
         <div className="max-w-6xl mx-auto px-6 md:px-10 grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
