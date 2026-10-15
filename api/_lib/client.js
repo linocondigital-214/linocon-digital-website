@@ -11,6 +11,7 @@
 //   docs:    { proposal | agreement: { status: 'draft' | 'sent' | 'signed', sentAt, signedAt,
 //              fields: { <field>: text }, text: { <section id>: text } } }
 //   worklog: { <entry id>: { date: 'YYYY-MM-DD', text } }   Lino's private notes, never shown to the client
+//   payment: { label, link, portal }   the client's Pay button: Stripe payment link and billing portal
 // }
 
 // What the client's own page may see: proposal and agreement drafts stay
@@ -26,7 +27,7 @@ export function publicView(client) {
 
 const DETAIL_FIELDS = ['name', 'website', 'contact', 'email', 'serviceArea', 'startDate']
 const SERVICES = ['website', 'seo', 'backlinks', 'grow']
-const EDITABLE = new Set(['details', 'has', 'done', 'na', 'signoff', 'numbers', 'months', 'docs', 'worklog'])
+const EDITABLE = new Set(['details', 'has', 'done', 'na', 'signoff', 'numbers', 'months', 'docs', 'worklog', 'payment'])
 const FORBIDDEN = new Set(['__proto__', 'constructor', 'prototype'])
 const MAX_SIZE = 200_000
 
@@ -62,6 +63,7 @@ export function applyChanges(client, changes) {
       (typeof value === 'number' && Number.isFinite(value)) ||
       (typeof value === 'string' && value.length <= 4000)
     if (!ok) throw new BadRequest('Invalid change value')
+    if (path[0] === 'payment') checkPayment(path, value)
 
     let node = client
     for (const key of path.slice(0, -1)) {
@@ -75,6 +77,25 @@ export function applyChanges(client, changes) {
   client.updatedAt = new Date().toISOString()
   if (JSON.stringify(client).length > MAX_SIZE) throw new BadRequest('Client record is too large')
   return client
+}
+
+// The Pay button may only point at Stripe's own pages.
+const PAYMENT_FIELDS = new Set(['label', 'link', 'portal'])
+
+function checkPayment(path, value) {
+  if (path.length !== 2 || !PAYMENT_FIELDS.has(path[1])) throw new BadRequest('Invalid change path')
+  if (value === null) return
+  if (typeof value !== 'string') throw new BadRequest('Invalid change value')
+  if (path[1] !== 'label' && !isStripeLink(value)) throw new BadRequest('Payment links must be https Stripe links')
+}
+
+function isStripeLink(value) {
+  try {
+    const url = new URL(value)
+    return url.protocol === 'https:' && (url.hostname === 'stripe.com' || url.hostname.endsWith('.stripe.com'))
+  } catch {
+    return false
+  }
 }
 
 export class BadRequest extends Error {}
