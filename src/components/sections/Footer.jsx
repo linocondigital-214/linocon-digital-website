@@ -98,7 +98,10 @@ export default function Footer() {
           <span className="text-[13px] text-text-tertiary">
             &copy; {new Date().getFullYear()} LinoCon Digital. All rights reserved.
           </span>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <Link to="/privacy" className="text-[13px] text-text-secondary hover:text-text transition-colors">
+              Privacy Policy
+            </Link>
             <a href={`mailto:${CONTACT_EMAIL}`} className="text-[13px] text-text-secondary hover:text-text transition-colors">
               {CONTACT_EMAIL}
             </a>
