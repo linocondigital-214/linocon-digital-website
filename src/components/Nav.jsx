@@ -151,6 +151,7 @@ export default function Nav() {
   }, [location])
 
   const solid = scrolled || open
+  const isHome = location.pathname === '/'
 
   return (
     <header
@@ -165,7 +166,17 @@ export default function Nav() {
           <Logo />
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-8">
+        <nav className="hidden lg:flex items-center gap-6 xl:gap-8 whitespace-nowrap">
+          <Link
+            to="/"
+            onClick={() => window.scrollTo(0, 0)}
+            aria-current={isHome ? 'page' : undefined}
+            className={`text-sm font-semibold transition-colors ${
+              isHome ? 'text-text' : 'text-text-secondary hover:text-text'
+            }`}
+          >
+            Home
+          </Link>
           {MENUS.map((menu) => (
             <DropdownMenu key={menu.label} menu={menu} />
           ))}
@@ -214,6 +225,17 @@ export default function Nav() {
 
       {open && (
         <nav className="lg:hidden border-t border-border px-5 pb-6 pt-2 flex flex-col max-h-[calc(100svh-4rem)] overflow-y-auto">
+          <Link
+            to="/"
+            onClick={() => {
+              setOpen(false)
+              window.scrollTo(0, 0)
+            }}
+            aria-current={isHome ? 'page' : undefined}
+            className="py-4 text-lg font-semibold border-b border-border"
+          >
+            Home
+          </Link>
           {MENUS.map((menu) => {
             const isOpen = expanded === menu.label
             return (
