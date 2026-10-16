@@ -4,7 +4,6 @@ import Nav from './components/Nav'
 import CursorGlow from './components/CursorGlow'
 import Footer from './components/sections/Footer'
 import Home from './pages/Home'
-import useCanonical from './lib/useCanonical'
 
 const BookCall = lazy(() => import('./pages/BookCall'))
 const Articles = lazy(() => import('./pages/Articles'))
@@ -23,7 +22,6 @@ const isPrivatePath = (path) => /^\/(progress|clients)(\/|$)/.test(path)
 function App() {
   const { pathname } = useLocation()
   const isPrivate = isPrivatePath(pathname)
-  useCanonical(pathname)
 
   return (
     <>

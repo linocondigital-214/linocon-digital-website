@@ -1,19 +1,5 @@
 {
-  "functions": {
-    "api/sitemap.js": { "includeFiles": "src/content/articles/**" }
-  },
-  "redirects": [
-    {
-      "source": "/:path*",
-      "has": [{ "type": "host", "value": "www.linocondigital.com" }],
-      "destination": "https://linocondigital.com/:path*",
-      "permanent": true
-    }
-  ],
-  "rewrites": [
-    { "source": "/sitemap.xml", "destination": "/api/sitemap" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
-  ],
+  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }],
   "headers": [
     {
       "source": "/(progress|clients)(.*)",
