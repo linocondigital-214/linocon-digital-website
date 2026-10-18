@@ -15,9 +15,9 @@ const BUNDLES = [
   {
     name: 'Grow Bundle',
     tagline: 'Grow Plan + Backlink Building',
-    price: '$499',
+    price: '$499.99',
     unit: '/ month',
-    note: 'Instead of $599 / month on their own.',
+    note: 'Instead of $599.98 / month on their own.',
     points: ['Monthly website care and SEO improvements', 'Google Business Profile upkeep', 'Relevant, quality backlinks. No link farms', 'Monthly progress update'],
     featured: true,
   },
@@ -25,7 +25,7 @@ const BUNDLES = [
     name: 'All-in Starter',
     tagline: 'Launch Bundle + 3 months of Grow',
     price: '10% off',
-    unit: 'your launch, plus 3 months of Grow at $499 / month',
+    unit: 'your launch, plus 3 months of Grow at $499.99 / month',
     note: 'Launch your site, then grow it from day one.',
     points: ['Everything in the Launch Bundle', 'First 3 months of the Grow Bundle', 'Month-by-month progress page', 'Continue month to month after that'],
   },
@@ -100,7 +100,7 @@ export default function Bundles() {
           ))}
         </div>
 
-        <p className="text-sm text-text-secondary mt-8">Prices in Canadian dollars. Taxes extra where applicable.</p>
+        <p className="text-sm text-text-secondary pt-8">Prices in Canadian dollars. Taxes extra where applicable.</p>
       </div>
     </section>
   )

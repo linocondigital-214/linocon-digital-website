@@ -64,7 +64,7 @@ function PaymentEdit({ payment, onChange }) {
         </div>
       </div>
       <div className="grid md:grid-cols-2 gap-x-6 gap-y-4 mt-5">
-        <Field label="What it's for" hint="For example: Monthly website care, $99/month" value={payment.label ?? ''} onSave={save('label')} max={120} />
+        <Field label="What it's for" hint="For example: Grow Plan, $349.99/month" value={payment.label ?? ''} onSave={save('label')} max={120} />
         <Field label="Stripe payment link" hint="https://buy.stripe.com/..." value={payment.link ?? ''} onSave={save('link')} link />
         <Field
           label="Billing portal link (optional)"
