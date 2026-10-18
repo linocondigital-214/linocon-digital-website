@@ -18,6 +18,7 @@ const COLUMNS = [
       { href: '/#process', label: 'How we work' },
       { href: '/#faq', label: 'FAQ' },
       { to: '/articles', label: 'Articles' },
+      { to: '/pay', label: 'Pay an invoice' },
     ],
   },
   {
