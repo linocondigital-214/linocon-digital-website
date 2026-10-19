@@ -17,6 +17,19 @@
   --color-orange: #ff6a3d;
 
   --color-paper: #fafaf9;
+
+  /* Finance app (/finance), from the approved mockup */
+  --color-fin-panel: #14141b;
+  --color-fin-panel-2: #1b1b24;
+  --color-fin-line: #272733;
+  --color-fin-muted: #a3a2b3;
+  --color-fin-faint: #6e6d80;
+  --color-fin-blue: #4e6cf5;
+  --color-fin-violet: #9a5ce0;
+  --color-fin-coral: #f26b4b;
+  --color-fin-good: #3fcb8b;
+  --color-fin-warn: #f5b547;
+  --color-fin-bad: #f26b4b;
 }
 
 * {
@@ -65,6 +78,16 @@ a {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.fin-grad {
+  background: linear-gradient(100deg, var(--color-fin-blue), var(--color-fin-violet) 55%, var(--color-fin-coral));
+}
+
+.fin-glow {
+  background:
+    radial-gradient(60% 50% at 20% 0%, rgba(78, 108, 245, 0.18), transparent 70%),
+    radial-gradient(50% 40% at 90% 100%, rgba(242, 107, 75, 0.14), transparent 70%);
 }
 
 .bg-gradient-brand {

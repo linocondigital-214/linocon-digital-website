@@ -109,6 +109,7 @@ function Cards({ s }) {
       <Reveal className="mb-12">
         <Eyebrow>{s.eyebrow}</Eyebrow>
         <Heading>{s.heading}</Heading>
+        {s.intro && <p className="text-lg text-text-secondary leading-relaxed max-w-3xl mt-5">{s.intro}</p>}
       </Reveal>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
         {s.items.map((item, i) => (

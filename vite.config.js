@@ -4,7 +4,7 @@ import { defineConfig } from 'vite'
 
 // On Vercel the files in /api run as serverless functions. This plugin runs
 // the same files during `npm run dev`, saving to memory instead of Redis, so
-// the client progress pages work locally (admin password: "preview").
+// the client progress and finance pages work locally (passwords: "preview").
 function localApi() {
   return {
     name: 'local-api',
@@ -12,9 +12,10 @@ function localApi() {
     configureServer(server) {
       process.env.LCD_MEMORY_STORE ??= '1'
       process.env.ADMIN_PASSWORD ??= 'preview'
+      process.env.FINANCE_PASSWORD ??= 'preview'
       server.middlewares.use(async (req, res, next) => {
         const url = new URL(req.url, 'http://localhost')
-        const match = url.pathname.match(/^\/api\/(clients|client)$/)
+        const match = url.pathname.match(/^\/api\/(clients|client|finance)$/)
         if (!match) return next()
 
         let raw = ''

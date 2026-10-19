@@ -5,6 +5,7 @@
 import { randomBytes } from 'node:crypto'
 
 const memory = new Map()
+const expiresAt = new Map()
 
 export class SetupError extends Error {}
 
@@ -14,7 +15,7 @@ function redisConfig() {
   return url && token ? { url, token } : null
 }
 
-async function redis(command) {
+export async function redis(command) {
   const config = redisConfig()
   if (!config) {
     if (process.env.LCD_MEMORY_STORE) return memoryCommand(command)
@@ -31,14 +32,35 @@ async function redis(command) {
 }
 
 function memoryCommand([name, key, ...args]) {
+  if (expiresAt.has(key) && expiresAt.get(key) <= Date.now()) {
+    memory.delete(key)
+    expiresAt.delete(key)
+  }
   switch (name) {
     case 'GET':
       return memory.get(key) ?? null
-    case 'SET':
+    case 'SET': {
+      // Supports the SET key value [NX] [EX seconds] forms the finance app uses.
+      const opts = args.slice(1).map(String)
+      if (opts.includes('NX') && memory.has(key)) return null
       memory.set(key, args[0])
+      const ex = opts.indexOf('EX')
+      if (ex >= 0) expiresAt.set(key, Date.now() + Number(opts[ex + 1]) * 1000)
+      else expiresAt.delete(key)
       return 'OK'
+    }
     case 'DEL':
+      expiresAt.delete(key)
       return memory.delete(key) ? 1 : 0
+    case 'INCR': {
+      const next = Number(memory.get(key) ?? 0) + 1
+      memory.set(key, String(next))
+      return next
+    }
+    case 'EXPIRE':
+      if (!memory.has(key)) return 0
+      expiresAt.set(key, Date.now() + Number(args[0]) * 1000)
+      return 1
     case 'SADD': {
       const set = memory.get(key) ?? new Set()
       set.add(args[0])
