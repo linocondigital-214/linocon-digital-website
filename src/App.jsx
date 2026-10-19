@@ -19,11 +19,12 @@ const Refer = lazy(() => import('./pages/Refer'))
 const ClientProgress = lazy(() => import('./pages/ClientProgress'))
 const Clients = lazy(() => import('./pages/Clients'))
 const ClientEdit = lazy(() => import('./pages/ClientEdit'))
+const Finance = lazy(() => import('./pages/Finance'))
 const ClientDocEdit = lazy(() => import('./pages/ClientDoc').then((m) => ({ default: m.ClientDocEdit })))
 const ClientDocView = lazy(() => import('./pages/ClientDoc').then((m) => ({ default: m.ClientDocView })))
 
-// Client progress pages are private: no site menu or footer.
-const isPrivatePath = (path) => /^\/(progress|clients)(\/|$)/.test(path)
+// Client progress and finance pages are private: no site menu or footer.
+const isPrivatePath = (path) => /^\/(progress|clients|finance)(\/|$)/.test(path)
 
 function App() {
   const { pathname } = useLocation()
@@ -146,6 +147,14 @@ function App() {
             element={
               <Suspense fallback={null}>
                 <ClientDocView />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/finance/:section?"
+            element={
+              <Suspense fallback={null}>
+                <Finance />
               </Suspense>
             }
           />

@@ -1,0 +1,88 @@
+// /api/finance: Lino's private books (linocondigital.com/finance).
+//   GET  ?op=status    signed in or not, and whether setup is finished
+//   POST ?op=password  step 1 of sign-in
+//   POST ?op=code      step 2: authenticator or recovery code
+//   POST ?op=signout
+//   GET  ?op=summary   the dashboard numbers
+import QRCode from 'qrcode'
+import { SetupError } from './_lib/store.js'
+import { checkSetup, currentUser, finishSignIn, isEnrolled, recoveryCodesLeft, sessionCookie, signOut, startSignIn } from './_lib/finance/auth.js'
+import { otpauthUrl } from './_lib/finance/totp.js'
+import { can } from './_lib/finance/roles.js'
+import { getSettings, listRecords } from './_lib/finance/records.js'
+import { summarize } from './_lib/finance/summary.js'
+
+const MESSAGES = {
+  wrong: "That didn't match. Try again.",
+  locked: 'Too many tries. Sign-in is paused for 15 minutes.',
+  expired: 'That took too long. Start again with your password.',
+}
+
+async function handle(req, res) {
+  const op = req.query?.op
+  const post = req.method === 'POST'
+  // Sign-in and changes only accept JSON, which other sites can't send here.
+  if (post && !String(req.headers['content-type'] ?? '').startsWith('application/json')) return [415, { error: 'json' }]
+
+  if (op === 'status' && req.method === 'GET') {
+    checkSetup()
+    const user = await currentUser(req)
+    return [200, { signedIn: Boolean(user), role: user?.role ?? null, linked: await isEnrolled() }]
+  }
+
+  if (op === 'password' && post) {
+    const result = await startSignIn(req, req.body?.password)
+    if (result.status !== 'ok') return [result.status === 'locked' ? 429 : 401, { error: result.status, message: MESSAGES[result.status] }]
+    const body = { ticket: result.ticket, link: result.enroll }
+    if (result.enroll) {
+      const url = otpauthUrl(result.secret)
+      body.setup = { secret: result.secret, qr: await QRCode.toString(url, { type: 'svg', margin: 1 }) }
+    }
+    return [200, body]
+  }
+
+  if (op === 'code' && post) {
+    const result = await finishSignIn(req, req.body?.ticket, req.body?.code)
+    if (result.status !== 'ok') return [result.status === 'locked' ? 429 : 401, { error: result.status, message: MESSAGES[result.status] }]
+    res.setHeader('Set-Cookie', sessionCookie(result.session))
+    return [200, { signedIn: true, recoveryCodes: result.recoveryCodes }]
+  }
+
+  if (op === 'signout' && post) {
+    await signOut(req)
+    res.setHeader('Set-Cookie', sessionCookie(null))
+    return [200, { signedIn: false }]
+  }
+
+  const user = await currentUser(req)
+  if (!user) return [401, { error: 'signin' }]
+
+  if (op === 'summary' && req.method === 'GET') {
+    if (!can(user.role, 'view')) return [403, { error: 'role' }]
+    const [income, expenses, invoices, settings] = await Promise.all([
+      listRecords('income'),
+      listRecords('expense'),
+      listRecords('invoice'),
+      getSettings(),
+    ])
+    return [200, { role: user.role, summary: summarize({ income, expenses, invoices, settings }), recoveryCodesLeft: await recoveryCodesLeft() }]
+  }
+
+  return [404, { error: 'unknown' }]
+}
+
+export default async function finance(req, res) {
+  res.setHeader('Cache-Control', 'no-store')
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow')
+  try {
+    const [status, body] = await handle(req, res)
+    res.status(status).json(body)
+  } catch (err) {
+    if (err instanceof SetupError) {
+      res.status(503).json({ error: 'setup', message: err.message })
+    } else {
+      console.error(err)
+      res.status(500).json({ error: 'server', message: 'Something went wrong' })
+    }
+  }
+}
