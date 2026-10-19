@@ -4,6 +4,7 @@
 //   POST ?op=code      step 2: authenticator or recovery code
 //   POST ?op=signout
 //   GET  ?op=summary   the dashboard numbers
+// Expense calls are listed in _lib/finance/expenseOps.js.
 import QRCode from 'qrcode'
 import { SetupError } from './_lib/store.js'
 import { checkSetup, currentUser, finishSignIn, isEnrolled, recoveryCodesLeft, sessionCookie, signOut, startSignIn } from './_lib/finance/auth.js'
@@ -11,6 +12,7 @@ import { otpauthUrl } from './_lib/finance/totp.js'
 import { can } from './_lib/finance/roles.js'
 import { getSettings, listRecords } from './_lib/finance/records.js'
 import { summarize } from './_lib/finance/summary.js'
+import { Invalid, expenseOps } from './_lib/finance/expenseOps.js'
 
 const MESSAGES = {
   wrong: "That didn't match. Try again.",
@@ -68,6 +70,9 @@ async function handle(req, res) {
     return [200, { role: user.role, summary: summarize({ income, expenses, invoices, settings }), recoveryCodesLeft: await recoveryCodesLeft() }]
   }
 
+  const result = await expenseOps(op, req, user)
+  if (result) return result
+
   return [404, { error: 'unknown' }]
 }
 
@@ -78,7 +83,9 @@ export default async function finance(req, res) {
     const [status, body] = await handle(req, res)
     res.status(status).json(body)
   } catch (err) {
-    if (err instanceof SetupError) {
+    if (err instanceof Invalid) {
+      res.status(400).json({ error: 'invalid', message: err.message })
+    } else if (err instanceof SetupError) {
       res.status(503).json({ error: 'setup', message: err.message })
     } else {
       console.error(err)
