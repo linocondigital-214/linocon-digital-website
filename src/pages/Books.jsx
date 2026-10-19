@@ -277,8 +277,8 @@ function Waitlist() {
               Be one of the first to own your books.
             </h2>
             <p className="text-lg text-text-secondary leading-relaxed">
-              We&rsquo;re testing LinoCon Books on our own books first. Join the list and founding clients get
-              first access at founding prices. No payment, no obligation.
+              We&rsquo;re testing LinoCon Books on our own business first. Join the list to be one of the first
+              to use it, at our lowest starting price. Free to join. You can decide later.
             </p>
           </div>
 
@@ -289,7 +289,7 @@ function Waitlist() {
               </h3>
               <p className="text-text-secondary">
                 {status === 'sent'
-                  ? 'We’ll email you as soon as LinoCon Books is ready for founding clients.'
+                  ? 'We’ll email you as soon as LinoCon Books is ready.'
                   : 'Your email app should have opened with your details filled in. Just hit send.'}
               </p>
             </div>
