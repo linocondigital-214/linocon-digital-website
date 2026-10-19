@@ -1,8 +1,10 @@
 // The books, saved in the same Upstash Redis as the client pages, under
 // "fin:" keys. Amounts are whole cents so totals never drift.
 //
-// income:   { id, date: 'YYYY-MM-DD', amount (before GST), gst, service, clientId, client, source: 'stripe' | 'manual', fee }
-// expense:  { id, date, vendor, category, amount (total paid), gst (GST/HST part), paidWith, receipt: bool, note, createdAt, updatedAt }
+// income:   { id, date: 'YYYY-MM-DD', amount (before GST, negative for a refund), gst, fee, service, clientId, client, note,
+//             source: 'stripe' | 'manual', receivedBy (manual), stripeId, chargeId, refund (Stripe), createdAt, updatedAt }
+// expense:  { id, date, vendor, category, amount (total paid), gst (GST/HST part), paidWith, receipt: bool, note, source?, createdAt, updatedAt }
+//           source 'stripe' marks the monthly Stripe fees the app adds itself
 //           receipt photos are kept apart under fin:receipt:<id> so lists stay small
 // invoice:  { id, number, clientId, client, issued, due, subtotal, gst, status: 'draft' | 'open' | 'paid' | 'void', paidOn }
 // settings: { ownerName, gstRegistered, gstRegisteredOn, gstFiling: 'Annual' | 'Quarterly', openingCash, openingDate }

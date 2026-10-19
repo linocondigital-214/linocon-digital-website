@@ -68,12 +68,15 @@ export default function Expenses({ onChanged }) {
   return <ExpenseList data={data} month={month} setMonth={setMonth} onAdd={() => setParams({ add: '1' })} onOpen={(id) => setParams({ edit: id })} />
 }
 
+// Stripe's monthly fees come from Stripe's own records, so they need no photo.
+const needsReceipt = (e) => !e.receipt && e.source !== 'stripe'
+
 const byDate = (a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)
 
 function ExpenseList({ data, month, setMonth, onAdd, onOpen }) {
   const rows = data.expenses.filter((e) => e.date.startsWith(month))
   const total = rows.reduce((t, e) => t + e.amount, 0)
-  const missing = rows.filter((e) => !e.receipt).length
+  const missing = rows.filter(needsReceipt).length
   const totals = new Map()
   for (const e of rows) totals.set(e.category, (totals.get(e.category) ?? 0) + e.amount)
   const byCategory = [...totals].sort((a, b) => b[1] - a[1])
@@ -123,12 +126,16 @@ function ExpenseList({ data, month, setMonth, onAdd, onOpen }) {
             {rows.map((e) => (
               <li key={e.id}>
                 <button type="button" onClick={() => onOpen(e.id)} className="w-full text-left px-4 md:px-5 py-3.5 flex items-center gap-3 hover:bg-fin-panel-2">
-                  <span className={`w-2 h-2 rounded-full shrink-0 ${e.receipt ? 'bg-fin-good' : 'bg-fin-warn'}`} title={e.receipt ? 'Receipt saved' : 'No receipt yet'} />
+                  <span
+                    className={`w-2 h-2 rounded-full shrink-0 ${needsReceipt(e) ? 'bg-fin-warn' : 'bg-fin-good'}`}
+                    title={needsReceipt(e) ? 'No receipt yet' : 'Receipt saved'}
+                  />
                   <span className="flex-1 min-w-0">
                     <span className="block font-semibold truncate">{e.vendor}</span>
                     <span className="block text-sm text-fin-muted truncate">
                       {shortDate(e.date)} · {e.category}
-                      {!e.receipt && ' · no receipt'}
+                      {needsReceipt(e) && ' · no receipt'}
+                      {e.source === 'stripe' && ' · from Stripe'}
                     </span>
                   </span>
                   <span className="tabular-nums font-semibold">{money(e.amount)}</span>
@@ -246,7 +253,8 @@ function ExpenseForm({ expense, lists, onCancel, onSaved, onDeleted }) {
 
   const shown = photo.dataUrl ?? (photo.existing && !photo.removed ? existingUrl : null)
   const hasPhoto = Boolean(photo.dataUrl) || (photo.existing && !photo.removed)
-  const readOnly = !isNew && !lists.canEdit
+  const fromStripe = expense?.source === 'stripe'
+  const readOnly = (!isNew && !lists.canEdit) || fromStripe
 
   return (
     <form onSubmit={save} className="max-w-xl">
@@ -254,8 +262,15 @@ function ExpenseForm({ expense, lists, onCancel, onSaved, onDeleted }) {
         ‹ Back to expenses
       </button>
       <h1 className="font-display font-bold text-3xl pt-3">{isNew ? 'Add expense' : 'Expense'}</h1>
+      {fromStripe && (
+        <div className="mt-3 text-sm text-fin-muted">
+          These are the fees Stripe kept from your payments this month. The app adds them and keeps them up to date, so there’s
+          nothing to change here.
+        </div>
+      )}
 
       <fieldset disabled={readOnly || saving} className="mt-6 flex flex-col gap-5">
+        {!fromStripe && (
         <div>
           <input ref={fileInput} type="file" accept="image/*" capture="environment" onChange={choosePhoto} className="hidden" />
           {hasPhoto ? (
@@ -290,6 +305,7 @@ function ExpenseForm({ expense, lists, onCancel, onSaved, onDeleted }) {
             </button>
           )}
         </div>
+        )}
 
         <Label text="Amount paid (total)">
           <div className="relative">

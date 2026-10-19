@@ -69,7 +69,7 @@ function gstStatus({ income, expenses, settings, now }) {
   return { registered: true, label, due, collected, credits, owing: collected - credits }
 }
 
-export function summarize({ income, expenses, invoices, settings }, now = today()) {
+export function summarize({ income, expenses, invoices, settings, stripe = {} }, now = today()) {
   const thisMonth = monthKey(now)
   const lastMonth = shiftMonth(thisMonth, -1)
   const year = now.slice(0, 4)
@@ -90,7 +90,10 @@ export function summarize({ income, expenses, invoices, settings }, now = today(
   const totals = (rows, keyOf, valueOf) => {
     const map = new Map()
     for (const r of rows) map.set(keyOf(r), (map.get(keyOf(r)) ?? 0) + valueOf(r))
-    return [...map].map(([name, amount]) => ({ name, amount })).sort((a, b) => b.amount - a.amount)
+    return [...map]
+      .filter(([, amount]) => amount !== 0)
+      .map(([name, amount]) => ({ name, amount }))
+      .sort((a, b) => b.amount - a.amount)
   }
 
   const open = invoices.filter((inv) => inv.status === 'open')
@@ -98,11 +101,12 @@ export function summarize({ income, expenses, invoices, settings }, now = today(
   const owed = (inv) => inv.subtotal + (inv.gst || 0)
 
   // Cash: the opening balance Lino types in Settings, plus money in, less
-  // money out since then.
+  // money out since then. Stripe's fees are expenses (stripe.js), so they
+  // count once.
   const since = (r) => !settings.openingDate || r.date >= settings.openingDate
   const cash =
     settings.openingCash +
-    sum(income.filter(since), (i) => i.amount + (i.gst || 0) - (i.fee || 0)) -
+    sum(income.filter(since), (i) => i.amount + (i.gst || 0)) -
     sum(expenses.filter(since), (e) => e.amount)
 
   const attention = overdue.map((inv) => ({
@@ -111,7 +115,7 @@ export function summarize({ income, expenses, invoices, settings }, now = today(
     detail: `Invoice ${inv.number}`,
     amount: owed(inv),
   }))
-  const noReceipt = expenses.filter((e) => inYear(e) && !e.receipt)
+  const noReceipt = expenses.filter((e) => inYear(e) && !e.receipt && e.source !== 'stripe')
   if (noReceipt.length) {
     attention.push({
       tone: 'warn',
@@ -127,6 +131,7 @@ export function summarize({ income, expenses, invoices, settings }, now = today(
     months,
     cash,
     cashAsOf: settings.openingDate,
+    mrr: stripe.connected && stripe.lastSync ? { amount: stripe.mrr ?? 0, count: stripe.subscriptions ?? 0 } : null,
     unpaid: { amount: sum(open, owed), count: open.length, overdue: overdue.length },
     gst: gstStatus({ income, expenses, settings, now }),
     byService: totals(income.filter(inYear), (i) => i.service || 'Other', (i) => i.amount),

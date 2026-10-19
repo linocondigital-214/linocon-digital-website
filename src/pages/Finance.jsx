@@ -4,7 +4,8 @@ import FinanceLogin, { Card } from '../components/finance/FinanceLogin'
 import FinanceShell from '../components/finance/FinanceShell'
 import Dashboard from '../components/finance/Dashboard'
 import Expenses from '../components/finance/Expenses'
-import { SECTIONS, fetchSummary, fetchStatus, signOutFinance } from '../lib/finance'
+import Income from '../components/finance/Income'
+import { SECTIONS, fetchSummary, fetchStatus, signOutFinance, syncStripe } from '../lib/finance'
 import { useNoIndex } from '../lib/clientProgress'
 import usePageMeta from '../lib/usePageMeta'
 
@@ -28,14 +29,24 @@ export default function Finance() {
       })
   }, [])
 
-  useEffect(load, [load])
-
   // After a change elsewhere in the app, refresh the dashboard numbers quietly.
   const refresh = useCallback(() => {
     fetchSummary()
       .then((data) => setState((s) => ({ ...s, ...data })))
       .catch(() => {})
   }, [])
+
+  useEffect(load, [load])
+
+  // Once signed in, check Stripe for new payments in the background and
+  // refresh the numbers if any came in.
+  const signedIn = state.status === 'ready'
+  useEffect(() => {
+    if (!signedIn) return
+    syncStripe()
+      .then((s) => s.added && refresh())
+      .catch(() => {})
+  }, [signedIn, refresh])
 
   async function signOut() {
     await signOutFinance().catch(() => {})
@@ -76,6 +87,8 @@ export default function Finance() {
         </>
       ) : current.key === 'expenses' ? (
         <Expenses onChanged={refresh} />
+      ) : current.key === 'income' ? (
+        <Income onChanged={refresh} />
       ) : (
         <div className="max-w-xl rounded-2xl border border-fin-line bg-fin-panel p-6 md:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-fin-muted">Coming next</p>
