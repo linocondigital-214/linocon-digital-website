@@ -3,7 +3,7 @@ import Reveal from '../components/Reveal'
 import { CONTACT_EMAIL } from '../lib/leads'
 import usePageMeta from '../lib/usePageMeta'
 
-const UPDATED = 'October 16, 2026'
+const UPDATED = 'October 19, 2026'
 
 // Written for Canadian privacy law (PIPEDA and BC's PIPA). If the site starts
 // collecting something new (a new form, tool or tracker), add it here.
@@ -44,6 +44,11 @@ export default function Privacy() {
           <ul>
             <li>
               <strong>When you ask for a free audit:</strong> your website address and email.
+            </li>
+            <li>
+              <strong>When you join the LinoCon Books waitlist:</strong> your name, email, business
+              name and which option you&rsquo;re interested in. We only use it to contact you about
+              LinoCon Books.
             </li>
             <li>
               <strong>When you book a call:</strong> your name, email, company or website, and what

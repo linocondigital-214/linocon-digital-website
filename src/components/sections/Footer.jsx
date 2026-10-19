@@ -2,12 +2,14 @@ import { Link } from 'react-router-dom'
 import { Logo } from '../Logo'
 import { CONTACT_EMAIL } from '../../lib/leads'
 import { SERVICES, servicePath } from '../../lib/services'
+import { BOOKS } from '../../lib/books'
 
 const COLUMNS = [
   {
     title: 'Services',
     links: [
       ...SERVICES.map((s) => ({ to: servicePath(s), label: s.name })),
+      { to: BOOKS.path, label: BOOKS.comingSoon ? `${BOOKS.name} (coming soon)` : BOOKS.name },
       { href: '/#audit', label: 'Free website audit' },
     ],
   },

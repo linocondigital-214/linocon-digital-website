@@ -40,6 +40,51 @@ function Check() {
   )
 }
 
+// LinoCon Complete: everything plus LinoCon Books. Coming soon, so it links
+// to the Books waitlist instead of a payment.
+function Complete() {
+  const points = ['Launch Bundle: website + SEO setup', 'Grow Bundle: monthly growth + backlinks', 'LinoCon Books: your own bookkeeping app', 'Books Care included while you stay on Grow']
+  return (
+    <Reveal
+      y={40}
+      className="relative mt-8 rounded-3xl border border-white/15 bg-gradient-to-br from-surface-2 via-surface to-blue/15 p-7 md:p-10 grid lg:grid-cols-[1fr_1.1fr] gap-8 lg:gap-12 items-center"
+    >
+      <span className="absolute -top-3 left-7 text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-gradient-brand text-ink">
+        Coming soon
+      </span>
+      <div className="flex flex-col gap-5">
+        <div>
+          <h3 className="font-display font-bold text-2xl md:text-3xl">LinoCon Complete</h3>
+          <p className="text-text-secondary mt-1">Everything your business needs online, plus your own books.</p>
+        </div>
+        <div>
+          <p className="flex flex-wrap items-baseline gap-x-2">
+            <span className="font-display font-bold text-4xl md:text-5xl">$549.99</span>
+            <span className="text-text-secondary">/ month for 12 months</span>
+          </p>
+          <p className="text-sm text-text-secondary mt-2">
+            Then $499.99 / month, and the bookkeeping app is yours. Plus your Launch Bundle invoice.
+          </p>
+        </div>
+        <Link
+          to="/books#waitlist"
+          className="flex items-center justify-center h-13 px-6 rounded-full border border-white/20 hover:bg-white/5 transition-colors text-base font-bold w-full sm:w-fit"
+        >
+          Join the waitlist
+        </Link>
+      </div>
+      <ul className="grid sm:grid-cols-2 gap-3">
+        {points.map((p) => (
+          <li key={p} className="flex items-start gap-3 rounded-2xl border border-border bg-ink/40 px-5 py-4 text-text-secondary leading-snug">
+            <Check />
+            {p}
+          </li>
+        ))}
+      </ul>
+    </Reveal>
+  )
+}
+
 export default function Bundles() {
   return (
     <section id="bundles" className="py-28 md:py-36 scroll-mt-20">
@@ -99,6 +144,8 @@ export default function Bundles() {
             </Reveal>
           ))}
         </div>
+
+        <Complete />
 
         <p className="text-sm text-text-secondary pt-8">Prices in Canadian dollars. Taxes extra where applicable.</p>
       </div>

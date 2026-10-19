@@ -3,8 +3,12 @@ import { Link, useLocation } from 'react-router-dom'
 import { Logo } from './Logo'
 import { SERVICES, servicePath } from '../lib/services'
 import { LIVE_STEPS, stepPath } from '../lib/process'
+import { BOOKS } from '../lib/books'
 
-const SERVICE_ITEMS = SERVICES.map((s) => ({ to: servicePath(s), name: s.name, menu: s.menu }))
+const SERVICE_ITEMS = [
+  ...SERVICES.map((s) => ({ to: servicePath(s), name: s.name, menu: s.menu })),
+  { to: BOOKS.path, name: BOOKS.name, menu: BOOKS.menu, badge: BOOKS.comingSoon ? 'Soon' : null },
+]
 const STEP_ITEMS = LIVE_STEPS.map((s) => ({ to: stepPath(s), name: `${s.n} ${s.name}`, menu: s.menu }))
 
 // The Services and Process menus. Process only becomes a menu once at least one
@@ -35,6 +39,14 @@ function Chevron({ open }) {
     >
       <path d="M2.5 4.5L6 8l3.5-3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
+  )
+}
+
+function Badge({ children }) {
+  return (
+    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-gradient-brand text-ink">
+      {children}
+    </span>
   )
 }
 
@@ -113,7 +125,10 @@ function DropdownMenu({ menu }) {
               to={item.to}
               className="flex flex-col gap-1 rounded-xl px-4 py-3 hover:bg-white/5 focus-visible:bg-white/5 transition-colors"
             >
-              <span className="text-sm font-bold text-text">{item.name}</span>
+              <span className="flex items-center gap-2 text-sm font-bold text-text">
+                {item.name}
+                {item.badge && <Badge>{item.badge}</Badge>}
+              </span>
               <span className="text-[13px] leading-snug text-text-secondary">{item.menu}</span>
             </Link>
           ))}
@@ -253,7 +268,10 @@ export default function Nav() {
                   <div className="flex flex-col pb-3 pl-4 border-l border-white/15 ml-1 mb-2">
                     {menu.items.map((item) => (
                       <Link key={item.to} to={item.to} className="py-2.5 flex flex-col">
-                        <span className="text-base font-semibold">{item.name}</span>
+                        <span className="flex items-center gap-2 text-base font-semibold">
+                          {item.name}
+                          {item.badge && <Badge>{item.badge}</Badge>}
+                        </span>
                         <span className="text-sm text-text-secondary">{item.menu}</span>
                       </Link>
                     ))}
