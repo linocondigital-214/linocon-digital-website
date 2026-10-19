@@ -262,16 +262,16 @@ function Waitlist() {
   }
 
   const input =
-    'h-14 rounded-xl bg-ink/60 border border-border px-5 text-base outline-none focus:border-blue transition-colors'
+    'w-full min-w-0 h-14 rounded-xl bg-ink/60 border border-border px-5 text-base outline-none focus:border-blue transition-colors'
 
   return (
     <section id="waitlist" className="py-20 md:py-28 border-t border-border scroll-mt-20">
       <div className="max-w-6xl mx-auto px-6 md:px-10">
         <Reveal
           y={48}
-          className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-blue/25 via-surface-2 to-orange/20 p-8 sm:p-12 md:p-16 grid md:grid-cols-[1.1fr_1fr] gap-10 md:gap-14 items-center"
+          className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-blue/25 via-surface-2 to-orange/20 p-8 sm:p-12 md:p-16 grid grid-cols-1 md:grid-cols-[1.1fr_1fr] gap-10 md:gap-14 items-center"
         >
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-5 min-w-0">
             <Eyebrow>Founding waitlist</Eyebrow>
             <h2 className="font-display font-bold text-4xl md:text-5xl leading-tight">
               Be one of the first to own your books.
@@ -294,7 +294,7 @@ function Waitlist() {
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4 min-w-0">
               <label className="sr-only" htmlFor="books-name">Your name</label>
               <input id="books-name" name="name" type="text" required placeholder="Your name" className={input} />
               <label className="sr-only" htmlFor="books-email">Your email</label>
@@ -304,7 +304,7 @@ function Waitlist() {
               <label className="sr-only" htmlFor="books-interest">What are you interested in?</label>
               <select id="books-interest" name="interest" defaultValue="LinoCon Books" className={`${input} appearance-none`}>
                 <option>LinoCon Books</option>
-                <option>LinoCon Complete (website, SEO, backlinks and Books)</option>
+                <option>LinoCon Complete bundle</option>
                 <option>Launch Bundle + Books</option>
                 <option>Not sure yet</option>
               </select>
