@@ -44,6 +44,40 @@ const SECTIONS = [
     ],
   },
   {
+    // Only what the app really does: it's the same sign-in LinoCon Digital
+    // uses for its own books at /finance.
+    type: 'cards',
+    eyebrow: 'Security',
+    heading: 'How your books stay safe.',
+    intro: 'Your money records are private. These are the same protections we use for LinoCon Digital’s own books.',
+    items: [
+      {
+        title: 'Two-step sign-in',
+        body: 'Your password plus a 6-digit code from an app on your phone. Someone who only has your password still can’t get in.',
+      },
+      {
+        title: 'Backup codes',
+        body: 'Lost your phone? One-time backup codes, given to you at setup, let you back in so you’re never locked out of your own books.',
+      },
+      {
+        title: 'Stops password guessing',
+        body: 'After 5 wrong tries, sign-in pauses for 15 minutes, which makes guessing your password useless.',
+      },
+      {
+        title: 'Signs itself out',
+        body: 'After 30 minutes without use you’re signed out, so a laptop left open isn’t an open door.',
+      },
+      {
+        title: 'Private and kept apart',
+        body: 'Your app isn’t linked anywhere or listed on Google, every page uses a secure (https) connection, and your records are kept separate from other businesses.',
+      },
+      {
+        title: 'Card details stay with Stripe',
+        body: 'When customers pay an invoice online, Stripe handles the card. Card numbers never reach your app.',
+      },
+    ],
+  },
+  {
     type: 'checklist',
     eyebrow: 'Who it’s for',
     heading: 'Built for owners who do their own books.',
