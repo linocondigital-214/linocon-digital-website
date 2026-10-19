@@ -51,6 +51,14 @@ export default function Privacy() {
               LinoCon Books.
             </li>
             <li>
+              <strong>When you refer a friend:</strong> your name and email, and your
+              friend&rsquo;s name, business name and email, plus anything you add in the note. Please
+              only refer someone who knows you&rsquo;re sharing their details. We use your
+              friend&rsquo;s details only to contact them once about your referral, and yours to
+              apply your referral savings. If your friend doesn&rsquo;t want to hear from us, we
+              delete their details.
+            </li>
+            <li>
               <strong>When you book a call:</strong> your name, email, company or website, and what
               you&rsquo;d like to achieve. If you then pick a time in our booking calendar
               (Cal.com), Cal.com collects the details you enter there.
@@ -90,6 +98,7 @@ export default function Privacy() {
           <h2>How we use it</h2>
           <ul>
             <li>To reply to you, run your free audit, and set up and hold your call.</li>
+            <li>To contact a business you referred to us, and to apply your referral savings.</li>
             <li>To provide, report on and bill for the services you sign up for.</li>
             <li>To understand how people use our site so we can improve it.</li>
             <li>To keep the site and our records secure, and to meet legal and tax obligations.</li>
