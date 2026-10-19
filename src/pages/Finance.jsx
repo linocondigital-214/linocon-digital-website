@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import FinanceLogin, { Card } from '../components/finance/FinanceLogin'
 import FinanceShell from '../components/finance/FinanceShell'
 import Dashboard from '../components/finance/Dashboard'
+import Expenses from '../components/finance/Expenses'
 import { SECTIONS, fetchSummary, fetchStatus, signOutFinance } from '../lib/finance'
 import { useNoIndex } from '../lib/clientProgress'
 import usePageMeta from '../lib/usePageMeta'
@@ -28,6 +29,13 @@ export default function Finance() {
   }, [])
 
   useEffect(load, [load])
+
+  // After a change elsewhere in the app, refresh the dashboard numbers quietly.
+  const refresh = useCallback(() => {
+    fetchSummary()
+      .then((data) => setState((s) => ({ ...s, ...data })))
+      .catch(() => {})
+  }, [])
 
   async function signOut() {
     await signOutFinance().catch(() => {})
@@ -66,6 +74,8 @@ export default function Finance() {
             </div>
           )}
         </>
+      ) : current.key === 'expenses' ? (
+        <Expenses onChanged={refresh} />
       ) : (
         <div className="max-w-xl rounded-2xl border border-fin-line bg-fin-panel p-6 md:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-fin-muted">Coming next</p>

@@ -27,6 +27,50 @@ export const sendPassword = (password) => call('password', { method: 'POST', bod
 export const sendCode = (ticket, code) => call('code', { method: 'POST', body: { ticket, code } })
 export const signOutFinance = () => call('signout', { method: 'POST', body: {} })
 export const fetchSummary = () => call('summary')
+export const fetchExpenses = () => call('expenses')
+export const suggestFor = (vendor) => call(`suggest&vendor=${encodeURIComponent(vendor)}`).then((d) => d.suggestion)
+export const fetchReceipt = (id) => call(`receipt&id=${encodeURIComponent(id)}`).then((d) => d.dataUrl)
+export const addExpense = (expense, receipt) => call('expense-add', { method: 'POST', body: { expense, receipt } }).then((d) => d.expense)
+export const editExpense = (id, expense, receipt, removeReceipt) =>
+  call('expense-edit', { method: 'POST', body: { id, expense, receipt, removeReceipt } }).then((d) => d.expense)
+export const deleteExpense = (id) => call('expense-delete', { method: 'POST', body: { id } })
+
+// "$1,234.50" or "12" -> 123450 cents; null when it isn't an amount.
+export function toCents(text) {
+  const clean = String(text ?? '').replace(/[$,\s]/g, '')
+  if (!/^\d+(\.\d{0,2})?$/.test(clean)) return null
+  const [whole, part = ''] = clean.split('.')
+  return Number(whole) * 100 + Number(part.padEnd(2, '0'))
+}
+
+export const centsToText = (cents) => (cents ? (cents / 100).toFixed(2) : '')
+
+// Shrinks a phone photo to a JPEG small enough to save (about 1600px on the
+// long side), so a receipt uploads quickly even on mobile data.
+export async function shrinkPhoto(file, maxSide = 1600) {
+  const url = URL.createObjectURL(file)
+  try {
+    const img = await new Promise((resolve, reject) => {
+      const i = new Image()
+      i.onload = () => resolve(i)
+      i.onerror = () => reject(new Error('That photo couldn’t be read. Try another one.'))
+      i.src = url
+    })
+    let side = maxSide
+    for (let quality = 0.8; ; quality -= 0.1) {
+      const scale = Math.min(1, side / Math.max(img.naturalWidth, img.naturalHeight))
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.round(img.naturalWidth * scale)
+      canvas.height = Math.round(img.naturalHeight * scale)
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
+      const dataUrl = canvas.toDataURL('image/jpeg', quality)
+      if (dataUrl.length < 1_000_000 || quality < 0.45) return dataUrl
+      side = Math.round(side * 0.85)
+    }
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
 
 const dollars = new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', currencyDisplay: 'narrowSymbol' })
 const wholeDollars = new Intl.NumberFormat('en-CA', {
@@ -55,7 +99,7 @@ export const SECTIONS = [
   { key: '', name: 'Dashboard', short: 'Home', icon: 'dashboard' },
   { key: 'income', name: 'Income', icon: 'income', soon: 'Stripe payments, matched to your clients, arrive here in the next update.' },
   { key: 'invoices', name: 'Invoices', icon: 'invoice', soon: 'Invoices with GST added and a Pay now button through Stripe come in the next update.' },
-  { key: 'expenses', name: 'Expenses', icon: 'expense', soon: 'Adding expenses with a receipt photo, sorted into categories for you, comes in the next update.' },
+  { key: 'expenses', name: 'Expenses', icon: 'expense' },
   { key: 'gst', name: 'GST & Year-End', short: 'GST', icon: 'gst', soon: 'GST totals, the year-end close and balance sheets to 2030 come after income and expenses.' },
   { key: 'export', name: 'Export', icon: 'export', soon: 'Excel and PDF exports for your accountant come with the GST and year-end update.' },
   { key: 'access', name: 'Access', icon: 'access', soon: 'A limited bookkeeper login (view and add only) can be added here later.' },

@@ -78,7 +78,7 @@ function PhoneTabs() {
         const s = SECTIONS.find((x) => x.key === key)
         if (key === 'expenses') {
           return (
-            <NavLink key={key} to={path(key)} className="flex flex-col items-center -mt-5 pb-2 text-xs text-fin-muted">
+            <NavLink key={key} to={`${path(key)}?add=1`} className="flex flex-col items-center -mt-5 pb-2 text-xs text-fin-muted">
               <span className="w-12 h-12 rounded-full fin-grad grid place-items-center text-white shadow-lg shadow-fin-violet/30">
                 <Icon name="plus" className="w-6 h-6" />
               </span>

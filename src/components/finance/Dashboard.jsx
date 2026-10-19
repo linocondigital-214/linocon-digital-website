@@ -16,7 +16,7 @@ export default function Dashboard({ summary }) {
           </h1>
         </div>
         <div className="flex gap-3">
-          <Link to="/finance/expenses" className="h-11 px-5 rounded-full border border-fin-line font-semibold grid place-items-center hover:bg-fin-panel">
+          <Link to="/finance/expenses?add=1" className="h-11 px-5 rounded-full border border-fin-line font-semibold grid place-items-center hover:bg-fin-panel">
             Add expense
           </Link>
           <Link to="/finance/invoices" className="h-11 px-5 rounded-full fin-grad text-white font-semibold grid place-items-center">
@@ -27,8 +27,8 @@ export default function Dashboard({ summary }) {
 
       {empty && (
         <div className="mt-6 rounded-2xl border border-fin-line bg-fin-panel-2/60 px-5 py-4 text-sm text-fin-muted">
-          Your books are empty for now, so everything starts at $0. Income from Stripe, expenses and invoices get added in the next
-          updates.
+          Your books are empty for now, so everything starts at $0. Start by adding an expense with a photo of the receipt. Income
+          from Stripe and invoices come in the next updates.
         </div>
       )}
 
