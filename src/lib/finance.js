@@ -34,6 +34,11 @@ export const addExpense = (expense, receipt) => call('expense-add', { method: 'P
 export const editExpense = (id, expense, receipt, removeReceipt) =>
   call('expense-edit', { method: 'POST', body: { id, expense, receipt, removeReceipt } }).then((d) => d.expense)
 export const deleteExpense = (id) => call('expense-delete', { method: 'POST', body: { id } })
+export const fetchIncome = () => call('income')
+export const syncStripe = (force = false) => call('stripe-sync', { method: 'POST', body: { force } }).then((d) => d.stripe)
+export const addIncome = (income) => call('income-add', { method: 'POST', body: { income } }).then((d) => d.income)
+export const editIncome = (id, income) => call('income-edit', { method: 'POST', body: { id, income } }).then((d) => d.income)
+export const deleteIncome = (id) => call('income-delete', { method: 'POST', body: { id } })
 
 // "$1,234.50" or "12" -> 123450 cents; null when it isn't an amount.
 export function toCents(text) {
@@ -97,7 +102,7 @@ export function greeting(date = new Date()) {
 // The sections of the app. The ones not built yet show a short note.
 export const SECTIONS = [
   { key: '', name: 'Dashboard', short: 'Home', icon: 'dashboard' },
-  { key: 'income', name: 'Income', icon: 'income', soon: 'Stripe payments, matched to your clients, arrive here in the next update.' },
+  { key: 'income', name: 'Income', icon: 'income' },
   { key: 'invoices', name: 'Invoices', icon: 'invoice', soon: 'Invoices with GST added and a Pay now button through Stripe come in the next update.' },
   { key: 'expenses', name: 'Expenses', icon: 'expense' },
   { key: 'gst', name: 'GST & Year-End', short: 'GST', icon: 'gst', soon: 'GST totals, the year-end close and balance sheets to 2030 come after income and expenses.' },

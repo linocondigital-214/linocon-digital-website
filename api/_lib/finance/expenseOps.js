@@ -32,6 +32,7 @@ async function learn(expense) {
 }
 
 const denied = [403, { error: 'role', message: 'Your login can’t do that.' }]
+const stripeFees = [400, { error: 'invalid', message: 'Stripe fees are kept up to date from Stripe, so they can’t be changed here.' }]
 
 export async function expenseOps(op, req, user) {
   const get = req.method === 'GET'
@@ -72,6 +73,7 @@ export async function expenseOps(op, req, user) {
     const id = req.body?.id
     const existing = isRecordId(id) ? await getRecord('expense', id) : null
     if (!existing) return [404, { error: 'missing', message: 'That expense was already removed.' }]
+    if (existing.source === 'stripe') return stripeFees
     const fields = cleanExpense(req.body?.expense)
     const receipt = req.body?.receipt ? checkReceipt(req.body.receipt) : null
     let hasReceipt = existing.receipt
@@ -92,6 +94,7 @@ export async function expenseOps(op, req, user) {
     if (!can(user.role, 'delete')) return denied
     const id = req.body?.id
     if (!isRecordId(id)) return [404, { error: 'missing' }]
+    if ((await getRecord('expense', id))?.source === 'stripe') return stripeFees
     await deleteReceipt(id)
     await deleteRecord('expense', id)
     return [200, { deleted: id }]

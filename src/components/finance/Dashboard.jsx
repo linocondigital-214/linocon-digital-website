@@ -27,8 +27,8 @@ export default function Dashboard({ summary }) {
 
       {empty && (
         <div className="mt-6 rounded-2xl border border-fin-line bg-fin-panel-2/60 px-5 py-4 text-sm text-fin-muted">
-          Your books are empty for now, so everything starts at $0. Start by adding an expense with a photo of the receipt. Income
-          from Stripe and invoices come in the next updates.
+          Your books are empty for now, so everything starts at $0. Payments through Stripe show up here on their own. Add an
+          expense with a photo of the receipt, or record an e-Transfer under Income.
         </div>
       )}
 
@@ -48,8 +48,10 @@ export default function Dashboard({ summary }) {
         <Stat label="Profit this month" value={money(month.profit)}>
           After {money(month.expenses)} expenses
         </Stat>
-        <Stat label="Monthly recurring (MRR)" value="—">
-          Shows once Stripe is connected
+        <Stat label="Monthly recurring (MRR)" value={summary.mrr ? money(summary.mrr.amount) : '—'}>
+          {summary.mrr
+            ? `${summary.mrr.count} active ${summary.mrr.count === 1 ? 'plan' : 'plans'} in Stripe`
+            : 'Shows once Stripe is connected'}
         </Stat>
         <Stat label="Cash in bank" value={money(summary.cash)}>
           {summary.cashAsOf ? `Since ${shortDate(summary.cashAsOf)}` : 'Starting balance gets set in a later update'}
@@ -216,7 +218,7 @@ function Breakdown({ title, rows, empty }) {
       {rows.length ? (
         <ul className="flex flex-col gap-3">
           {rows.slice(0, 6).map((r) => (
-            <li key={r.name} className="grid grid-cols-[minmax(0,8rem)_1fr_auto] items-center gap-3 text-sm">
+            <li key={r.name} className="grid grid-cols-[minmax(0,11rem)_1fr_auto] items-center gap-3 text-sm">
               <span className="truncate">{r.name}</span>
               <span className="h-2 rounded-full bg-fin-panel-2 overflow-hidden">
                 <span className="block h-full fin-grad rounded-full" style={{ width: `${(r.amount / top) * 100}%` }} />
