@@ -1,7 +1,7 @@
 // Lead tracking for Google Analytics 4 (the gtag snippet lives in index.html).
 // Page views are counted by GA4 itself, including page changes inside the
 // site. This file adds the events that matter for leads:
-//   generate_lead      a form was sent (form_name: free_audit | strategy_call)
+//   generate_lead      a form was sent (form_name: free_audit | strategy_call | books_waitlist)
 //   call_booked        a time was booked in the Cal.com calendar on /book
 //   book_call_click    a "Book a call" button was clicked
 //   audit_click        a "Free audit" button was clicked
