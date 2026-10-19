@@ -20,6 +20,7 @@ const COLUMNS = [
       { href: '/#process', label: 'How we work' },
       { href: '/#faq', label: 'FAQ' },
       { to: '/articles', label: 'Articles' },
+      { to: '/refer', label: 'Refer a friend' },
       { to: '/pay', label: 'Pay an invoice' },
     ],
   },
