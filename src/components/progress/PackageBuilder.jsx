@@ -68,6 +68,16 @@ export default function PackageBuilder({ client, onChange, adminBase }) {
     window.location.href = href
   }
 
+  // A single service clears the other ticks; a bundle or mix and match keeps them.
+  function choosePackage(value) {
+    if (value.startsWith('single:')) {
+      const key = value.slice(7)
+      onChange([{ path: ['docs', 'package', 'bundle'], value: null }, ...ITEMS.map((i) => ({ path: ['docs', 'package', 'on', i.key], value: i.key === key || null }))])
+    } else {
+      set(['bundle'], value === 'custom' ? null : value)
+    }
+  }
+
   async function toAgreement() {
     await onChange(packageToDocs(pkg))
     navigate(`${adminBase}/agreement`)
@@ -88,19 +98,30 @@ export default function PackageBuilder({ client, onChange, adminBase }) {
         <div className={card}>
           <label className="flex flex-col gap-2">
             <span className="font-bold">Package</span>
-            <select value={bundle.key} onChange={(e) => set(['bundle'], e.target.value === 'custom' ? null : e.target.value)} className={`${input} h-12`}>
-              {BUNDLES.map((b) => (
-                <option key={b.key} value={b.key} disabled={b.soon}>
-                  {b.name}
-                  {b.tagline ? `: ${b.tagline}` : ''}
-                </option>
-              ))}
+            <select value={packageChoice(pkg, bundle)} onChange={(e) => choosePackage(e.target.value)} className={`${input} h-12`}>
+              <optgroup label="Single service">
+                {ITEMS.map((i) => (
+                  <option key={i.key} value={`single:${i.key}`}>
+                    {i.name} only: {money(i.cents)} {i.billing === 'once' ? 'one-time' : '/ month'}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Bundles">
+                {BUNDLES.filter((b) => b.key !== 'custom').map((b) => (
+                  <option key={b.key} value={b.key} disabled={b.soon}>
+                    {b.name}: {b.tagline}
+                  </option>
+                ))}
+              </optgroup>
+              <option value="custom">Mix and match: tick services below</option>
             </select>
           </label>
           <div className="text-sm text-text-secondary mt-3">
-            {bundle.key === 'custom'
-              ? 'Tick the services below. A bundle ticks its services for you and adds its saving.'
-              : `${bundle.tagline}. You can still add other services or lines below.`}
+            {bundle.key !== 'custom'
+              ? `${bundle.tagline}. You can still add other services or lines below.`
+              : packageChoice(pkg, bundle) !== 'custom'
+                ? 'Just this one service. You can still tick more services or add your own lines below.'
+                : 'Pick one service or a bundle above, or tick the services you want below.'}
           </div>
           {bundle.key === 'custom' && pkg.on?.website && pkg.on?.seo && (
             <button type="button" onClick={() => set(['bundle'], 'launch')} className="mt-3 text-sm font-semibold text-blue text-left">
@@ -258,6 +279,13 @@ export default function PackageBuilder({ client, onChange, adminBase }) {
       <PackageSummary client={client} />
     </div>
   )
+}
+
+// What the Package menu shows: one service on its own, a bundle, or mix and match.
+function packageChoice(pkg, bundle) {
+  if (bundle.key !== 'custom') return bundle.key
+  const on = ITEMS.filter((i) => pkg.on?.[i.key])
+  return on.length === 1 ? `single:${on[0].key}` : 'custom'
 }
 
 function ServiceRow({ item, pkg, inBundle, set }) {
