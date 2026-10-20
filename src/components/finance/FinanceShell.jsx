@@ -10,7 +10,7 @@ export default function FinanceShell({ children, role, ownerName, onSignOut }) {
   const roleName = role === 'owner' ? 'Owner' : 'Bookkeeper'
   return (
     <div className="min-h-screen md:flex">
-      <aside className="hidden md:flex md:flex-col w-60 shrink-0 border-r border-fin-line px-5 py-6 sticky top-0 h-screen">
+      <aside className="no-print hidden md:flex md:flex-col w-60 shrink-0 border-r border-fin-line px-5 py-6 sticky top-0 h-screen">
         <div className="flex items-center gap-2.5 px-1">
           <Mark className="w-7 h-5" gradientId="finMarkSide" />
           <span className="font-display font-bold text-lg">LinoCon</span>
@@ -49,7 +49,7 @@ export default function FinanceShell({ children, role, ownerName, onSignOut }) {
         </div>
       </aside>
 
-      <header className="md:hidden flex items-center justify-between px-4 pt-5">
+      <header className="no-print md:hidden flex items-center justify-between px-4 pt-5">
         <div className="flex items-center gap-2">
           <Mark className="w-6 h-5" gradientId="finMarkTop" />
           <span className="font-display font-bold">LinoCon</span>
@@ -67,7 +67,7 @@ export default function FinanceShell({ children, role, ownerName, onSignOut }) {
         </div>
       </header>
 
-      <main className="flex-1 min-w-0 px-4 md:px-10 pt-6 md:pt-9 pb-32 md:pb-16">{children}</main>
+      <main className="print-main flex-1 min-w-0 px-4 md:px-10 pt-6 md:pt-9 pb-32 md:pb-16">{children}</main>
 
       <PhoneTabs />
     </div>
@@ -78,7 +78,7 @@ const TABS = ['', 'invoices', 'expenses', 'income', 'gst']
 
 function PhoneTabs() {
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-fin-line bg-ink/95 backdrop-blur grid grid-cols-5 pb-[env(safe-area-inset-bottom)]">
+    <nav className="no-print md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-fin-line bg-ink/95 backdrop-blur grid grid-cols-5 pb-[env(safe-area-inset-bottom)]">
       {TABS.map((key) => {
         const s = SECTIONS.find((x) => x.key === key)
         if (key === 'expenses') {
