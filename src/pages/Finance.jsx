@@ -9,6 +9,7 @@ import Invoices from '../components/finance/Invoices'
 import GstYearEnd from '../components/finance/GstYearEnd'
 import Settings from '../components/finance/Settings'
 import Export from '../components/finance/Export'
+import Access from '../components/finance/Access'
 import { SECTIONS, fetchSummary, fetchStatus, signOutFinance, syncStripe } from '../lib/finance'
 import { useNoIndex } from '../lib/clientProgress'
 import usePageMeta from '../lib/usePageMeta'
@@ -97,6 +98,8 @@ export default function Finance() {
         <Invoices onChanged={refresh} />
       ) : current.key === 'gst' ? (
         <GstYearEnd onChanged={refresh} />
+      ) : current.key === 'access' ? (
+        <Access />
       ) : current.key === 'export' ? (
         <Export />
       ) : current.key === 'settings' ? (

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Mark from '../Logo'
-import { sendCode, sendPassword } from '../../lib/finance'
+import { acceptInvite, sendCode, sendPassword } from '../../lib/finance'
 
 export function Brand() {
   return (
@@ -30,7 +30,8 @@ const button = 'w-full h-12 rounded-full fin-grad font-bold text-white disabled:
 
 // Sign-in in two steps: the password, then a 6-digit code from an
 // authenticator app. The first time, the app gets linked with a QR code and
-// recovery codes are shown once.
+// recovery codes are shown once. A bookkeeper's first sign-in starts from the
+// invite code the owner gave them.
 export default function FinanceLogin({ onSignedIn }) {
   const [step, setStep] = useState({ name: 'password' })
   const [error, setError] = useState('')
@@ -58,6 +59,29 @@ export default function FinanceLogin({ onSignedIn }) {
           run(async () => {
             const res = await sendPassword(password)
             setStep({ name: res.link ? 'link' : 'code', ticket: res.ticket, setup: res.setup })
+          })
+        }
+        onInvite={() => {
+          setError('')
+          setStep({ name: 'invite' })
+        }}
+      />
+    )
+  }
+
+  if (step.name === 'invite') {
+    return (
+      <InviteStep
+        busy={busy}
+        error={error}
+        onBack={() => {
+          setError('')
+          setStep({ name: 'password' })
+        }}
+        onSubmit={(code, password) =>
+          run(async () => {
+            const res = await acceptInvite(code, password)
+            setStep({ name: 'link', ticket: res.ticket, setup: res.setup })
           })
         }
       />
@@ -88,7 +112,7 @@ export default function FinanceLogin({ onSignedIn }) {
   )
 }
 
-function PasswordStep({ onSubmit, busy, error }) {
+function PasswordStep({ onSubmit, onInvite, busy, error }) {
   const [password, setPassword] = useState('')
   return (
     <Card>
@@ -121,6 +145,60 @@ function PasswordStep({ onSubmit, busy, error }) {
         </button>
       </form>
       <div className="text-center text-xs text-fin-faint mt-5">Paused after 5 wrong tries · signs out after 30 minutes idle</div>
+      <button type="button" onClick={onInvite} className="block mx-auto mt-4 text-sm text-fin-muted underline hover:text-text">
+        Bookkeeper with an invite code?
+      </button>
+    </Card>
+  )
+}
+
+function InviteStep({ onSubmit, onBack, busy, error }) {
+  const [code, setCode] = useState('')
+  const [password, setPassword] = useState('')
+  const [again, setAgain] = useState('')
+  const [mismatch, setMismatch] = useState(false)
+  return (
+    <Card>
+      <h1 className="font-display font-bold text-3xl">Set up your bookkeeper login</h1>
+      <div className="text-sm text-fin-muted mt-2">Type the invite code the owner gave you, then choose your own password.</div>
+      <form
+        className="mt-7 flex flex-col gap-5"
+        onSubmit={(e) => {
+          e.preventDefault()
+          setMismatch(password !== again)
+          if (code.trim() && password && password === again) onSubmit(code.trim(), password)
+        }}
+      >
+        <label className="flex flex-col gap-2 text-sm font-medium">
+          Invite code
+          <input
+            autoComplete="off"
+            autoCapitalize="characters"
+            autoFocus
+            placeholder="ABCD-EFGH-JKLM"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className={`${field} font-mono tracking-wider`}
+          />
+        </label>
+        <label className="flex flex-col gap-2 text-sm font-medium">
+          Choose a password
+          <input type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} className={field} />
+          <span className="text-xs font-normal text-fin-muted">At least 12 characters. A short sentence works well.</span>
+        </label>
+        <label className="flex flex-col gap-2 text-sm font-medium">
+          Type it again
+          <input type="password" autoComplete="new-password" value={again} onChange={(e) => setAgain(e.target.value)} className={field} />
+        </label>
+        {mismatch && <p className="text-sm text-fin-bad">The two passwords don’t match.</p>}
+        {error && <p className="text-sm text-fin-bad">{error}</p>}
+        <button type="submit" disabled={busy} className={button}>
+          {busy ? 'Checking...' : 'Next: link your phone'}
+        </button>
+      </form>
+      <button type="button" onClick={onBack} className="text-sm text-fin-muted hover:text-text mt-4">
+        Back
+      </button>
     </Card>
   )
 }
@@ -190,7 +268,7 @@ function CodeStep({ step, onSubmit, onBack, busy, error }) {
           {busy ? 'Checking...' : linking ? 'Link and sign in' : 'Sign in'}
         </button>
       </form>
-      {!linking && <div className="text-xs text-fin-faint mt-4">Lost your phone? Type one of your recovery codes in the box instead.</div>}
+      {!linking && <div className="text-xs text-fin-faint mt-4">Lost your phone? Type one of your recovery codes in the box instead. Bookkeepers can ask the owner for a new invite.</div>}
       <button type="button" onClick={onBack} className="text-sm text-fin-muted hover:text-text mt-4">
         Back
       </button>

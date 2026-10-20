@@ -25,6 +25,7 @@ async function call(op, { method = 'GET', body } = {}) {
 export const fetchStatus = () => call('status')
 export const sendPassword = (password) => call('password', { method: 'POST', body: { password } })
 export const sendCode = (ticket, code) => call('code', { method: 'POST', body: { ticket, code } })
+export const acceptInvite = (code, password) => call('invite', { method: 'POST', body: { code, password } })
 export const signOutFinance = () => call('signout', { method: 'POST', body: {} })
 export const fetchSummary = () => call('summary')
 export const fetchExpenses = () => call('expenses')
@@ -51,6 +52,9 @@ export const fetchSettings = () => call('settings')
 export const saveSettings = (settings) => call('settings-save', { method: 'POST', body: { settings } }).then((d) => d.settings)
 export const addMove = (move) => call('move-add', { method: 'POST', body: { move } }).then((d) => d.move)
 export const deleteMove = (id) => call('move-delete', { method: 'POST', body: { id } })
+export const fetchAccess = () => call('access')
+export const inviteBookkeeper = (name) => call('access-invite', { method: 'POST', body: { name } })
+export const removeBookkeeper = () => call('access-remove', { method: 'POST', body: {} })
 export const fetchExport = (year) => call(year ? `export&year=${year}` : 'export')
 
 // "$1,234.50" or "12" -> 123450 cents; null when it isn't an amount.
@@ -120,6 +124,6 @@ export const SECTIONS = [
   { key: 'expenses', name: 'Expenses', icon: 'expense' },
   { key: 'gst', name: 'GST & Year-End', short: 'GST', icon: 'gst' },
   { key: 'export', name: 'Export', icon: 'export' },
-  { key: 'access', name: 'Access', icon: 'access', soon: 'A limited bookkeeper login (view and add only) can be added here later.' },
+  { key: 'access', name: 'Access', icon: 'access' },
   { key: 'settings', name: 'Settings', icon: 'settings' },
 ]
