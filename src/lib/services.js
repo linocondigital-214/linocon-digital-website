@@ -1,4 +1,4 @@
-// The three services. The homepage section, the Services menu, the footer and
+// The three services. The homepage section (which adds LinoCon Books as a 4th, see books.js), the Services menu, the footer and
 // each service's own page (/services/<slug>) all read from this list.
 // Each service page's full content lives in servicePages.js, which only loads
 // with the page itself.

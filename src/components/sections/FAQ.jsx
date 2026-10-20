@@ -17,8 +17,8 @@ const FAQS = [
     a: 'SEO is a long-term process, not an overnight result. Your technical SEO foundation can be improved immediately, but Google needs time to crawl, index, evaluate, and rank your website and content. Results also depend on your industry, competition, content, website authority, and backlink profile. We focus on building a strong foundation and improving visibility over time.',
   },
   {
-    q: 'Do I need all three services?',
-    a: 'No. You can start with a new website, improve the SEO of your existing website, or focus specifically on relevant backlinks. However, [the services](#services) work particularly well together: a strong website improves the visitor experience, SEO helps search engines understand and discover your site, and quality backlinks can support authority.',
+    q: 'Do I need every service?',
+    a: "No. You can start with a new website, improve the SEO of your existing website, or focus specifically on relevant backlinks. However, [the services](#services) work particularly well together: a strong website improves the visitor experience, SEO helps search engines understand and discover your site, and quality backlinks can support authority. [LinoCon Books](/books) is coming soon and is separate: it's your own app for invoices, expenses and GST, and you can join the waitlist for free.",
   },
   {
     q: 'Are your backlinks safe?',

@@ -10,6 +10,23 @@ export const BOOKS = {
   comingSoon: true,
 }
 
+// LinoCon Books as the 4th block of the homepage "What we do" section. Same
+// shape as a SERVICES entry, plus href/cta so its button goes to the waitlist
+// instead of a /services page.
+export const BOOKS_SERVICE = {
+  slug: 'books',
+  name: BOOKS.name,
+  kicker: '04 — LinoCon Books',
+  comingSoon: true,
+  title: 'Your own bookkeeping app, on your own domain.',
+  body: 'A simple app for your invoices, expenses and GST. Pay for 12 months, then it’s yours to keep.',
+  points: ['Invoices your customers can pay online', 'Expenses with receipt photos', 'GST report ready for your accountant'],
+  image: 'books',
+  alt: 'A small business bookkeeping app showing money in, money out, a paid invoice and a GST report',
+  href: BOOKS.path,
+  cta: 'Join the waitlist',
+}
+
 export const BOOKS_PLANS = [
   {
     name: 'Books Starter',

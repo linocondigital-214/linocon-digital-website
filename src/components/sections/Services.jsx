@@ -10,16 +10,22 @@ import Reveal from '../Reveal'
 import useMediaQuery from '../../lib/useMediaQuery'
 import { Link } from 'react-router-dom'
 import { ServiceImage } from '../visuals'
-import { SERVICES, servicePath } from '../../lib/services'
+import { SERVICES as CORE_SERVICES, servicePath } from '../../lib/services'
+import { BOOKS_SERVICE } from '../../lib/books'
+
+// The three services, plus LinoCon Books (coming soon) as the fourth.
+const SERVICES = [...CORE_SERVICES, BOOKS_SERVICE]
+
+const hrefFor = (s) => s.href || servicePath(s)
 
 // A filled brand button, so the way into each service page is hard to miss.
 function LearnMore({ s }) {
   return (
     <Link
-      to={servicePath(s)}
+      to={hrefFor(s)}
       className="group inline-flex items-center justify-center gap-2.5 h-13 px-7 mt-3 rounded-full bg-gradient-brand text-ink text-base font-bold shadow-lg shadow-blue/20 transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-xl hover:shadow-orange/25"
     >
-      Explore {s.name}
+      {s.cta || `Explore ${s.name}`}
       <svg width="16" height="16" viewBox="0 0 14 14" fill="none" aria-hidden="true" className="transition-transform group-hover:translate-x-1">
         <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
@@ -31,13 +37,26 @@ function LearnMore({ s }) {
 function ImageLink({ s }) {
   return (
     <Link
-      to={servicePath(s)}
-      aria-label={`Explore ${s.name}`}
+      to={hrefFor(s)}
+      aria-label={s.cta ? `${s.name}: ${s.cta}` : `Explore ${s.name}`}
       tabIndex={-1}
       className="flex justify-center transition-transform duration-500 hover:-translate-y-1"
     >
       <ServiceImage name={s.image} alt={s.alt} />
     </Link>
+  )
+}
+
+function Kicker({ s }) {
+  return (
+    <span className="flex flex-wrap items-center gap-x-3 gap-y-2">
+      <span className="text-sm font-bold tracking-widest uppercase text-text-tertiary">{s.kicker}</span>
+      {s.comingSoon && (
+        <span className="text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-gradient-brand text-ink whitespace-nowrap">
+          Coming soon
+        </span>
+      )}
+    </span>
   )
 }
 
@@ -94,9 +113,7 @@ function StickyStory() {
                 transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                 className="flex flex-col items-start gap-5"
               >
-                <span className="text-sm font-bold tracking-widest uppercase text-text-tertiary">
-                  {s.kicker}
-                </span>
+                <Kicker s={s} />
                 <h3 className="font-display font-bold text-4xl lg:text-5xl leading-tight">{s.title}</h3>
                 <p className="text-lg text-text-secondary leading-relaxed max-w-md">{s.body}</p>
                 <Points points={s.points} />
@@ -126,7 +143,7 @@ function Stacked() {
   return SERVICES.map((s) => (
     <div key={s.title} className="max-w-6xl mx-auto px-6 flex flex-col gap-10 py-20 border-t border-border">
       <Reveal className="flex flex-col items-start gap-5">
-        <span className="text-sm font-bold tracking-widest uppercase text-text-tertiary">{s.kicker}</span>
+        <Kicker s={s} />
         <h3 className="font-display font-bold text-3xl leading-tight">{s.title}</h3>
         <p className="text-lg text-text-secondary leading-relaxed">{s.body}</p>
         <Points points={s.points} />
@@ -147,7 +164,7 @@ export default function Services() {
       <Reveal className="max-w-6xl mx-auto px-6 md:px-10 pb-16 md:pb-8">
         <span className="text-sm font-bold tracking-widest uppercase text-orange">What we do</span>
         <h2 className="font-display font-bold text-4xl md:text-6xl leading-tight max-w-3xl mt-4">
-          Three services. One growth system.
+          Four services. One growth system.
         </h2>
       </Reveal>
       {reduce || !isDesktop ? <Stacked /> : <StickyStory />}
