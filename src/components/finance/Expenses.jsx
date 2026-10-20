@@ -10,7 +10,8 @@ import {
   money,
   monthTitle,
   shortDate,
-  shrinkPhoto,
+  isPdf,
+  readReceipt,
   suggestFor,
   toCents,
 } from '../../lib/finance'
@@ -24,7 +25,7 @@ function shiftMonth(key, by) {
 }
 
 // /finance/expenses: the month's expenses, and the form to add one with a
-// receipt photo. ?add=1 (the phone's + button) opens the form straight away.
+// receipt (photo, screenshot or PDF). ?add=1 (the phone's + button) opens the form straight away.
 export default function Expenses({ onChanged }) {
   const [params, setParams] = useSearchParams()
   const [data, setData] = useState({ status: 'loading' })
@@ -118,7 +119,7 @@ function ExpenseList({ data, month, setMonth, onAdd, onOpen }) {
 
       {rows.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-fin-line bg-fin-panel p-6 text-fin-muted">
-          No expenses in {monthTitle(month)} yet. Tap <b className="text-text">Add expense</b> and take a photo of the receipt.
+          No expenses in {monthTitle(month)} yet. Tap <b className="text-text">Add expense</b> and add the receipt: a photo, a screenshot or a PDF.
         </div>
       ) : (
         <>
@@ -189,6 +190,7 @@ function ExpenseForm({ expense, lists, onCancel, onSaved, onDeleted }) {
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const cameraInput = useRef(null)
   const fileInput = useRef(null)
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
 
@@ -212,7 +214,8 @@ function ExpenseForm({ expense, lists, onCancel, onSaved, onDeleted }) {
     if (!file) return
     setPhoto((p) => ({ ...p, busy: true }))
     try {
-      const dataUrl = await shrinkPhoto(file)
+      setError('')
+      const dataUrl = await readReceipt(file)
       setPhoto({ dataUrl, existing: false, removed: false, busy: false })
     } catch (err) {
       setError(err.message)
@@ -253,6 +256,7 @@ function ExpenseForm({ expense, lists, onCancel, onSaved, onDeleted }) {
 
   const shown = photo.dataUrl ?? (photo.existing && !photo.removed ? existingUrl : null)
   const hasPhoto = Boolean(photo.dataUrl) || (photo.existing && !photo.removed)
+  const shownUrl = useBlobUrl(shown)
   const fromStripe = expense?.source === 'stripe'
   const readOnly = (!isNew && !lists.canEdit) || fromStripe
 
@@ -272,21 +276,26 @@ function ExpenseForm({ expense, lists, onCancel, onSaved, onDeleted }) {
       <fieldset disabled={readOnly || saving} className="mt-6 flex flex-col gap-5">
         {!fromStripe && (
         <div>
-          <input ref={fileInput} type="file" accept="image/*" capture="environment" onChange={choosePhoto} className="hidden" />
+          <input ref={cameraInput} type="file" accept="image/*" capture="environment" onChange={choosePhoto} className="hidden" />
+          <input ref={fileInput} type="file" accept="image/*,application/pdf,.pdf" onChange={choosePhoto} className="hidden" />
           {hasPhoto ? (
             <div className="rounded-2xl border border-fin-line bg-fin-panel p-3 flex gap-4 items-center">
               {shown ? (
-                <a href={shown} target="_blank" rel="noreferrer" className="shrink-0">
-                  <img src={shown} alt="Receipt" className="w-20 h-24 object-cover rounded-lg bg-white" />
+                <a href={shownUrl ?? undefined} target="_blank" rel="noreferrer" className="shrink-0" title="Open the receipt">
+                  {isPdf(shown) ? (
+                    <span className="w-20 h-24 rounded-lg bg-white text-[#b91c1c] font-bold text-sm grid place-items-center">PDF</span>
+                  ) : (
+                    <img src={shown} alt="Receipt" className="w-20 h-24 object-cover rounded-lg bg-white" />
+                  )}
                 </a>
               ) : (
                 <span className="w-20 h-24 rounded-lg bg-fin-panel-2 shrink-0" />
               )}
               <div className="flex flex-col gap-2 text-sm">
-                <span className="font-semibold text-fin-good">Receipt photo added</span>
-                <div className="flex gap-3">
+                <span className="font-semibold text-fin-good">{photo.busy ? 'Getting it ready...' : 'Receipt added'}</span>
+                <div className="flex flex-wrap gap-x-3 gap-y-1">
                   <button type="button" onClick={() => fileInput.current.click()} className="underline text-fin-muted hover:text-text">
-                    Retake
+                    Replace
                   </button>
                   <button type="button" onClick={() => setPhoto({ dataUrl: null, existing: photo.existing, removed: true, busy: false })} className="underline text-fin-muted hover:text-text">
                     Remove
@@ -295,14 +304,24 @@ function ExpenseForm({ expense, lists, onCancel, onSaved, onDeleted }) {
               </div>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={() => fileInput.current.click()}
-              className="w-full rounded-2xl border border-dashed border-fin-line bg-fin-panel hover:bg-fin-panel-2 py-6 flex flex-col items-center gap-1"
-            >
-              <span className="font-semibold">{photo.busy ? 'Getting the photo ready...' : 'Take a photo of the receipt'}</span>
-              <span className="text-sm text-fin-muted">or choose one from your photos</span>
-            </button>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => cameraInput.current.click()}
+                className="rounded-2xl border border-dashed border-fin-line bg-fin-panel hover:bg-fin-panel-2 py-5 px-3 flex flex-col items-center gap-1 text-center"
+              >
+                <span className="font-semibold">{photo.busy ? 'Getting it ready...' : 'Take a photo'}</span>
+                <span className="text-xs text-fin-muted">of a paper receipt</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => fileInput.current.click()}
+                className="rounded-2xl border border-dashed border-fin-line bg-fin-panel hover:bg-fin-panel-2 py-5 px-3 flex flex-col items-center gap-1 text-center"
+              >
+                <span className="font-semibold">Upload a file</span>
+                <span className="text-xs text-fin-muted">PDF, screenshot or photo</span>
+              </button>
+            </div>
           )}
         </div>
         )}
@@ -409,4 +428,27 @@ function Label({ text, hint, children }) {
       {hint && <span className="text-xs font-normal text-fin-muted">{hint}</span>}
     </label>
   )
+}
+
+// A data URL can't be opened in a new tab (browsers block it), so link to a
+// temporary blob URL of the same receipt instead.
+function useBlobUrl(dataUrl) {
+  const [url, setUrl] = useState(null)
+  useEffect(() => {
+    if (!dataUrl) return setUrl(null)
+    let made = null
+    let live = true
+    fetch(dataUrl)
+      .then((r) => r.blob())
+      .then((blob) => {
+        made = URL.createObjectURL(blob)
+        if (live) setUrl(made)
+      })
+      .catch(() => {})
+    return () => {
+      live = false
+      if (made) URL.revokeObjectURL(made)
+    }
+  }, [dataUrl])
+  return url
 }
