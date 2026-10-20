@@ -139,13 +139,19 @@ function Hero() {
             Invoices, expenses, sales tax and a clean export for your accountant, on your own domain. Pay for it
             over 12 months, then the app and your data are yours.
           </p>
-          <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3 sm:gap-4">
+          <div className="w-full sm:w-auto flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center justify-center lg:justify-start gap-3 sm:gap-4">
             <a
               href="#waitlist"
               className="flex items-center justify-center h-14 px-7 rounded-full bg-gradient-brand text-ink text-base font-bold"
             >
               Join the founding waitlist
             </a>
+            <Link
+              to="/books/demo"
+              className="flex items-center justify-center h-14 px-7 rounded-full border border-white/20 text-base font-bold hover:bg-white/5 transition-colors"
+            >
+              Try the demo
+            </Link>
             <Link
               to="/book"
               className="flex items-center justify-center h-14 px-7 rounded-full border border-white/20 text-base font-bold hover:bg-white/5 transition-colors"
