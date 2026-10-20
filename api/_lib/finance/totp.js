@@ -53,5 +53,5 @@ export function matchStep(secret, code, now = Date.now()) {
   return null
 }
 
-export const otpauthUrl = (secret) =>
-  `otpauth://totp/${encodeURIComponent('LinoCon Books:Owner')}?secret=${secret}&issuer=${encodeURIComponent('LinoCon Books')}&period=${STEP}&digits=6`
+export const otpauthUrl = (secret, account = 'Owner') =>
+  `otpauth://totp/${encodeURIComponent(`LinoCon Books:${account.replace(/:/g, ' ')}`)}?secret=${secret}&issuer=${encodeURIComponent('LinoCon Books')}&period=${STEP}&digits=6`

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { centsToText, fetchSettings, saveSettings, toCents } from '../../lib/finance'
 
 const field = 'w-full h-12 rounded-xl bg-fin-panel-2 border border-fin-line px-4 text-text outline-none focus:border-fin-blue'
@@ -133,6 +134,14 @@ export default function Settings({ onChanged }) {
         </button>
       ) : (
         <div className="mt-6 text-sm text-fin-muted">Only the owner can change settings.</div>
+      )}
+      {state.canSettings && (
+        <div className="mt-6 text-sm text-fin-muted">
+          Want to give a bookkeeper their own login?{' '}
+          <Link to="/finance/access" className="underline hover:text-text">
+            Go to Access
+          </Link>
+        </div>
       )}
     </form>
   )

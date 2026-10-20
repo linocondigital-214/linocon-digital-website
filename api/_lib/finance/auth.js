@@ -2,10 +2,15 @@
 // then a 6-digit code from an authenticator app. The first sign-in links the
 // app (QR code) and hands out one-time recovery codes for a lost phone.
 //
+// The owner can also invite one bookkeeper (see roles.js for what they can
+// do). The invite is a one-time code, good for 7 days; the bookkeeper picks
+// their own password and links their own authenticator app with it. Removing
+// the bookkeeper ends their sessions at once.
+//
 // Sessions live in Redis behind an HttpOnly cookie: they end after 30
 // minutes without activity and 12 hours at most. Five wrong tries from one
 // connection (or 20 overall) lock sign-in for 15 minutes.
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
+import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
 import { redis, SetupError } from '../store.js'
 import { matchStep, newSecret } from './totp.js'
 
@@ -16,6 +21,8 @@ const LOCK_SECONDS = 15 * 60
 const MAX_TRIES = 5
 const MAX_TRIES_ALL = 20
 const COOKIE = 'lcd_fin'
+const INVITE_DAYS = 7
+const MIN_PASSWORD = 12
 
 const sha = (value) => createHash('sha256').update(String(value)).digest()
 const hashKey = (token) => sha(token).toString('hex')
@@ -29,7 +36,14 @@ const KEYS = {
   session: (t) => `fin:session:${hashKey(t)}`,
   fails: (ip) => `fin:fails:${ip}`,
   failsAll: 'fin:fails:all',
+  bookkeeper: 'fin:bk',
+  bookkeeperLastStep: 'fin:bk:last',
+  invite: 'fin:bk:invite',
 }
+
+const passwordHash = (password, salt) => scryptSync(String(password), salt, 32).toString('hex')
+const samePassword = (password, salt, hash) =>
+  typeof password === 'string' && password.length > 0 && timingSafeEqual(Buffer.from(passwordHash(password, salt), 'hex'), Buffer.from(hash, 'hex'))
 
 const getJson = async (key) => {
   const raw = await redis(['GET', key])
@@ -67,6 +81,12 @@ export async function startSignIn(req, password) {
   const expected = process.env.FINANCE_PASSWORD
   const ok = typeof password === 'string' && password.length > 0 && timingSafeEqual(sha(password), sha(expected))
   if (!ok) {
+    const bookkeeper = await getJson(KEYS.bookkeeper)
+    if (bookkeeper && samePassword(password, bookkeeper.salt, bookkeeper.hash)) {
+      const ticket = token()
+      await redis(['SET', KEYS.pending(ticket), JSON.stringify({ role: 'bookkeeper', bookkeeperId: bookkeeper.id, secret: null }), 'EX', PENDING_SECONDS])
+      return { status: 'ok', ticket, enroll: false, secret: null }
+    }
     await countFailure(req)
     return { status: 'wrong' }
   }
@@ -88,7 +108,10 @@ export async function finishSignIn(req, ticket, code) {
   const entered = code.replace(/\s+/g, '')
 
   let recoveryCodes = null
-  if (pending.secret) {
+  if (pending.role === 'bookkeeper') {
+    const result = await checkBookkeeperCode(pending, entered)
+    if (result !== 'ok') return result === 'expired' ? { status: 'expired' } : failed(req)
+  } else if (pending.secret) {
     // Linking the app: the code proves it was scanned correctly.
     const step = matchStep(pending.secret, entered)
     if (step === null) return failed(req)
@@ -109,8 +132,95 @@ export async function finishSignIn(req, ticket, code) {
   await redis(['DEL', KEYS.pending(ticket)])
   await redis(['DEL', KEYS.fails(clientIp(req))])
   const session = token()
-  await redis(['SET', KEYS.session(session), JSON.stringify({ role: pending.role, createdAt: Date.now() }), 'EX', IDLE_SECONDS])
+  const record = { role: pending.role, createdAt: Date.now(), bookkeeperId: pending.bookkeeperId ?? pending.setup?.id }
+  await redis(['SET', KEYS.session(session), JSON.stringify(record), 'EX', IDLE_SECONDS])
   return { status: 'ok', session, recoveryCodes }
+}
+
+// The bookkeeper's code: linking their app the first time (from an invite),
+// or the usual 6-digit code. Bookkeepers get no recovery codes; if they lose
+// their phone the owner removes them and sends a new invite.
+async function checkBookkeeperCode(pending, entered) {
+  if (pending.setup) {
+    const step = matchStep(pending.secret, entered)
+    if (step === null) return 'wrong'
+    const invite = await getJson(KEYS.invite)
+    if (!invite || invite.id !== pending.setup.id) return 'expired' // the owner cancelled it meanwhile
+    const now = new Date().toISOString()
+    const { id, name, salt, hash } = pending.setup
+    await redis(['SET', KEYS.bookkeeper, JSON.stringify({ id, name, salt, hash, secret: pending.secret, invitedAt: invite.createdAt, linkedAt: now, lastSignIn: now })])
+    await redis(['SET', KEYS.bookkeeperLastStep, String(step)])
+    await redis(['DEL', KEYS.invite])
+    return 'ok'
+  }
+  const bookkeeper = await getJson(KEYS.bookkeeper)
+  if (!bookkeeper || bookkeeper.id !== pending.bookkeeperId) return 'expired'
+  const step = /^\d{6}$/.test(entered) ? matchStep(bookkeeper.secret, entered) : null
+  const last = Number((await redis(['GET', KEYS.bookkeeperLastStep])) ?? -1)
+  if (step === null || step <= last) return 'wrong'
+  await redis(['SET', KEYS.bookkeeperLastStep, String(step)])
+  await redis(['SET', KEYS.bookkeeper, JSON.stringify({ ...bookkeeper, lastSignIn: new Date().toISOString() })])
+  return 'ok'
+}
+
+// The bookkeeper's first sign-in: the invite code from the owner and the
+// password they choose. Returns a ticket and a new authenticator secret to link.
+export async function acceptInvite(req, code, password) {
+  checkSetup()
+  if (await isLocked(req)) return { status: 'locked' }
+  const invite = await getJson(KEYS.invite)
+  const normalized = normalizeInvite(code)
+  const matches = invite && normalized && timingSafeEqual(sha(normalized), Buffer.from(invite.hash, 'hex'))
+  if (!matches || Date.parse(invite.expires) < Date.now()) {
+    await countFailure(req)
+    return { status: 'wrong' }
+  }
+  if (typeof password !== 'string' || password.length < MIN_PASSWORD) return { status: 'weak' }
+  if (timingSafeEqual(sha(password), sha(process.env.FINANCE_PASSWORD))) return { status: 'weak' }
+  const salt = randomBytes(16).toString('hex')
+  const setup = { id: invite.id, name: invite.name, salt, hash: passwordHash(password, salt) }
+  const ticket = token()
+  const pending = { role: 'bookkeeper', secret: newSecret(), setup }
+  await redis(['SET', KEYS.pending(ticket), JSON.stringify(pending), 'EX', PENDING_SECONDS])
+  return { status: 'ok', ticket, secret: pending.secret, name: invite.name }
+}
+
+// What the owner sees on the Access page.
+export async function accessStatus() {
+  const [bookkeeper, invite] = await Promise.all([getJson(KEYS.bookkeeper), getJson(KEYS.invite)])
+  return {
+    bookkeeper: bookkeeper && { name: bookkeeper.name, invitedAt: bookkeeper.invitedAt, linkedAt: bookkeeper.linkedAt, lastSignIn: bookkeeper.lastSignIn },
+    invite: invite && Date.parse(invite.expires) > Date.now() ? { name: invite.name, createdAt: invite.createdAt, expires: invite.expires } : null,
+  }
+}
+
+// A new invite replaces any unused one. Returns the code to pass on; only its
+// hash is kept.
+export async function inviteBookkeeper(name) {
+  const code = [0, 1, 2].map(() => recoveryCode().replace('-', '').slice(0, 4)).join('-')
+  const now = Date.now()
+  const invite = {
+    id: randomBytes(9).toString('base64url'),
+    name,
+    hash: sha(code).toString('hex'),
+    createdAt: new Date(now).toISOString(),
+    expires: new Date(now + INVITE_DAYS * 86_400_000).toISOString(),
+  }
+  await redis(['SET', KEYS.invite, JSON.stringify(invite), 'EX', INVITE_DAYS * 86_400])
+  return { code, expires: invite.expires }
+}
+
+// Removes the bookkeeper and any unused invite. Their open sessions stop
+// working on their next request (currentUser checks the bookkeeper still exists).
+export async function removeBookkeeper() {
+  await redis(['DEL', KEYS.bookkeeper])
+  await redis(['DEL', KEYS.invite])
+  await redis(['DEL', KEYS.bookkeeperLastStep])
+}
+
+const normalizeInvite = (code) => {
+  const c = String(code ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '')
+  return c.length === 12 ? `${c.slice(0, 4)}-${c.slice(4, 8)}-${c.slice(8)}` : null
 }
 
 async function failed(req) {
@@ -158,6 +268,15 @@ export async function currentUser(req) {
   if (Date.now() - session.createdAt > MAX_SESSION_MS) {
     await redis(['DEL', KEYS.session(t)])
     return null
+  }
+  if (session.role === 'bookkeeper') {
+    const bookkeeper = await getJson(KEYS.bookkeeper)
+    if (!bookkeeper || bookkeeper.id !== session.bookkeeperId) {
+      await redis(['DEL', KEYS.session(t)])
+      return null
+    }
+    await redis(['EXPIRE', KEYS.session(t), IDLE_SECONDS])
+    return { role: 'bookkeeper', name: bookkeeper.name }
   }
   await redis(['EXPIRE', KEYS.session(t), IDLE_SECONDS])
   return { role: session.role }
