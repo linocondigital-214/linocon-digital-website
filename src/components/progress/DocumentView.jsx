@@ -89,7 +89,7 @@ export default function DocumentView({ client, docKey, editable = false, onChang
 
 // Own gradient id: the page header's logo (hidden when printing) uses the
 // shared one, and a gradient inside a hidden element doesn't paint.
-function DocMark() {
+export function DocMark() {
   return (
     <svg viewBox="0 0 30 24" fill="none" className="w-8 h-6" aria-hidden="true">
       <defs>
@@ -106,56 +106,14 @@ function DocMark() {
 }
 
 function Controls({ client, docKey, onChange }) {
-  const doc = DOCS[docKey]
   const state = docState(client, docKey)
-  const status = state.status || 'draft'
   const services = client.details.services ?? {}
   const fields = DOC_FIELDS.filter((f) => f.doc === docKey && (!f.service || services[f.service]))
   const set = (path, value) => onChange([{ path: ['docs', docKey, ...path], value }])
 
-  function setStatus(next) {
-    const changes = [{ path: ['docs', docKey, 'status'], value: next }]
-    if (next !== 'draft' && !state.sentAt) changes.push({ path: ['docs', docKey, 'sentAt'], value: today() })
-    if (next === 'signed' && !state.signedAt) changes.push({ path: ['docs', docKey, 'signedAt'], value: today() })
-    onChange(changes)
-  }
-
   return (
     <div className="no-print max-w-3xl mx-auto mb-8 flex flex-col gap-4">
-      <div className="rounded-2xl border border-border bg-surface p-5 md:p-6">
-        <p className="font-bold">Status</p>
-        <div className="flex flex-wrap items-center gap-2 mt-3">
-          {doc.statuses.map((s) => (
-            <button
-              key={s.value}
-              type="button"
-              aria-pressed={status === s.value}
-              onClick={() => setStatus(s.value)}
-              className={`h-10 px-4 rounded-full text-sm font-bold border ${
-                status === s.value ? 'bg-gradient-brand text-ink border-transparent' : 'border-border text-text-secondary hover:border-text-tertiary'
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
-          {status === 'signed' && (
-            <label className="flex items-center gap-2 text-sm text-text-secondary ml-2">
-              {statusLabel(docKey, 'signed')} on
-              <input
-                type="date"
-                value={state.signedAt || ''}
-                onChange={(e) => set(['signedAt'], e.target.value || null)}
-                className="h-10 rounded-lg bg-ink border border-border px-3 text-text [color-scheme:dark]"
-              />
-            </label>
-          )}
-        </div>
-        <p className="text-sm text-text-secondary mt-3">
-          {status === 'draft'
-            ? 'Drafts are private. The client sees this on their page once you mark it as sent.'
-            : `The client can see this on their page${state.sentAt ? ` (sent ${dateLabel(state.sentAt)})` : ''}.`}
-        </p>
-      </div>
+      <StatusCard client={client} docKey={docKey} onChange={onChange} />
 
       {docKey === 'agreement' && (
         <p className="rounded-2xl border border-orange/40 bg-orange/10 p-5 text-sm">
@@ -175,6 +133,58 @@ function Controls({ client, docKey, onChange }) {
           ))}
         </div>
       </div>
+    </div>
+  )
+}
+
+// Draft / Sent / Signed for one document. Not printed.
+export function StatusCard({ client, docKey, onChange }) {
+  const doc = DOCS[docKey]
+  const state = docState(client, docKey)
+  const status = state.status || 'draft'
+  const set = (path, value) => onChange([{ path: ['docs', docKey, ...path], value }])
+
+  function setStatus(next) {
+    const changes = [{ path: ['docs', docKey, 'status'], value: next }]
+    if (next !== 'draft' && !state.sentAt) changes.push({ path: ['docs', docKey, 'sentAt'], value: today() })
+    if (next === 'signed' && !state.signedAt) changes.push({ path: ['docs', docKey, 'signedAt'], value: today() })
+    onChange(changes)
+  }
+
+  return (
+    <div className="rounded-2xl border border-border bg-surface p-5 md:p-6">
+      <p className="font-bold">Status</p>
+      <div className="flex flex-wrap items-center gap-2 mt-3">
+        {doc.statuses.map((s) => (
+          <button
+            key={s.value}
+            type="button"
+            aria-pressed={status === s.value}
+            onClick={() => setStatus(s.value)}
+            className={`h-10 px-4 rounded-full text-sm font-bold border ${
+              status === s.value ? 'bg-gradient-brand text-ink border-transparent' : 'border-border text-text-secondary hover:border-text-tertiary'
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
+        {status === 'signed' && (
+          <label className="flex items-center gap-2 text-sm text-text-secondary ml-2">
+            {statusLabel(docKey, 'signed')} on
+            <input
+              type="date"
+              value={state.signedAt || ''}
+              onChange={(e) => set(['signedAt'], e.target.value || null)}
+              className="h-10 rounded-lg bg-ink border border-border px-3 text-text [color-scheme:dark]"
+            />
+          </label>
+        )}
+      </div>
+      <p className="text-sm text-text-secondary mt-3">
+        {status === 'draft'
+          ? 'Drafts are private. The client sees this on their page once you mark it as sent.'
+          : `The client can see this on their page${state.sentAt ? ` (sent ${dateLabel(state.sentAt)})` : ''}.`}
+      </p>
     </div>
   )
 }
@@ -329,8 +339,17 @@ function Prices({ client, values, editable }) {
             </td>
           </tr>
         ))}
+        {values.packageExtras?.split('\n').filter(Boolean).map((line) => {
+          const at = line.lastIndexOf(': ')
+          return (
+            <tr key={line}>
+              <td className="py-2.5 pr-4">{at > 0 ? line.slice(0, at) : line}</td>
+              <td className="py-2.5 text-right font-semibold text-ink whitespace-nowrap">{at > 0 ? line.slice(at + 2) : ''}</td>
+            </tr>
+          )
+        })}
         <tr>
-          <td className="py-2.5 pr-4 font-bold text-ink">Total to start</td>
+          <td className="py-2.5 pr-4 font-bold text-ink">Total</td>
           <td className="py-2.5 text-right font-bold text-ink">{values.total || <Blank field="total" editable={editable} />}</td>
         </tr>
       </tbody>
