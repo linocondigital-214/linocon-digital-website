@@ -30,7 +30,12 @@ export default function GstYearEnd({ onChanged }) {
   return (
     <div className="max-w-5xl">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-fin-muted">For CRA and your accountant</p>
-      <h1 className="font-display font-bold text-3xl md:text-4xl pt-1">GST &amp; Year-End</h1>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <h1 className="font-display font-bold text-3xl md:text-4xl pt-1">GST &amp; Year-End</h1>
+        <Link to="/finance/export" className="h-10 px-4 rounded-full border border-fin-line text-sm font-semibold grid place-items-center hover:bg-fin-panel">
+          Export for your accountant
+        </Link>
+      </div>
 
       <div className="mt-6 flex gap-2 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
         {VIEWS.map(([key, name]) => (
@@ -250,7 +255,13 @@ function YearEnd({ data }) {
           <li>Make sure every expense from last year is in, with its receipt.</li>
           <li>Compare last year’s closing cash with your bank balance on December 31. If they differ, look for something missing.</li>
           <li>Follow up on any invoices still unpaid at December 31.</li>
-          <li>Send the year’s export to your accountant.</li>
+          <li>
+            Send the year’s{' '}
+            <Link to="/finance/export" className="underline">
+              export
+            </Link>{' '}
+            to your accountant.
+          </li>
           <li>Sole proprietors: income tax and the T2125 are due June 15, and any balance owing must be paid by April 30. Confirm with your accountant.</li>
         </ol>
       </Panel>

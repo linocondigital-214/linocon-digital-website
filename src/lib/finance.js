@@ -51,6 +51,7 @@ export const fetchSettings = () => call('settings')
 export const saveSettings = (settings) => call('settings-save', { method: 'POST', body: { settings } }).then((d) => d.settings)
 export const addMove = (move) => call('move-add', { method: 'POST', body: { move } }).then((d) => d.move)
 export const deleteMove = (id) => call('move-delete', { method: 'POST', body: { id } })
+export const fetchExport = (year) => call(year ? `export&year=${year}` : 'export')
 
 // "$1,234.50" or "12" -> 123450 cents; null when it isn't an amount.
 export function toCents(text) {
@@ -118,7 +119,7 @@ export const SECTIONS = [
   { key: 'invoices', name: 'Invoices', icon: 'invoice' },
   { key: 'expenses', name: 'Expenses', icon: 'expense' },
   { key: 'gst', name: 'GST & Year-End', short: 'GST', icon: 'gst' },
-  { key: 'export', name: 'Export', icon: 'export', soon: 'Excel and PDF exports for your accountant come with the GST and year-end update.' },
+  { key: 'export', name: 'Export', icon: 'export' },
   { key: 'access', name: 'Access', icon: 'access', soon: 'A limited bookkeeper login (view and add only) can be added here later.' },
   { key: 'settings', name: 'Settings', icon: 'settings' },
 ]

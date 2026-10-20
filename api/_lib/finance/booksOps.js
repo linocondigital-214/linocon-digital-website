@@ -5,6 +5,7 @@
 //   POST ?op=settings-save  { settings }  (owner only)
 //   POST ?op=move-add       { move }      owner & tax money: own money in or out, GST paid, loans...
 //   POST ?op=move-delete    { id }        (owner only)
+//   GET  ?op=export&year=   everything for one year, for the Excel and PDF exports
 import { can } from './roles.js'
 import { Invalid } from './expenses.js'
 import { LAST_YEAR, MOVE_TYPES, balanceSheet, gstYear, smallSupplier, yearEnd } from './books.js'
@@ -98,6 +99,40 @@ export async function booksOps(op, req, user) {
         lastYear: LAST_YEAR,
         canDelete: can(user.role, 'delete'),
         canSettings: can(user.role, 'settings'),
+      },
+    ]
+  }
+
+  if (op === 'export' && get) {
+    if (!can(user.role, 'export')) return denied
+    const data = await loadBooks()
+    const now = today()
+    const rows = yearEnd(data, now)
+    const year = Number(req.query?.year) || Number(now.slice(0, 4))
+    const row = rows.find((r) => r.year === year)
+    if (!row) return [404, { error: 'year', message: 'Pick a year your books cover.' }]
+    const from = `${year}-01-01`
+    const to = `${year}-12-31`
+    const inYear = (r) => r.date >= from && r.date <= to
+    const byDate = (a, b) => a.date.localeCompare(b.date)
+    // The year-end balance sheet, or today's while the year is still open.
+    const balance = row.closed ? balanceSheet(data, to) : balanceSheet(data, now, { withTyped: true })
+    return [
+      200,
+      {
+        year,
+        today: now,
+        years: rows.map((r) => r.year),
+        settings: data.settings,
+        income: data.income.filter(inYear).sort(byDate),
+        expenses: data.expenses.filter(inYear).sort(byDate),
+        invoices: data.invoices
+          .filter((inv) => inv.status !== 'draft' && (inv.sentOn ?? inv.issued ?? '').startsWith(String(year)))
+          .sort((a, b) => (a.number ?? '').localeCompare(b.number ?? '')),
+        moves: data.moves.filter(inYear).sort(byDate),
+        gst: gstYear(data, year),
+        yearEnd: row,
+        balance,
       },
     ]
   }
