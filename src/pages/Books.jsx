@@ -16,10 +16,10 @@ const SECTIONS = [
     eyebrow: "What's inside",
     heading: 'Simple books, made for small businesses.',
     items: [
-      { title: 'One clear dashboard', body: 'Money in, money out, profit and sales tax owing (GST/HST) for this month and this year, at a glance.' },
-      { title: 'Invoices that get paid', body: 'Branded invoices with GST or HST added for you and a Pay now button. They mark themselves paid.' },
+      { title: 'One clear dashboard', body: 'Money in, money out, profit and sales tax owing for this month and this year, at a glance.' },
+      { title: 'Invoices that get paid', body: 'Branded invoices with your sales tax added for you and a Pay now button. They mark themselves paid.' },
       { title: 'Expenses from your phone', body: 'Snap the receipt, type the amount, done. Categories are suggested for you.' },
-      { title: 'Sales tax made simple', body: 'GST/HST collected and paid for each filing period, ready when it’s time to file.' },
+      { title: 'Sales tax made simple', body: 'Set up for the tax where you do business, like GST/HST in Canada. Collected and paid for each filing period, ready when it’s time to file.' },
       { title: 'Export for your accountant', body: 'One button gives your accountant a clean spreadsheet and your receipts.' },
       { title: 'Secure login', body: 'Password plus a one-time code, and an optional limited login for your bookkeeper.' },
     ],
@@ -81,7 +81,7 @@ const SECTIONS = [
     type: 'checklist',
     eyebrow: 'Who it’s for',
     heading: 'Built for owners who do their own books.',
-    intro: 'If you invoice customers and file GST/HST, but find big accounting software confusing or pricey, this is for you.',
+    intro: 'If you invoice customers and file sales tax, but find big accounting software confusing or pricey, this is for you.',
     note: 'If your accountant needs you on a specific accounting program, or you need payroll or inventory, we’ll tell you honestly that another tool is a better fit.',
     items: [
       'Sole owners and small teams',
@@ -95,7 +95,7 @@ const SECTIONS = [
 export default function Books() {
   usePageMeta(
     'LinoCon Books: Your Own Bookkeeping App (Coming Soon)',
-    'A simple bookkeeping app for small businesses: invoices, expenses, GST/HST and an export for your accountant. Pay for 12 months, then it’s yours. Join the founding waitlist.',
+    'A simple bookkeeping app for small businesses: invoices, expenses, sales tax and an export for your accountant. Pay for 12 months, then it’s yours. Join the founding waitlist.',
   )
 
   // /books#waitlist links come from other pages; scroll once the form is there.
@@ -136,7 +136,7 @@ function Hero() {
             <Headline text="Your own bookkeeping app. Not another subscription." accent="Your own" />
           </h1>
           <p className="text-lg md:text-xl leading-relaxed text-text-secondary text-balance">
-            Invoices, expenses, GST/HST and a clean export for your accountant, on your own domain. Pay for it
+            Invoices, expenses, sales tax and a clean export for your accountant, on your own domain. Pay for it
             over 12 months, then the app and your data are yours.
           </p>
           <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3 sm:gap-4">
@@ -165,7 +165,7 @@ function AppPreview() {
   const tiles = [
     { label: 'Money in', tone: 'from-blue/30' },
     { label: 'Money out', tone: 'from-orange/25' },
-    { label: 'GST/HST owing', tone: 'from-white/10' },
+    { label: 'Tax owing', tone: 'from-white/10' },
   ]
   const rows = ['Invoice sent', 'Invoice paid', 'Receipt added', 'Tax period ready']
   return (
