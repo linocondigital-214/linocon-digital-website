@@ -18,7 +18,8 @@ import {
   pkgState,
   toCents,
 } from '../../lib/packages'
-import { DocMark, StatusCard } from './DocumentView'
+import { DocMark, SendSignedCopy, StatusCard } from './DocumentView'
+import { AcceptedBlock } from './ESign'
 
 const input = 'min-w-0 rounded-xl bg-ink border border-border px-4 outline-none focus:border-blue [color-scheme:dark]'
 const newId = () => Math.random().toString(36).slice(2, 8)
@@ -94,6 +95,7 @@ export default function PackageBuilder({ client, onChange, adminBase }) {
         </div>
 
         <StatusCard client={client} docKey="package" onChange={onChange} />
+        <SendSignedCopy client={client} docKey="package" />
 
         <div className={card}>
           <label className="flex flex-col gap-2">
@@ -524,6 +526,8 @@ export function PackageSummary({ client }) {
           </section>
         </div>
       )}
+
+      <AcceptedBlock esign={pkg.esign} title="package" />
 
       <footer className="mt-12 pt-5 border-t border-ink/15 text-xs text-ink/50 flex flex-wrap justify-between gap-2">
         <span>

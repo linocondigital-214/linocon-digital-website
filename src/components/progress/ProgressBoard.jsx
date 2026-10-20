@@ -126,8 +126,8 @@ function Documents({ client, editable, docBase }) {
             <div className="flex-1 min-w-0">
               <p className="font-bold">{d.name}</p>
               <p className="text-sm text-text-secondary">
-                {statusLabel(d.key, status)}
-                {when && ` ${dateLabel(when)}`}
+                {!editable && status === 'sent' ? (d.signatures ? 'Ready for you to sign' : 'Ready for you to accept') : statusLabel(d.key, status)}
+                {when && !(!editable && status === 'sent') && ` ${dateLabel(when)}`}
                 {editable && status === 'draft' && ' · only you can see it'}
               </p>
             </div>

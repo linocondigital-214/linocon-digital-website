@@ -4,6 +4,7 @@ import { route, isAdmin } from './_lib/http.js'
 import { deleteClient, getClient, isClientId, saveClient } from './_lib/store.js'
 import { applyChanges, BadRequest } from './_lib/client.js'
 import { removeLogin } from './_lib/portal.js'
+import { withSignChecks } from './_lib/esign.js'
 
 export default route(async (req) => {
   if (!(await isAdmin(req))) return [401, { error: 'signin' }]
@@ -12,7 +13,7 @@ export default route(async (req) => {
 
   if (req.method === 'GET') {
     const client = await getClient(id)
-    return client ? [200, { client }] : [404, { error: 'not-found' }]
+    return client ? [200, { client: withSignChecks(client) }] : [404, { error: 'not-found' }]
   }
 
   if (req.method === 'PATCH') {
@@ -25,7 +26,7 @@ export default route(async (req) => {
       throw err
     }
     await saveClient(client)
-    return [200, { client }]
+    return [200, { client: withSignChecks(client) }]
   }
 
   if (req.method === 'DELETE') {
