@@ -30,11 +30,11 @@ const ClientDocView = lazy(() => import('./pages/ClientDoc').then((m) => ({ defa
 // The Books demo is full screen, so it skips them too.
 const isPrivatePath = (path) => /^\/(progress|clients|admin|finance|books\/demo)(\/|$)/.test(path)
 
-// /clients/<proposal|agreement> is the signed-in client's document. Lino's old
+// /clients/<package|proposal|agreement> is the signed-in client's document. Lino's old
 // editor links (/clients/<client id>/...) now live under /admin.
 function ClientsSub() {
   const { sub, doc } = useParams()
-  if (!doc && ['proposal', 'agreement'].includes(sub)) {
+  if (!doc && ['package', 'proposal', 'agreement'].includes(sub)) {
     return (
       <Suspense fallback={null}>
         <ClientDocView doc={sub} />

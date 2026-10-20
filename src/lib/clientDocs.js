@@ -48,7 +48,8 @@ export const DOC_FIELDS = [
   { key: 'priceSeo', label: 'SEO Setup price', placeholder: 'e.g. $____ one-time', service: 'seo', doc: 'proposal' },
   { key: 'priceBacklinks', label: 'Backlink Building price', placeholder: 'e.g. $____ per month', service: 'backlinks', doc: 'proposal' },
   { key: 'priceGrow', label: 'Grow plan price', placeholder: 'e.g. $____ per month', service: 'grow', doc: 'proposal' },
-  { key: 'total', label: 'Total to start', placeholder: 'e.g. $____ + $____ per month', doc: 'proposal' },
+  { key: 'packageExtras', label: 'Savings, discounts and extras (one per line)', placeholder: 'Filled in from the package', multiline: true, doc: 'proposal' },
+  { key: 'total', label: 'Total', placeholder: 'e.g. $____ + $____ per month', doc: 'proposal' },
   { key: 'deposit', label: 'Deposit before work starts', placeholder: 'e.g. 50% ($____)', doc: 'proposal' },
   { key: 'timeline', label: 'Timeline', placeholder: 'e.g. Audit and Plan: 2 weeks. Build & Launch: 4 to 6 weeks.', multiline: true, doc: 'proposal' },
   { key: 'agreementDate', label: 'Agreement date', type: 'date', doc: 'agreement' },
@@ -171,6 +172,20 @@ const AGREEMENT = [
 ]
 
 export const DOCS = {
+  // Built on its own page (PackageBuilder), not from template sections.
+  package: {
+    key: 'package',
+    name: 'Package',
+    title: 'Your package',
+    sections: [],
+    builder: true,
+    statuses: [
+      { value: 'draft', label: 'Draft' },
+      { value: 'sent', label: 'Sent' },
+      { value: 'signed', label: 'Accepted' },
+    ],
+    signatures: false,
+  },
   proposal: {
     key: 'proposal',
     name: 'Proposal',

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import PrivateShell, { Notice } from '../components/progress/PrivateShell'
 import AdminClientGate, { AdminSignIn, AdminSignOut } from '../components/progress/AdminClientGate'
 import DocumentView from '../components/progress/DocumentView'
+import PackageBuilder, { PackageSummary } from '../components/progress/PackageBuilder'
 import { DOCS, isShared } from '../lib/clientDocs'
 import { fetchMyProgress } from '../lib/clientProgress'
 import useAdminClient, { SAVING_TEXT } from '../lib/useAdminClient'
@@ -14,7 +15,7 @@ const backLink = (to, label) => (
   </Link>
 )
 
-// /admin/<id>/<proposal|agreement>: Lino fills in and prints the document.
+// /admin/<id>/<package|proposal|agreement>: Lino fills in and prints the document.
 export function ClientDocEdit() {
   const { id, doc } = useParams()
   const { state, saving, reload, onChange } = useAdminClient(id)
@@ -37,13 +38,17 @@ export function ClientDocEdit() {
     >
       <AdminClientGate state={state}>
         {backLink(`/admin/${id}`, state.client?.details.name)}
-        <DocumentView client={state.client} docKey={doc} editable onChange={onChange} />
+        {DOCS[doc].builder ? (
+          state.client && <PackageBuilder client={state.client} onChange={onChange} adminBase={`/admin/${id}`} />
+        ) : (
+          <DocumentView client={state.client} docKey={doc} editable onChange={onChange} />
+        )}
       </AdminClientGate>
     </PrivateShell>
   )
 }
 
-// /clients/<proposal|agreement>: the signed-in client's read-only copy, once
+// /clients/<package|proposal|agreement>: the signed-in client's read-only copy, once
 // Lino marks it as sent.
 export function ClientDocView({ doc }) {
   const navigate = useNavigate()
@@ -66,7 +71,18 @@ export function ClientDocView({ doc }) {
       ) : (
         <>
           {backLink('/clients', 'Back to your progress')}
-          <DocumentView client={state.client} docKey={doc} />
+          {DOCS[doc].builder ? (
+            <>
+              <div className="no-print max-w-3xl mx-auto mb-6">
+                <button type="button" onClick={() => window.print()} className="h-11 px-5 rounded-full bg-gradient-brand text-ink text-sm font-bold">
+                  Print / Save as PDF
+                </button>
+              </div>
+              <PackageSummary client={state.client} />
+            </>
+          ) : (
+            <DocumentView client={state.client} docKey={doc} />
+          )}
         </>
       )}
     </PrivateShell>
