@@ -1,24 +1,25 @@
 import { useState } from 'react'
 import Mark from '../Logo'
 import { acceptInvite, sendCode, sendPassword } from '../../lib/finance'
+import { adminCode, adminPassword } from '../../lib/clientProgress'
 
-export function Brand() {
+export function Brand({ label = 'Finance' }) {
   return (
     <div className="flex items-center gap-2.5">
       <Mark className="w-7 h-5" />
       <span className="font-display font-bold text-lg">LinoCon Digital</span>
       <span className="text-[11px] font-semibold tracking-[0.12em] uppercase text-fin-muted border border-fin-line rounded-full px-2 py-px">
-        Finance
+        {label}
       </span>
     </div>
   )
 }
 
-export function Card({ children, wide = false }) {
+export function Card({ children, wide = false, label }) {
   return (
     <div className="fin-glow min-h-screen flex items-center justify-center px-4 py-10">
       <div className={`w-full ${wide ? 'max-w-lg' : 'max-w-md'} rounded-3xl border border-fin-line bg-fin-panel p-6 sm:p-8`}>
-        <Brand />
+        <Brand label={label} />
         <div className="mt-7">{children}</div>
       </div>
     </div>
@@ -32,7 +33,33 @@ const button = 'w-full h-12 rounded-full fin-grad font-bold text-white disabled:
 // authenticator app. The first time, the app gets linked with a QR code and
 // recovery codes are shown once. A bookkeeper's first sign-in starts from the
 // invite code the owner gave them.
-export default function FinanceLogin({ onSignedIn }) {
+//
+// The client admin (/admin) uses the same sign-in, owner only: `app="admin"`.
+const APPS = {
+  finance: {
+    label: 'Finance',
+    title: 'Sign in to your books',
+    where: 'linocondigital.com/finance · private, not linked from the website',
+    codeFor: 'LinoCon Books',
+    done: 'Open my books',
+    sendPassword,
+    sendCode,
+    invites: true,
+  },
+  admin: {
+    label: 'Admin',
+    title: 'Sign in to your admin',
+    where: 'linocondigital.com/admin · only you can sign in here',
+    codeFor: 'LinoCon Books (the same code you use for /finance)',
+    done: 'Open my clients',
+    sendPassword: adminPassword,
+    sendCode: adminCode,
+    invites: false,
+  },
+}
+
+export default function FinanceLogin({ onSignedIn, app = 'finance' }) {
+  const cfg = APPS[app]
   const [step, setStep] = useState({ name: 'password' })
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -53,11 +80,12 @@ export default function FinanceLogin({ onSignedIn }) {
   if (step.name === 'password') {
     return (
       <PasswordStep
+        cfg={cfg}
         busy={busy}
         error={error}
         onSubmit={(password) =>
           run(async () => {
-            const res = await sendPassword(password)
+            const res = await cfg.sendPassword(password)
             setStep({ name: res.link ? 'link' : 'code', ticket: res.ticket, setup: res.setup })
           })
         }
@@ -89,11 +117,12 @@ export default function FinanceLogin({ onSignedIn }) {
   }
 
   if (step.name === 'recovery') {
-    return <RecoveryCodes codes={step.codes} onDone={onSignedIn} />
+    return <RecoveryCodes cfg={cfg} codes={step.codes} onDone={onSignedIn} />
   }
 
   return (
     <CodeStep
+      cfg={cfg}
       step={step}
       busy={busy}
       error={error}
@@ -103,7 +132,7 @@ export default function FinanceLogin({ onSignedIn }) {
       }}
       onSubmit={(code) =>
         run(async () => {
-          const res = await sendCode(step.ticket, code)
+          const res = await cfg.sendCode(step.ticket, code)
           if (res.recoveryCodes) setStep({ name: 'recovery', codes: res.recoveryCodes })
           else onSignedIn()
         })
@@ -112,12 +141,12 @@ export default function FinanceLogin({ onSignedIn }) {
   )
 }
 
-function PasswordStep({ onSubmit, onInvite, busy, error }) {
+function PasswordStep({ cfg, onSubmit, onInvite, busy, error }) {
   const [password, setPassword] = useState('')
   return (
-    <Card>
-      <h1 className="font-display font-bold text-3xl">Sign in to your books</h1>
-      <div className="text-sm text-fin-muted mt-2">linocondigital.com/finance · private, not linked from the website</div>
+    <Card label={cfg.label}>
+      <h1 className="font-display font-bold text-3xl">{cfg.title}</h1>
+      <div className="text-sm text-fin-muted mt-2">{cfg.where}</div>
       <form
         className="mt-7 flex flex-col gap-5"
         onSubmit={(e) => {
@@ -145,9 +174,11 @@ function PasswordStep({ onSubmit, onInvite, busy, error }) {
         </button>
       </form>
       <div className="text-center text-xs text-fin-faint mt-5">Paused after 5 wrong tries · signs out after 30 minutes idle</div>
-      <button type="button" onClick={onInvite} className="block mx-auto mt-4 text-sm text-fin-muted underline hover:text-text">
-        Bookkeeper with an invite code?
-      </button>
+      {cfg.invites && (
+        <button type="button" onClick={onInvite} className="block mx-auto mt-4 text-sm text-fin-muted underline hover:text-text">
+          Bookkeeper with an invite code?
+        </button>
+      )}
     </Card>
   )
 }
@@ -203,11 +234,11 @@ function InviteStep({ onSubmit, onBack, busy, error }) {
   )
 }
 
-function CodeStep({ step, onSubmit, onBack, busy, error }) {
+function CodeStep({ cfg, step, onSubmit, onBack, busy, error }) {
   const [code, setCode] = useState('')
   const linking = step.name === 'link'
   return (
-    <Card wide={linking}>
+    <Card wide={linking} label={cfg.label}>
       {linking ? (
         <>
           <h1 className="font-display font-bold text-3xl">Link your phone</h1>
@@ -242,7 +273,7 @@ function CodeStep({ step, onSubmit, onBack, busy, error }) {
       ) : (
         <>
           <h1 className="font-display font-bold text-3xl">Enter your code</h1>
-          <div className="text-fin-muted mt-2">Open your authenticator app and type the 6-digit code for LinoCon Books.</div>
+          <div className="text-fin-muted mt-2">Open your authenticator app and type the 6-digit code for {cfg.codeFor}.</div>
         </>
       )}
       <form
@@ -268,7 +299,11 @@ function CodeStep({ step, onSubmit, onBack, busy, error }) {
           {busy ? 'Checking...' : linking ? 'Link and sign in' : 'Sign in'}
         </button>
       </form>
-      {!linking && <div className="text-xs text-fin-faint mt-4">Lost your phone? Type one of your recovery codes in the box instead. Bookkeepers can ask the owner for a new invite.</div>}
+      {!linking && (
+        <div className="text-xs text-fin-faint mt-4">
+          Lost your phone? Type one of your recovery codes in the box instead.{cfg.invites && ' Bookkeepers can ask the owner for a new invite.'}
+        </div>
+      )}
       <button type="button" onClick={onBack} className="text-sm text-fin-muted hover:text-text mt-4">
         Back
       </button>
@@ -276,11 +311,11 @@ function CodeStep({ step, onSubmit, onBack, busy, error }) {
   )
 }
 
-function RecoveryCodes({ codes, onDone }) {
+function RecoveryCodes({ cfg, codes, onDone }) {
   const [copied, setCopied] = useState(false)
   const [saved, setSaved] = useState(false)
   return (
-    <Card wide>
+    <Card wide label={cfg.label}>
       <h1 className="font-display font-bold text-3xl">Save your recovery codes</h1>
       <div className="text-fin-muted mt-2">
         If you lose your phone, each of these codes lets you sign in once instead of the 6-digit code. They won't be shown
@@ -310,7 +345,7 @@ function RecoveryCodes({ codes, onDone }) {
         I've saved these codes somewhere safe
       </label>
       <button type="button" disabled={!saved} onClick={onDone} className={`${button} mt-5`}>
-        Open my books
+        {cfg.done}
       </button>
     </Card>
   )

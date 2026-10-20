@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { dateLabel, today } from '../../lib/clientProgress'
 import { deleteLogChange, logChanges, newEntryId } from '../../lib/clientOverview'
 
-// Lino's private work log: dated notes per client. Shown on /clients for every
+// Lino's private work log: dated notes per client. Shown on /admin for every
 // client and on each client's edit page. Never on the client's own page.
 
 const inputClass = 'rounded-xl bg-ink border border-border px-4 outline-none focus:border-blue [color-scheme:dark]'
@@ -98,7 +98,7 @@ export function WorkLogList({ entries, showClient, onDelete, limit = 10 }) {
             <div className="min-w-0 flex-1">
               <p className="sm:hidden text-xs font-semibold text-text-secondary">{dateLabel(e.date)}</p>
               {showClient && (
-                <Link to={`/clients/${e.client.id}`} className="text-sm font-bold text-blue! hover:underline">
+                <Link to={`/admin/${e.client.id}`} className="text-sm font-bold text-blue! hover:underline">
                   {e.client.details.name}
                 </Link>
               )}

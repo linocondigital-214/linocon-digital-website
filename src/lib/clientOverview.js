@@ -1,4 +1,4 @@
-// The all-clients overview on /clients: where each client is, this month's
+// The all-clients overview on /admin: where each client is, this month's
 // Grow work, what needs Lino's attention, and the private work log.
 import { DOCS, docState, statusLabel } from './clientDocs'
 import { countDone, currentStage, monthlyItems, overallProgress, percent, quarterlyItems, today } from './clientProgress'

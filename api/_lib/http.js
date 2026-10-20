@@ -1,24 +1,26 @@
-import { createHash, timingSafeEqual } from 'node:crypto'
 import { SetupError } from './store.js'
+import { checkSetup, currentUser } from './finance/auth.js'
 
-const digest = (value) => createHash('sha256').update(String(value)).digest()
-
-// Lino's editor sends the password from the ADMIN_PASSWORD environment
-// variable (set in Vercel) with every change.
-export function isAdmin(req) {
-  const expected = process.env.ADMIN_PASSWORD
-  const given = req.headers['x-admin-password']
-  if (!expected) throw new SetupError('ADMIN_PASSWORD is not set')
-  return Boolean(given) && timingSafeEqual(digest(given), digest(expected))
+// Lino's client admin (/admin) uses the same sign-in as the finance app:
+// the FINANCE_PASSWORD plus a code from the authenticator app. See api/admin.js.
+export async function isAdmin(req) {
+  checkSetup()
+  const user = await currentUser(req, 'admin')
+  return user?.role === 'owner'
 }
 
 // Runs a handler and turns errors into JSON the pages can explain.
 export function route(handler) {
   return async (req, res) => {
     res.setHeader('Cache-Control', 'no-store')
-    res.setHeader('X-Robots-Tag', 'noindex')
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow')
     try {
-      const [status, body] = await handler(req)
+      // Changes only accept JSON, which other sites can't send here.
+      if (['POST', 'PATCH'].includes(req.method) && !String(req.headers['content-type'] ?? '').startsWith('application/json')) {
+        res.status(415).json({ error: 'json' })
+        return
+      }
+      const [status, body] = await handler(req, res)
       res.status(status).json(body)
     } catch (err) {
       if (err instanceof SetupError) {

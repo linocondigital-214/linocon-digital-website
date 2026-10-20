@@ -7,6 +7,9 @@
 // their own password and links their own authenticator app with it. Removing
 // the bookkeeper ends their sessions at once.
 //
+// The same owner sign-in also opens Lino's client admin (/admin): it gets its
+// own session and cookie (app 'admin'), and bookkeepers can't use it.
+//
 // Sessions live in Redis behind an HttpOnly cookie: they end after 30
 // minutes without activity and 12 hours at most. Five wrong tries from one
 // connection (or 20 overall) lock sign-in for 15 minutes.
@@ -20,7 +23,13 @@ const PENDING_SECONDS = 5 * 60
 const LOCK_SECONDS = 15 * 60
 const MAX_TRIES = 5
 const MAX_TRIES_ALL = 20
-const COOKIE = 'lcd_fin'
+// Each app's cookie: the finance one only goes to /api/finance; the admin one
+// goes to every /api call (the client admin uses /api/clients, /api/client,
+// /api/portal and /api/admin), and only owner sessions are ever stored for it.
+const COOKIES = {
+  finance: { name: 'lcd_fin', path: '/api/finance' },
+  admin: { name: 'lcd_adm', path: '/api' },
+}
 const INVITE_DAYS = 7
 const MIN_PASSWORD = 12
 
@@ -85,7 +94,7 @@ export async function startSignIn(req, password) {
     if (bookkeeper && samePassword(password, bookkeeper.salt, bookkeeper.hash)) {
       const ticket = token()
       await redis(['SET', KEYS.pending(ticket), JSON.stringify({ role: 'bookkeeper', bookkeeperId: bookkeeper.id, secret: null }), 'EX', PENDING_SECONDS])
-      return { status: 'ok', ticket, enroll: false, secret: null }
+      return { status: 'ok', ticket, enroll: false, secret: null, role: 'bookkeeper' }
     }
     await countFailure(req)
     return { status: 'wrong' }
@@ -94,17 +103,19 @@ export async function startSignIn(req, password) {
   const enrolled = await isEnrolled()
   const pending = { role: 'owner', secret: enrolled ? null : newSecret() }
   await redis(['SET', KEYS.pending(ticket), JSON.stringify(pending), 'EX', PENDING_SECONDS])
-  return { status: 'ok', ticket, enroll: !enrolled, secret: pending.secret }
+  return { status: 'ok', ticket, enroll: !enrolled, secret: pending.secret, role: 'owner' }
 }
 
 // Step 2: the 6-digit code (or a recovery code). Returns a session token, and
 // the recovery codes once, right after the authenticator app is linked.
-export async function finishSignIn(req, ticket, code) {
+// `app` is 'finance' or 'admin' (owner only).
+export async function finishSignIn(req, ticket, code, app = 'finance') {
   checkSetup()
   if (await isLocked(req)) return { status: 'locked' }
   if (typeof ticket !== 'string' || typeof code !== 'string') return { status: 'expired' }
   const pending = await getJson(KEYS.pending(ticket))
   if (!pending) return { status: 'expired' }
+  if (app === 'admin' && pending.role !== 'owner') return failed(req)
   const entered = code.replace(/\s+/g, '')
 
   let recoveryCodes = null
@@ -132,7 +143,7 @@ export async function finishSignIn(req, ticket, code) {
   await redis(['DEL', KEYS.pending(ticket)])
   await redis(['DEL', KEYS.fails(clientIp(req))])
   const session = token()
-  const record = { role: pending.role, createdAt: Date.now(), bookkeeperId: pending.bookkeeperId ?? pending.setup?.id }
+  const record = { role: pending.role, app, createdAt: Date.now(), bookkeeperId: pending.bookkeeperId ?? pending.setup?.id }
   await redis(['SET', KEYS.session(session), JSON.stringify(record), 'EX', IDLE_SECONDS])
   return { status: 'ok', session, recoveryCodes }
 }
@@ -260,11 +271,11 @@ export const recoveryCodesLeft = async () => ((await getJson(KEYS.recovery)) ?? 
 
 // The signed-in user for this request, or null. Each request pushes the idle
 // timeout back.
-export async function currentUser(req) {
-  const t = readCookie(req)
+export async function currentUser(req, app = 'finance') {
+  const t = readCookie(req, app)
   if (!t) return null
   const session = await getJson(KEYS.session(t))
-  if (!session) return null
+  if (!session || (session.app ?? 'finance') !== app) return null
   if (Date.now() - session.createdAt > MAX_SESSION_MS) {
     await redis(['DEL', KEYS.session(t)])
     return null
@@ -282,24 +293,25 @@ export async function currentUser(req) {
   return { role: session.role }
 }
 
-export async function signOut(req) {
-  const t = readCookie(req)
+export async function signOut(req, app = 'finance') {
+  const t = readCookie(req, app)
   if (t) await redis(['DEL', KEYS.session(t)])
 }
 
-function readCookie(req) {
+function readCookie(req, app) {
   const header = String(req.headers.cookie ?? '')
   for (const part of header.split(';')) {
     const [name, ...rest] = part.trim().split('=')
-    if (name === COOKIE) return rest.join('=') || null
+    if (name === COOKIES[app].name) return rest.join('=') || null
   }
   return null
 }
 
-// The session cookie is only sent to /api/finance, can't be read by page
-// scripts, and is never sent from other sites.
-export function sessionCookie(value) {
+// The session cookie can't be read by page scripts and is never sent from
+// other sites.
+export function sessionCookie(value, app = 'finance') {
+  const { name, path } = COOKIES[app]
   const secure = process.env.LCD_MEMORY_STORE ? '' : '; Secure'
   const age = value ? Math.floor(MAX_SESSION_MS / 1000) : 0
-  return `${COOKIE}=${value ?? ''}; Path=/api/finance; HttpOnly; SameSite=Strict; Max-Age=${age}${secure}`
+  return `${name}=${value ?? ''}; Path=${path}; HttpOnly; SameSite=Strict; Max-Age=${age}${secure}`
 }
