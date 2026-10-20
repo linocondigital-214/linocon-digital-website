@@ -19,7 +19,7 @@ export default function Dashboard({ summary }) {
           <Link to="/finance/expenses?add=1" className="h-11 px-5 rounded-full border border-fin-line font-semibold grid place-items-center hover:bg-fin-panel">
             Add expense
           </Link>
-          <Link to="/finance/invoices" className="h-11 px-5 rounded-full fin-grad text-white font-semibold grid place-items-center">
+          <Link to="/finance/invoices?add=1" className="h-11 px-5 rounded-full fin-grad text-white font-semibold grid place-items-center">
             New invoice
           </Link>
         </div>

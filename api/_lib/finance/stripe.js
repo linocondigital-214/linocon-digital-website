@@ -6,10 +6,11 @@
 //   payment  -> an income record, matched to a client from /clients
 //   refund   -> a negative income record with the same client and service
 //   fees     -> one "Stripe" expense per month under Bank & payment fees
-// It also works out monthly recurring revenue (MRR) from active subscriptions.
+// It also works out monthly recurring revenue (MRR) from active subscriptions,
+// and marks invoices sent from the app as paid once Stripe says so.
 import { createHash } from 'node:crypto'
 import { listClients, redis } from '../store.js'
-import { getRecord, listRecords, saveRecord } from './records.js'
+import { getRecord, isRecordId, listRecords, saveRecord } from './records.js'
 import { today } from './summary.js'
 
 const STATE_KEY = 'fin:stripe:state'
@@ -27,14 +28,18 @@ export function stripeKey() {
 // Local previews can point at a stand-in Stripe; the live site always talks to Stripe.
 const apiBase = () => (process.env.LCD_MEMORY_STORE && process.env.STRIPE_API_BASE) || 'https://api.stripe.com'
 
-async function stripeGet(path, params = {}) {
+// Params use Stripe's own form names, like 'custom_fields[0][name]'.
+async function stripeRequest(method, path, params = {}) {
   const query = new URLSearchParams()
   for (const [k, v] of Object.entries(params)) {
     for (const item of [v].flat()) query.append(k, String(item))
   }
-  const res = await fetch(`${apiBase()}/v1/${path}?${query}`, {
-    headers: { Authorization: `Bearer ${stripeKey()}`, 'Stripe-Version': API_VERSION },
-  })
+  const headers = { Authorization: `Bearer ${stripeKey()}`, 'Stripe-Version': API_VERSION }
+  const get = method === 'GET'
+  if (method === 'POST') headers['Content-Type'] = 'application/x-www-form-urlencoded'
+  const options = { method, headers }
+  if (method === 'POST') options.body = query
+  const res = await fetch(`${apiBase()}/v1/${path}${get ? `?${query}` : ''}`, options)
   const data = await res.json().catch(() => ({}))
   if (!res.ok) {
     const message = data.error?.message ?? `Stripe answered ${res.status}`
@@ -42,6 +47,10 @@ async function stripeGet(path, params = {}) {
   }
   return data
 }
+
+export const stripeGet = (path, params) => stripeRequest('GET', path, params)
+export const stripePost = (path, params) => stripeRequest('POST', path, params)
+export const stripeDelete = (path) => stripeRequest('DELETE', path)
 
 async function savedState() {
   const raw = await redis(['GET', STATE_KEY])
@@ -55,7 +64,7 @@ export async function getStripeState() {
 // Income and fee ids come from Stripe's own ids, so a payment is never added twice.
 export const stripeRecordId = (stripeId) => createHash('sha256').update(stripeId).digest('base64url').slice(0, 12)
 
-const dateOf = (unix) => today(new Date(unix * 1000))
+export const dateOf = (unix) => today(new Date(unix * 1000))
 
 // Which LinoCon service a payment was for, from the product names and
 // descriptions Stripe has. Order matters: bundles before their parts.
@@ -104,6 +113,7 @@ async function describePayment(charge) {
     tax,
     emails: [customer.email, charge.billing_details?.email, charge.receipt_email],
     names: [customer.name, charge.billing_details?.name],
+    invoiceId: invoice?.metadata?.lcd_invoice ?? null,
     label: customer.name || charge.billing_details?.name || customer.email || charge.billing_details?.email || 'Stripe customer',
   }
 }
@@ -140,6 +150,7 @@ export async function syncStripe({ force = false } = {}) {
     }
     await redis(['SET', OTHER_FEES_KEY, JSON.stringify(otherFees)])
     await saveMonthlyFees(otherFees)
+    await refreshInvoices()
     const mrr = await monthlyRecurring()
     const next = { lastSync: Date.now(), cursor: newest, mrr: mrr.amount, subscriptions: mrr.count, added, error: null }
     await redis(['SET', STATE_KEY, JSON.stringify(next)])
@@ -172,14 +183,19 @@ async function saveTransaction(txn, clients, otherFees) {
   if (isPayment) {
     const charge = typeof txn.source === 'object' && txn.source ? txn.source : {}
     const info = await describePayment(charge)
-    const client = matchClient(clients, info)
+    // A payment for an invoice sent from the app takes that invoice's client and service.
+    const invoice = isRecordId(info.invoiceId) ? await getRecord('invoice', info.invoiceId) : null
+    const client = invoice ? null : matchClient(clients, info)
+    // The app puts GST on its own invoice line, so the invoice knows how much it was.
+    const tax = invoice ? invoice.gst : info.tax
     record = {
       ...base,
-      amount: txn.amount - info.tax,
-      gst: info.tax,
-      service: guessService(info.texts) ?? 'Other',
-      clientId: client?.id ?? null,
-      client: client?.details.name ?? info.label,
+      amount: txn.amount - tax,
+      gst: tax,
+      service: invoice?.lines[0]?.service ?? guessService(info.texts) ?? 'Other',
+      clientId: invoice ? invoice.clientId : (client?.id ?? null),
+      client: invoice?.client ?? client?.details.name ?? info.label,
+      invoiceId: invoice?.id ?? null,
       chargeId: charge.id ?? null,
       description: charge.description ?? '',
     }
@@ -231,6 +247,23 @@ async function saveMonthlyFees(otherFees) {
       source: 'stripe',
       createdAt: existing?.createdAt ?? now,
       updatedAt: now,
+    })
+  }
+}
+
+// Invoices sent from the app: paid or voided in Stripe shows here too.
+async function refreshInvoices() {
+  const open = (await listRecords('invoice')).filter((i) => i.status === 'open' && i.stripeInvoiceId)
+  for (const inv of open) {
+    const remote = await stripeGet(`invoices/${inv.stripeInvoiceId}`)
+    const status = remote.status === 'paid' ? 'paid' : remote.status === 'void' || remote.status === 'uncollectible' ? 'void' : null
+    if (!status) continue
+    const paidAt = remote.status_transitions?.paid_at
+    await saveRecord('invoice', {
+      ...inv,
+      status,
+      paidOn: status === 'paid' ? (paidAt ? dateOf(paidAt) : today()) : null,
+      updatedAt: new Date().toISOString(),
     })
   }
 }
