@@ -3,7 +3,7 @@ import Reveal from '../components/Reveal'
 import { CONTACT_EMAIL } from '../lib/leads'
 import usePageMeta from '../lib/usePageMeta'
 
-const UPDATED = 'October 19, 2026'
+const UPDATED = 'October 20, 2026'
 
 // Written for Canadian privacy law (PIPEDA and BC's PIPA). If the site starts
 // collecting something new (a new form, tool or tracker), add it here.
@@ -57,6 +57,14 @@ export default function Privacy() {
               friend&rsquo;s details only to contact them once about your referral, and yours to
               apply your referral savings. If your friend doesn&rsquo;t want to hear from us, we
               delete their details.
+            </li>
+            <li>
+              <strong>When you ask to switch to us:</strong> your name, email, business name,
+              website address, where your website is built, who looks after it now, when their
+              plan ends, what you&rsquo;d like us to take over, and anything you add in the note.
+              We never ask for passwords. If you later add us as a helper on your accounts (such
+              as Google Business Profile or Analytics), you stay the owner and can remove us at
+              any time.
             </li>
             <li>
               <strong>When you book a call:</strong> your name, email, company or website, and what

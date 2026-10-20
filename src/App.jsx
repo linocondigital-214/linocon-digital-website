@@ -16,6 +16,7 @@ const Disclaimer = lazy(() => import('./pages/Disclaimer'))
 const Pay = lazy(() => import('./pages/Pay'))
 const Books = lazy(() => import('./pages/Books'))
 const Refer = lazy(() => import('./pages/Refer'))
+const Switch = lazy(() => import('./pages/Switch'))
 const Portal = lazy(() => import('./pages/Portal'))
 const Admin = lazy(() => import('./pages/Admin'))
 const ClientEdit = lazy(() => import('./pages/ClientEdit'))
@@ -114,6 +115,14 @@ function App() {
             element={
               <Suspense fallback={null}>
                 <Refer />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/switch"
+            element={
+              <Suspense fallback={null}>
+                <Switch />
               </Suspense>
             }
           />

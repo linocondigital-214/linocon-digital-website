@@ -11,6 +11,7 @@ const COLUMNS = [
       ...SERVICES.map((s) => ({ to: servicePath(s), label: s.name })),
       { to: BOOKS.path, label: BOOKS.comingSoon ? `${BOOKS.name} (coming soon)` : BOOKS.name },
       { href: '/#audit', label: 'Free website audit' },
+      { to: '/switch', label: 'Switching to LinoCon' },
     ],
   },
   {
