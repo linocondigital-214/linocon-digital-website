@@ -5,7 +5,7 @@ import { workbook, yearTotals } from '../../lib/financeReport'
 import { downloadBlob } from '../../lib/xlsx'
 
 // /finance/export: a year's books for an accountant, as an Excel workbook,
-// a one-page PDF summary (the browser's Save as PDF) and the receipt photos.
+// a one-page PDF summary (the browser's Save as PDF) and the receipts (photos and PDFs).
 export default function Export() {
   const [year, setYear] = useState(null)
   const [data, setData] = useState({ status: 'loading' })
@@ -41,7 +41,7 @@ export default function Export() {
         const photos = await Promise.all(batch.map((e) => fetchReceipt(e.id)))
         batch.forEach((e, n) => {
           const [head, body] = photos[n].split(',')
-          const ext = head.includes('png') ? 'png' : 'jpg'
+          const ext = head.includes('pdf') ? 'pdf' : head.includes('png') ? 'png' : 'jpg'
           const label = `${e.date} ${e.vendor} ${(e.amount / 100).toFixed(2)}`.replace(/[^\w .-]+/g, '').slice(0, 80)
           let file = `${label}.${ext}`
           for (let k = 2; files[file]; k++) file = `${label} (${k}).${ext}`
@@ -49,7 +49,7 @@ export default function Export() {
         })
       }
       files['About these receipts.txt'] = strToU8(
-        `Receipt photos for LinoCon Digital, ${data.year}. Each file is named date, vendor and total paid.\n`,
+        `Receipts for LinoCon Digital, ${data.year}. Each file is named date, vendor and total paid.\n`,
       )
       downloadBlob(new Blob([zipSync(files, { level: 0 })], { type: 'application/zip' }), `${name}-Receipts.zip`)
     } catch {
@@ -85,8 +85,8 @@ export default function Export() {
           <Choice title="Excel workbook" text="Every entry, by category, invoices, GST and the balance sheet. Opens in Excel or Google Sheets." action="Download Excel" onClick={excel} />
           <Choice title="PDF summary" text="The year on one page. Choose Save as PDF when the print window opens." action="Save as PDF" onClick={() => window.print()} />
           <Choice
-            title="Receipt photos"
-            text={t.receipts ? `${t.receipts} receipt ${t.receipts === 1 ? 'photo' : 'photos'} in one zip file.` : 'No receipt photos for this year yet.'}
+            title="Receipts"
+            text={t.receipts ? `${t.receipts} ${t.receipts === 1 ? 'receipt' : 'receipts'} (photos and PDFs) in one zip file.` : 'No receipts for this year yet.'}
             action={busy === 'receipts' ? 'Preparing...' : 'Download receipts'}
             disabled={!t.receipts || busy === 'receipts'}
             onClick={receipts}
@@ -95,7 +95,7 @@ export default function Export() {
         {error && <div className="mt-4 text-sm text-fin-bad">{error}</div>}
         {t.missingReceipts > 0 && (
           <div className="mt-4 text-sm text-fin-warn">
-            {t.missingReceipts} {t.missingReceipts === 1 ? 'expense has' : 'expenses have'} no receipt photo. Add them in Expenses before you send.
+            {t.missingReceipts} {t.missingReceipts === 1 ? 'expense has' : 'expenses have'} no receipt. Add them in Expenses before you send.
           </div>
         )}
 

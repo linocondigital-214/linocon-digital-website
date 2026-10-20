@@ -85,12 +85,21 @@ export function cleanExpense(input = {}) {
   return { date, vendor, amount, gst, category, paidWith, note: text(input.note, 300) }
 }
 
-// A receipt photo: a JPEG or PNG data URL, already shrunk on the device.
+// A receipt: a photo or screenshot (JPEG, PNG or WebP, already shrunk on the
+// device) or a PDF from an online purchase, as a data URL.
 export const MAX_RECEIPT = 1_200_000
+export const MAX_RECEIPT_PDF = 2_000_000
 
 export function checkReceipt(dataUrl) {
+  const pdf = typeof dataUrl === 'string' && dataUrl.startsWith('data:application/pdf;base64,')
+  if (pdf) {
+    // Every PDF starts with "%PDF", which is "JVBER" in base64.
+    if (!/^data:application\/pdf;base64,JVBER[A-Za-z0-9+/=]+$/.test(dataUrl)) throw new Invalid('That PDF couldn’t be read. Try another one.')
+    if (dataUrl.length > MAX_RECEIPT_PDF) throw new Invalid('That PDF is too large (over 1.4 MB). Try a screenshot of the receipt instead.')
+    return dataUrl
+  }
   if (typeof dataUrl !== 'string' || !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(dataUrl)) {
-    throw new Invalid('That photo couldn’t be read. Try another one.')
+    throw new Invalid('That file couldn’t be read. Use a photo, a screenshot or a PDF.')
   }
   if (dataUrl.length > MAX_RECEIPT) throw new Invalid('That photo is too large. Try taking it again.')
   return dataUrl

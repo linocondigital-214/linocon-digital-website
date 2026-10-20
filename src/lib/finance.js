@@ -67,6 +67,23 @@ export function toCents(text) {
 
 export const centsToText = (cents) => (cents ? (cents / 100).toFixed(2) : '')
 
+// A receipt file from the phone or computer as a data URL: photos and
+// screenshots are shrunk to a JPEG, PDFs (online purchases) are kept as they are.
+export const isPdf = (dataUrl) => typeof dataUrl === 'string' && dataUrl.startsWith('data:application/pdf')
+export async function readReceipt(file) {
+  if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) {
+    if (file.size > 1_450_000) throw new Error('That PDF is too large (over 1.4 MB). Try a screenshot of the receipt instead.')
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.onerror = () => reject(new Error('That PDF couldn’t be read. Try another one.'))
+      reader.readAsDataURL(file)
+    })
+    return dataUrl.replace(/^data:[^;]*;/, 'data:application/pdf;')
+  }
+  return shrinkPhoto(file)
+}
+
 // Shrinks a phone photo to a JPEG small enough to save (about 1600px on the
 // long side), so a receipt uploads quickly even on mobile data.
 export async function shrinkPhoto(file, maxSide = 1600) {

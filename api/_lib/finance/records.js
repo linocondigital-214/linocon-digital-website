@@ -5,7 +5,7 @@
 //             source: 'stripe' | 'manual', receivedBy (manual), stripeId, chargeId, refund (Stripe), createdAt, updatedAt }
 // expense:  { id, date, vendor, category, amount (total paid), gst (GST/HST part), paidWith, receipt: bool, note, source?, createdAt, updatedAt }
 //           source 'stripe' marks the monthly Stripe fees the app adds itself
-//           receipt photos are kept apart under fin:receipt:<id> so lists stay small
+//           receipts (photos or PDFs) are kept apart under fin:receipt:<id> so lists stay small
 // invoice:  { id, number (set when sent), clientId, client, email, issued, dueDays, due, lines: [{ description, service, amount }],
 //             subtotal, gst, note, status: 'draft' | 'open' | 'paid' | 'void', sentOn, sentBy: 'stripe' | 'self', paidOn,
 //             stripeInvoiceId, payUrl, pdfUrl, createdAt, updatedAt }
