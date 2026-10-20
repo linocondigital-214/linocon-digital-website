@@ -15,6 +15,7 @@ import {
   suggestFor,
   toCents,
 } from '../../lib/finance'
+import { parseReceipt } from '../../lib/receiptText'
 
 const todayIso = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Vancouver' }).format(new Date())
 
@@ -71,6 +72,8 @@ export default function Expenses({ onChanged }) {
 
 // Stripe's monthly fees come from Stripe's own records, so they need no photo.
 const needsReceipt = (e) => !e.receipt && e.source !== 'stripe'
+
+const listWords = (words) => (words.length < 2 ? words.join('') : `${words.slice(0, -1).join(', ')} and ${words.at(-1)}`)
 
 const byDate = (a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)
 
@@ -187,6 +190,8 @@ function ExpenseForm({ expense, lists, onCancel, onSaved, onDeleted }) {
   const [categoryFrom, setCategoryFrom] = useState(isNew ? null : 'picked')
   const [photo, setPhoto] = useState({ dataUrl: null, existing: expense?.receipt ?? false, removed: false, busy: false })
   const [existingUrl, setExistingUrl] = useState(null)
+  // Reading the receipt to fill in the form: null, 'reading', { found: [...] } or 'none'.
+  const [scan, setScan] = useState(null)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -217,9 +222,38 @@ function ExpenseForm({ expense, lists, onCancel, onSaved, onDeleted }) {
       setError('')
       const dataUrl = await readReceipt(file)
       setPhoto({ dataUrl, existing: false, removed: false, busy: false })
+      fillFromReceipt(file, isPdf(dataUrl) ? null : dataUrl)
     } catch (err) {
       setError(err.message)
       setPhoto((p) => ({ ...p, busy: false }))
+    }
+  }
+
+  // Fills in only the boxes still empty (and the date, while it's still today).
+  async function fillFromReceipt(file, image) {
+    setScan('reading')
+    let read
+    try {
+      const { receiptText } = await import('../../lib/receiptReader')
+      read = parseReceipt(await receiptText(file, image), todayIso())
+    } catch {
+      return setScan('none')
+    }
+    const updates = {}
+    if (read.amount && !form.amount.trim()) updates.amount = centsToText(read.amount)
+    if (read.gst && !form.gst.trim()) updates.gst = centsToText(read.gst)
+    if (read.date && form.date === todayIso()) updates.date = read.date
+    if (read.vendor && !form.vendor.trim()) updates.vendor = read.vendor
+    const names = { amount: 'total', gst: 'GST', date: 'date', vendor: 'store' }
+    const found = Object.keys(names).filter((k) => k in updates).map((k) => names[k])
+    setForm((f) => ({ ...f, ...updates }))
+    setScan(found.length ? { found } : 'none')
+    if (updates.vendor && categoryFrom !== 'picked') {
+      const s = await suggestFor(updates.vendor).catch(() => null)
+      if (s) {
+        setForm((f) => (f.category ? f : { ...f, category: s.category }))
+        setCategoryFrom((from) => (from === 'picked' ? from : s.from))
+      }
     }
   }
 
@@ -321,6 +355,16 @@ function ExpenseForm({ expense, lists, onCancel, onSaved, onDeleted }) {
                 <span className="font-semibold">Upload a file</span>
                 <span className="text-xs text-fin-muted">PDF, screenshot or photo</span>
               </button>
+              <div className="col-span-2 text-xs text-fin-muted">The app reads the receipt and fills in the details for you.</div>
+            </div>
+          )}
+          {scan && (
+            <div role="status" className={`mt-2 text-sm ${scan === 'none' ? 'text-fin-muted' : scan === 'reading' ? 'text-fin-blue' : 'text-fin-good'}`}>
+              {scan === 'reading'
+                ? 'Reading the receipt...'
+                : scan === 'none'
+                  ? 'Couldn’t read the details from this receipt. Type them below.'
+                  : `Filled in the ${listWords(scan.found)} from the receipt. Check them before you save.`}
             </div>
           )}
         </div>
