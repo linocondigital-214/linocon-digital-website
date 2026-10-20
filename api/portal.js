@@ -5,12 +5,14 @@
 //   POST ?op=invite    { code, email, password }  first sign-in with Lino's invite code
 //   POST ?op=signout
 //   GET  ?op=me        their own progress (drafts and Lino's notes left out)
+//   POST ?op=sign      { doc, name, agree }  e-sign a document Lino has sent
 // For Lino (signed in to /admin):
 //   GET  ?op=login&id=<client id>   the client's login and any unused invite
 //   POST ?op=login-invite { id }    a new one-time invite code, shown once
 //   POST ?op=login-remove { id }    removes the login and signs the client out
 import { route, isAdmin } from './_lib/http.js'
-import { getClient, isClientId } from './_lib/store.js'
+import { getClient, isClientId, saveClient } from './_lib/store.js'
+import { signDoc } from './_lib/esign.js'
 import { publicView } from './_lib/client.js'
 import { MIN_PASSWORD, acceptInvite, currentClient, inviteClient, loginStatus, removeLogin, sessionCookie, signIn, signOut } from './_lib/portal.js'
 
@@ -21,6 +23,14 @@ const MESSAGES = {
   email: 'Type a valid email address.',
   weak: `Choose a password of at least ${MIN_PASSWORD} characters.`,
   taken: 'That email is already used for another login. Use a different email.',
+}
+
+const SIGN_MESSAGES = {
+  unknown: 'This document can’t be signed.',
+  'not-sent': 'This document isn’t ready to sign yet.',
+  signed: 'This document is already signed.',
+  name: 'Type your full name to sign.',
+  agree: 'Tick the box to agree before signing.',
 }
 
 const failed = (status) => [status === 'locked' ? 429 : ['email', 'weak', 'taken'].includes(status) ? 400 : 401, { error: status, message: MESSAGES[status] }]
@@ -50,6 +60,22 @@ export default route(async (req, res) => {
     if (!clientId) return [401, { error: 'signin' }]
     const client = await getClient(clientId)
     if (!client) return [404, { error: 'not-found' }]
+    return [200, { client: publicView(client) }]
+  }
+
+  if (op === 'sign' && post) {
+    const clientId = await currentClient(req)
+    if (!clientId) return [401, { error: 'signin' }]
+    const client = await getClient(clientId)
+    if (!client) return [404, { error: 'not-found' }]
+    const result = signDoc(client, req.body?.doc, {
+      name: req.body?.name,
+      agree: req.body?.agree,
+      ip: String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() || req.socket?.remoteAddress,
+      agent: req.headers['user-agent'],
+    })
+    if (result !== 'ok') return [result === 'signed' ? 409 : 400, { error: result, message: SIGN_MESSAGES[result] }]
+    await saveClient(client)
     return [200, { client: publicView(client) }]
   }
 

@@ -12,6 +12,7 @@ import {
   statusLabel,
 } from '../../lib/clientDocs'
 import { dateLabel, today } from '../../lib/clientProgress'
+import { AcceptedBlock, SignatureName, SignedBy, signedAtLabel } from './ESign'
 
 // A proposal or service agreement, laid out as a printable page.
 // Lino's copy (`editable`) adds the status, the fields to fill in and a way to
@@ -74,7 +75,11 @@ export default function DocumentView({ client, docKey, editable = false, onChang
           ))}
         </div>
 
-        {doc.signatures && <Signatures values={values} editable={editable} />}
+        {doc.signatures ? (
+          <Signatures values={values} state={state} editable={editable} onChange={(changes) => onChange(changes.map((c) => ({ ...c, path: ['docs', docKey, ...c.path] })))} />
+        ) : (
+          <AcceptedBlock esign={state.esign} title={doc.title} />
+        )}
 
         <footer className="mt-12 pt-5 border-t border-ink/15 text-xs text-ink/50 flex flex-wrap justify-between gap-2">
           <span>
@@ -114,6 +119,7 @@ function Controls({ client, docKey, onChange }) {
   return (
     <div className="no-print max-w-3xl mx-auto mb-8 flex flex-col gap-4">
       <StatusCard client={client} docKey={docKey} onChange={onChange} />
+      <SendSignedCopy client={client} docKey={docKey} />
 
       {docKey === 'agreement' && (
         <p className="rounded-2xl border border-orange/40 bg-orange/10 p-5 text-sm">
@@ -137,6 +143,50 @@ function Controls({ client, docKey, onChange }) {
   )
 }
 
+// Once both sides have signed (the agreement) or the client has accepted
+// (proposal), Lino sends the client their copy: an email opens with a link to
+// the signed copy on their page, where they can save it as a PDF.
+export function SendSignedCopy({ client, docKey }) {
+  const state = docState(client, docKey)
+  const doc = DOCS[docKey]
+  if (!state.esign) return null
+  const done = !doc.signatures || state.ownerName
+  if (!done) {
+    return (
+      <div className="rounded-2xl border border-blue/50 bg-blue/10 p-5 text-sm">
+        {state.esign.name} signed online. Add your signature at the bottom of the agreement, then you can send them their signed copy.
+      </div>
+    )
+  }
+  const d = client.details
+  const subject = `Your signed ${doc.name.toLowerCase()}: ${d.name}`
+  const body = [
+    `Hi ${d.contact || state.esign.name},`,
+    '',
+    doc.signatures
+      ? `Thank you for signing. The ${doc.name.toLowerCase()} is now signed by both of us.`
+      : `Thank you for accepting the ${doc.name.toLowerCase()}.`,
+    '',
+    `Your copy is on your client page: https://${BUSINESS.website}/clients/${docKey}`,
+    'Sign in, open it and click "Save as PDF" to keep a copy. I have also attached it to this email.',
+    '',
+    'Lino',
+    BUSINESS.name,
+  ].join('\n')
+  const href = `mailto:${encodeURIComponent(d.email || '')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+  return (
+    <div className="rounded-2xl border border-blue/50 bg-blue/10 p-5 flex flex-col gap-3">
+      <div className="font-bold">{doc.signatures ? 'Signed by both sides' : 'Accepted by the client'}</div>
+      <div className="text-sm text-text-secondary">
+        Send the client their copy: click "Print / Save as PDF" above to save the PDF, then email it. The client can also download it from their page.
+      </div>
+      <a href={href} className="h-11 px-5 rounded-full bg-gradient-brand text-ink text-sm font-bold flex items-center w-fit">
+        Email the signed copy
+      </a>
+    </div>
+  )
+}
+
 // Draft / Sent / Signed for one document. Not printed.
 export function StatusCard({ client, docKey, onChange }) {
   const doc = DOCS[docKey]
@@ -148,6 +198,11 @@ export function StatusCard({ client, docKey, onChange }) {
     const changes = [{ path: ['docs', docKey, 'status'], value: next }]
     if (next !== 'draft' && !state.sentAt) changes.push({ path: ['docs', docKey, 'sentAt'], value: today() })
     if (next === 'signed' && !state.signedAt) changes.push({ path: ['docs', docKey, 'signedAt'], value: today() })
+    if (next !== 'signed' && state.esign) {
+      const verb = docKey === 'agreement' ? 'signature' : 'acceptance'
+      if (!window.confirm(`This removes ${state.esign.name}'s online ${verb}. They will need to sign again. Continue?`)) return
+      changes.push({ path: ['docs', docKey, 'esign'], value: null }, { path: ['docs', docKey, 'signedAt'], value: null })
+    }
     onChange(changes)
   }
 
@@ -180,11 +235,24 @@ export function StatusCard({ client, docKey, onChange }) {
           </label>
         )}
       </div>
-      <p className="text-sm text-text-secondary mt-3">
+      <div className="text-sm text-text-secondary pt-3">
         {status === 'draft'
           ? 'Drafts are private. The client sees this on their page once you mark it as sent.'
-          : `The client can see this on their page${state.sentAt ? ` (sent ${dateLabel(state.sentAt)})` : ''}.`}
-      </p>
+          : status === 'sent'
+            ? `The client can see this on their page and ${docKey === 'agreement' ? 'sign' : 'accept'} it online${state.sentAt ? ` (sent ${dateLabel(state.sentAt)})` : ''}.`
+            : `The client can see this on their page${state.sentAt ? ` (sent ${dateLabel(state.sentAt)})` : ''}.`}
+      </div>
+      {state.esign && (
+        <div className="text-sm pt-3">
+          {docKey === 'agreement' ? 'Signed' : 'Accepted'} online by <strong>{state.esign.name}</strong> on {signedAtLabel(state.esign.at)}
+          {state.esign.ip && <span className="text-text-secondary"> · from {state.esign.ip}</span>}
+        </div>
+      )}
+      {client.signChanged?.includes(docKey) && (
+        <div className="text-sm text-orange pt-2">
+          This has changed since the client signed it. To have them sign the new version, set it back to Sent.
+        </div>
+      )}
     </div>
   )
 }
@@ -357,37 +425,96 @@ function Prices({ client, values, editable }) {
   )
 }
 
-function Signatures({ values, editable }) {
+function Signatures({ values, state, editable, onChange }) {
   const line = (label) => (
     <div>
       <div className="h-10 border-b border-ink/40" />
-      <p className="text-xs text-ink/60 mt-1">{label}</p>
+      <div className="text-xs text-ink/60 pt-1">{label}</div>
     </div>
   )
+  const owner = state.ownerName ? { name: state.ownerName, at: state.ownerAt } : null
   return (
     <section className="print-keep mt-10 pt-8 border-t border-ink/15">
       <h2 className="font-display font-bold text-xl text-ink">Signatures</h2>
-      <p className="text-ink/70 mt-2">By signing, both parties agree to the terms above.</p>
+      <div className="text-ink/70 pt-2">By signing, both parties agree to the terms above.</div>
       <div className="grid sm:grid-cols-2 gap-10 mt-6">
         <div className="flex flex-col gap-4">
-          <p className="font-bold text-ink">{BUSINESS.name}</p>
-          {line('Signature')}
-          {line('Name and title')}
-          {line('Date')}
+          <div className="font-bold text-ink">{BUSINESS.name}</div>
+          {owner ? (
+            <SignedBy esign={owner} />
+          ) : (
+            <>
+              {line('Signature')}
+              {line('Name and title')}
+              {line('Date')}
+            </>
+          )}
+          {editable && <OwnerSign owner={owner} onChange={onChange} />}
         </div>
         <div className="flex flex-col gap-4">
-          <p className="font-bold text-ink">
+          <div className="font-bold text-ink">
             {values.business}
             {values.clientSigner ? `: ${values.clientSigner}` : ''}
-          </p>
-          {line('Signature')}
-          {line(values.clientSigner ? 'Name and title (as above)' : 'Name and title')}
-          {line('Date')}
+          </div>
+          {state.esign ? (
+            <SignedBy esign={state.esign} />
+          ) : (
+            <>
+              {line('Signature')}
+              {line(values.clientSigner ? 'Name and title (as above)' : 'Name and title')}
+              {line('Date')}
+            </>
+          )}
         </div>
       </div>
-      {editable && !values.clientSigner && (
-        <p className="no-print text-sm text-ink/50 mt-4">Tip: add the client signer's name under "Fill in".</p>
+      {editable && !values.clientSigner && !state.esign && (
+        <div className="no-print text-sm text-ink/50 pt-4">Tip: add the client signer's name under "Fill in".</div>
       )}
     </section>
+  )
+}
+
+// Lino signs for LinoCon Digital by typing their name. Not printed.
+function OwnerSign({ owner, onChange }) {
+  const [name, setName] = useState('')
+  if (owner) {
+    return (
+      <button
+        type="button"
+        onClick={() => onChange([{ path: ['ownerName'], value: null }, { path: ['ownerAt'], value: null }])}
+        className="no-print text-sm font-semibold text-ink/50 text-left"
+      >
+        Remove your signature
+      </button>
+    )
+  }
+  return (
+    <form
+      className="no-print flex flex-col gap-2 rounded-xl bg-ink/5 p-3"
+      onSubmit={(e) => {
+        e.preventDefault()
+        if (name.trim().length < 2) return
+        onChange([
+          { path: ['ownerName'], value: name.trim() },
+          { path: ['ownerAt'], value: new Date().toISOString() },
+        ])
+      }}
+    >
+      <label className="text-sm font-semibold text-ink/70" htmlFor="owner-sign">
+        Sign for LinoCon Digital
+      </label>
+      <input
+        id="owner-sign"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Type your full name"
+        maxLength={100}
+        className="h-10 rounded-lg bg-white border border-ink/20 px-3 text-ink outline-none focus:border-blue"
+      />
+      {name.trim().length >= 2 && <SignatureName name={name.trim()} />}
+      <button type="submit" className="h-10 px-4 rounded-full bg-ink text-paper text-sm font-bold w-fit">
+        Sign
+      </button>
+    </form>
   )
 }

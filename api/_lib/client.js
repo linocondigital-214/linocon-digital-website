@@ -64,6 +64,11 @@ export function applyChanges(client, changes) {
       (typeof value === 'string' && value.length <= 4000)
     if (!ok) throw new BadRequest('Invalid change value')
     if (path[0] === 'payment') checkPayment(path, value)
+    // A client's e-signature is only written by the client signing
+    // (api/_lib/esign.js). Lino can clear it, never write it.
+    if (path[0] === 'docs' && path[2] === 'esign' && !(path.length === 3 && value === null)) {
+      throw new BadRequest('Invalid change path')
+    }
 
     let node = client
     for (const key of path.slice(0, -1)) {

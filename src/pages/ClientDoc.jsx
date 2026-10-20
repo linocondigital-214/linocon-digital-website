@@ -4,7 +4,8 @@ import PrivateShell, { Notice } from '../components/progress/PrivateShell'
 import AdminClientGate, { AdminSignIn, AdminSignOut } from '../components/progress/AdminClientGate'
 import DocumentView from '../components/progress/DocumentView'
 import PackageBuilder, { PackageSummary } from '../components/progress/PackageBuilder'
-import { DOCS, isShared } from '../lib/clientDocs'
+import { SignBox } from '../components/progress/ESign'
+import { DOCS, docState, isShared } from '../lib/clientDocs'
 import { fetchMyProgress } from '../lib/clientProgress'
 import useAdminClient, { SAVING_TEXT } from '../lib/useAdminClient'
 import usePageMeta from '../lib/usePageMeta'
@@ -71,6 +72,7 @@ export function ClientDocView({ doc }) {
       ) : (
         <>
           {backLink('/clients', 'Back to your progress')}
+          <SignedNotice client={state.client} doc={doc} />
           {DOCS[doc].builder ? (
             <>
               <div className="no-print max-w-3xl mx-auto mb-6">
@@ -83,9 +85,34 @@ export function ClientDocView({ doc }) {
           ) : (
             <DocumentView client={state.client} docKey={doc} />
           )}
+          {docState(state.client, doc).status === 'sent' && (
+            <SignBox docKey={doc} docName={DOCS[doc].name} onSigned={(client) => {
+              setState({ status: 'ready', client })
+              window.scrollTo({ top: 0, behavior: 'smooth' })
+            }} />
+          )}
         </>
       )}
     </PrivateShell>
+  )
+}
+
+// Above a document the client has signed or accepted.
+function SignedNotice({ client, doc }) {
+  const state = docState(client, doc)
+  if (!state.esign) return null
+  const both = !DOCS[doc].signatures || state.ownerName
+  return (
+    <div className="no-print max-w-3xl mx-auto mb-6 rounded-2xl border border-blue/50 bg-blue/10 p-5">
+      <div className="font-bold">
+        {DOCS[doc].signatures ? (both ? 'Signed by you and LinoCon Digital' : 'Thank you for signing') : 'Thank you for accepting'}
+      </div>
+      <div className="text-sm text-text-secondary pt-1">
+        {both
+          ? 'Click "Print / Save as PDF" to keep a copy.'
+          : 'LinoCon Digital will add their signature next, and you will get your signed copy.'}
+      </div>
+    </div>
   )
 }
 
