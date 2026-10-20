@@ -149,7 +149,7 @@ export const portalSignIn = (email, password) => post('/api/portal?op=signin', {
 export const portalInvite = (code, email, password) => post('/api/portal?op=invite', { code, email, password })
 export const portalSignOut = () => post('/api/portal?op=signout')
 export const fetchMyProgress = () => api('/api/portal?op=me').then((d) => d.client)
-export const signDocument = (doc, name, agree) => post('/api/portal?op=sign', { doc, name, agree }).then((d) => d.client)
+export const signDocument = (doc, name, agree, drawing) => post('/api/portal?op=sign', { doc, name, agree, drawing }).then((d) => d.client)
 
 // Before admin sign-in moved to a session, the admin password was kept in
 // this browser. Clear it out.
