@@ -1,18 +1,18 @@
 import { Link } from 'react-router-dom'
 import { Notice, SetupNotice } from './PrivateShell'
-import AdminLogin from './AdminLogin'
+import FinanceLogin from '../finance/FinanceLogin'
+import { adminSignOut } from '../../lib/clientProgress'
 
-// Sign-in, loading and error states for Lino's client pages; renders
-// `children` once the client has loaded.
-export default function AdminClientGate({ state, signIn, children }) {
+// Loading and error states for Lino's client pages; renders `children` once
+// the client has loaded. Pages show <AdminSignIn> instead while signed out.
+export default function AdminClientGate({ state, children }) {
   return (
     <>
-      {state.status === 'login' && <AdminLogin wrong={state.wrong} onSubmit={signIn} />}
       {state.status === 'loading' && <p className="text-text-secondary">Loading...</p>}
       {state.status === 'setup' && <SetupNotice />}
       {state.status === 'missing' && (
         <Notice title="Client not found">
-          <Link to="/clients" className="underline decoration-blue underline-offset-4">
+          <Link to="/admin" className="underline decoration-blue underline-offset-4">
             Back to your clients
           </Link>
         </Notice>
@@ -24,5 +24,20 @@ export default function AdminClientGate({ state, signIn, children }) {
       )}
       {state.status === 'ready' && children}
     </>
+  )
+}
+
+// Same password and authenticator code as the finance app.
+export const AdminSignIn = ({ onSignedIn }) => <FinanceLogin app="admin" onSignedIn={onSignedIn} />
+
+export function AdminSignOut() {
+  return (
+    <button
+      type="button"
+      onClick={() => adminSignOut().finally(() => window.location.assign('/admin'))}
+      className="text-sm font-semibold text-text-secondary hover:text-text"
+    >
+      Sign out
+    </button>
   )
 }

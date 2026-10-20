@@ -1,22 +1,19 @@
-// /api/client?id=<id>: one client's progress.
-// GET is public (the id is the client's private link); changes need the
-// admin password.
+// /api/client?id=<id>: one client's progress, for Lino's admin only. Clients
+// read their own progress through /api/portal once signed in.
 import { route, isAdmin } from './_lib/http.js'
 import { deleteClient, getClient, isClientId, saveClient } from './_lib/store.js'
-import { applyChanges, BadRequest, publicView } from './_lib/client.js'
+import { applyChanges, BadRequest } from './_lib/client.js'
+import { removeLogin } from './_lib/portal.js'
 
 export default route(async (req) => {
+  if (!(await isAdmin(req))) return [401, { error: 'signin' }]
   const { id } = req.query
   if (!isClientId(id)) return [404, { error: 'not-found' }]
 
   if (req.method === 'GET') {
     const client = await getClient(id)
-    if (!client) return [404, { error: 'not-found' }]
-    if (!req.headers['x-admin-password']) return [200, { client: publicView(client) }]
-    return isAdmin(req) ? [200, { client }] : [401, { error: 'password' }]
+    return client ? [200, { client }] : [404, { error: 'not-found' }]
   }
-
-  if (!isAdmin(req)) return [401, { error: 'password' }]
 
   if (req.method === 'PATCH') {
     const client = await getClient(id)
@@ -32,6 +29,7 @@ export default route(async (req) => {
   }
 
   if (req.method === 'DELETE') {
+    await removeLogin(id)
     await deleteClient(id)
     return [200, { ok: true }]
   }

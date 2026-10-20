@@ -1,15 +1,18 @@
-// /api/clients: Lino's client list. GET lists every client, POST adds one.
+// /api/clients: Lino's client list (admin only). GET lists every client, POST adds one.
 import { route, isAdmin } from './_lib/http.js'
 import { listClients, newClientId, saveClient } from './_lib/store.js'
 import { newClient } from './_lib/client.js'
+import { loginStatus } from './_lib/portal.js'
 
 export default route(async (req) => {
-  if (!isAdmin(req)) return [401, { error: 'password' }]
+  if (!(await isAdmin(req))) return [401, { error: 'signin' }]
 
   if (req.method === 'GET') {
     const clients = await listClients()
     clients.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-    return [200, { clients }]
+    // Whether each client has set up their login, for the overview.
+    const logins = Object.fromEntries(await Promise.all(clients.map(async (c) => [c.id, await loginStatus(c.id)])))
+    return [200, { clients, logins }]
   }
 
   if (req.method === 'POST') {

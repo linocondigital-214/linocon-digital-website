@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { changeClient, fetchClient, rememberPassword, savedPassword } from './clientProgress'
+import { changeClient, fetchClient, forgetOldPassword } from './clientProgress'
 
 // Applies changes locally right away so ticking feels instant.
 function applyLocal(client, changes) {
@@ -16,47 +16,32 @@ function applyLocal(client, changes) {
   return next
 }
 
-// Loads one client for Lino's pages and saves each change to /api.
+// Loads one client for Lino's pages and saves each change to /api. When the
+// admin session has ended, `state.status` is 'login' and the page shows the
+// sign-in; `reload` loads the client again after signing in.
 export default function useAdminClient(id) {
-  const [password, setPassword] = useState(savedPassword)
-  const [state, setState] = useState({ status: password ? 'loading' : 'login' })
+  const [state, setState] = useState({ status: 'loading' })
   const [saving, setSaving] = useState('idle') // 'idle' | 'saving' | 'saved' | 'failed'
   const pending = useRef(0)
 
-  const signIn = useCallback((pw) => {
-    rememberPassword(pw)
-    setPassword(pw)
-    setState({ status: 'loading' })
-  }, [])
+  const reload = useCallback(() => {
+    forgetOldPassword()
+    fetchClient(id)
+      .then((client) => setState({ status: 'ready', client }))
+      .catch((err) => {
+        if (err.status === 401) setState({ status: 'login' })
+        else setState({ status: err.status === 404 ? 'missing' : err.code === 'setup' ? 'setup' : 'error' })
+      })
+  }, [id])
 
-  const signOut = useCallback((wrong) => {
-    rememberPassword('')
-    setPassword('')
-    setState({ status: 'login', wrong })
-  }, [])
-
-  const load = useCallback(
-    (pw) => {
-      fetchClient(id, pw)
-        .then((client) => setState({ status: 'ready', client }))
-        .catch((err) => {
-          if (err.status === 401) signOut(true)
-          else setState({ status: err.status === 404 ? 'missing' : err.code === 'setup' ? 'setup' : 'error' })
-        })
-    },
-    [id, signOut],
-  )
-
-  useEffect(() => {
-    if (password) load(password)
-  }, [password, load])
+  useEffect(reload, [reload])
 
   async function onChange(changes) {
     setState((s) => ({ ...s, client: applyLocal(s.client, changes) }))
     pending.current += 1
     setSaving('saving')
     try {
-      const client = await changeClient(password, id, changes)
+      const client = await changeClient(id, changes)
       pending.current -= 1
       if (pending.current === 0) {
         setState((s) => ({ ...s, client }))
@@ -64,13 +49,13 @@ export default function useAdminClient(id) {
       }
     } catch (err) {
       pending.current -= 1
-      if (err.status === 401) return signOut(true)
+      if (err.status === 401) return setState({ status: 'login' })
       setSaving('failed')
-      load(password)
+      reload()
     }
   }
 
-  return { password, state, saving, signIn, onChange }
+  return { state, saving, reload, onChange }
 }
 
 export const SAVING_TEXT = {

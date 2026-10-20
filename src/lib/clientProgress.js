@@ -100,30 +100,9 @@ export const today = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-export const clientLink = (id) => `${window.location.origin}/progress/${id}`
-
-// ---------- admin password (kept on Lino's own devices) ----------
-
-const PASSWORD_KEY = 'lcd-admin-password'
-
-export function savedPassword() {
-  try {
-    return localStorage.getItem(PASSWORD_KEY) || ''
-  } catch {
-    return ''
-  }
-}
-
-export function rememberPassword(password) {
-  try {
-    if (password) localStorage.setItem(PASSWORD_KEY, password)
-    else localStorage.removeItem(PASSWORD_KEY)
-  } catch {
-    // Private browsing: Lino just types it again next time.
-  }
-}
-
 // ---------- API ----------
+// Lino's admin and the client's login each use an HttpOnly session cookie the
+// browser sends by itself; nothing secret is kept in page storage.
 
 export class ApiError extends Error {
   constructor(status, body) {
@@ -133,10 +112,10 @@ export class ApiError extends Error {
   }
 }
 
-async function api(path, { password, method = 'GET', body } = {}) {
-  const options = { method, headers: password ? { 'X-Admin-Password': password } : {} }
+async function api(path, { method = 'GET', body } = {}) {
+  const options = { method, credentials: 'same-origin' }
   if (body) {
-    options.headers['Content-Type'] = 'application/json'
+    options.headers = { 'Content-Type': 'application/json' }
     options.body = JSON.stringify(body)
   }
   const res = await fetch(path, options)
@@ -145,14 +124,41 @@ async function api(path, { password, method = 'GET', body } = {}) {
   return data
 }
 
-export const fetchClient = (id, password) => api(`/api/client?id=${encodeURIComponent(id)}`, { password }).then((d) => d.client)
-export const fetchClients = (password) => api('/api/clients', { password }).then((d) => d.clients)
-export const createClient = (password, details) =>
-  api('/api/clients', { password, method: 'POST', body: { details } }).then((d) => d.client)
-export const changeClient = (password, id, changes) =>
-  api(`/api/client?id=${encodeURIComponent(id)}`, { password, method: 'PATCH', body: { changes } }).then((d) => d.client)
-export const removeClient = (password, id) =>
-  api(`/api/client?id=${encodeURIComponent(id)}`, { password, method: 'DELETE' })
+const post = (path, body = {}) => api(path, { method: 'POST', body })
+
+// Lino's admin (/admin): same password and authenticator code as /finance.
+export const adminStatus = () => api('/api/admin?op=status')
+export const adminPassword = (password) => post('/api/admin?op=password', { password })
+export const adminCode = (ticket, code) => post('/api/admin?op=code', { ticket, code })
+export const adminSignOut = () => post('/api/admin?op=signout')
+
+export const fetchClient = (id) => api(`/api/client?id=${encodeURIComponent(id)}`).then((d) => d.client)
+export const fetchClients = () => api('/api/clients')
+export const createClient = (details) => post('/api/clients', { details }).then((d) => d.client)
+export const changeClient = (id, changes) =>
+  api(`/api/client?id=${encodeURIComponent(id)}`, { method: 'PATCH', body: { changes } }).then((d) => d.client)
+export const removeClient = (id) => api(`/api/client?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
+
+export const fetchClientLogin = (id) => api(`/api/portal?op=login&id=${encodeURIComponent(id)}`)
+export const inviteClientLogin = (id) => post('/api/portal?op=login-invite', { id })
+export const removeClientLogin = (id) => post('/api/portal?op=login-remove', { id })
+
+// The client's own login (/clients).
+export const portalStatus = () => api('/api/portal?op=status')
+export const portalSignIn = (email, password) => post('/api/portal?op=signin', { email, password })
+export const portalInvite = (code, email, password) => post('/api/portal?op=invite', { code, email, password })
+export const portalSignOut = () => post('/api/portal?op=signout')
+export const fetchMyProgress = () => api('/api/portal?op=me').then((d) => d.client)
+
+// Before admin sign-in moved to a session, the admin password was kept in
+// this browser. Clear it out.
+export function forgetOldPassword() {
+  try {
+    localStorage.removeItem('lcd-admin-password')
+  } catch {
+    // Storage blocked: nothing was saved.
+  }
+}
 
 // Keeps these private pages out of Google, alongside the X-Robots-Tag header
 // set in vercel.json.

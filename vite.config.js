@@ -11,11 +11,10 @@ function localApi() {
     apply: 'serve',
     configureServer(server) {
       process.env.LCD_MEMORY_STORE ??= '1'
-      process.env.ADMIN_PASSWORD ??= 'preview'
       process.env.FINANCE_PASSWORD ??= 'preview'
       server.middlewares.use(async (req, res, next) => {
         const url = new URL(req.url, 'http://localhost')
-        const match = url.pathname.match(/^\/api\/(clients|client|finance)$/)
+        const match = url.pathname.match(/^\/api\/(clients|client|finance|admin|portal)$/)
         if (!match) return next()
 
         let raw = ''

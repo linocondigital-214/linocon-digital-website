@@ -1,73 +1,36 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import PrivateShell, { SetupNotice, Notice } from '../components/progress/PrivateShell'
-import AdminLogin from '../components/progress/AdminLogin'
-import CopyLinkButton from '../components/progress/CopyLinkButton'
+import { AdminSignIn, AdminSignOut } from '../components/progress/AdminClientGate'
+import { LoginChip } from '../components/progress/ClientLogin'
 import { WorkLogForm, WorkLogList } from '../components/progress/WorkLog'
-import {
-  SERVICES,
-  changeClient,
-  createClient,
-  fetchClients,
-  monthLabel,
-  percent,
-  rememberPassword,
-  savedPassword,
-} from '../lib/clientProgress'
+import { SERVICES, changeClient, createClient, fetchClients, forgetOldPassword, monthLabel, percent } from '../lib/clientProgress'
 import { agoLabel, logEntries, summary, thisMonthKey } from '../lib/clientOverview'
 import usePageMeta from '../lib/usePageMeta'
 
-// /clients: Lino's overview of every client (where each one is, what needs
-// attention, the work log), and where new clients are added.
-export default function Clients() {
-  usePageMeta('Clients')
-  const [password, setPassword] = useState(savedPassword)
-  const [state, setState] = useState({ status: password ? 'loading' : 'login' })
+// /admin: Lino's overview of every client (where each one is, what needs
+// attention, the work log), and where new clients are added. Only Lino can
+// sign in here, with the same password and phone code as /finance.
+export default function Admin() {
+  usePageMeta('Admin')
+  const [state, setState] = useState({ status: 'loading' })
 
-  const load = useCallback((pw) => {
-    fetchClients(pw)
-      .then((clients) => {
-        rememberPassword(pw)
-        setState({ status: 'ready', clients })
-      })
+  const load = useCallback(() => {
+    forgetOldPassword()
+    fetchClients()
+      .then(({ clients, logins }) => setState({ status: 'ready', clients, logins }))
       .catch((err) => {
-        if (err.status === 401) {
-          rememberPassword('')
-          setState({ status: 'login', wrong: true })
-        } else setState({ status: err.code === 'setup' ? 'setup' : 'error' })
+        if (err.status === 401) setState({ status: 'login' })
+        else setState({ status: err.code === 'setup' ? 'setup' : 'error' })
       })
   }, [])
 
-  useEffect(() => {
-    if (password) load(password)
-  }, [password, load])
+  useEffect(load, [load])
 
-  const signOut = () => {
-    rememberPassword('')
-    setPassword('')
-    setState({ status: 'login' })
-  }
+  if (state.status === 'login') return <AdminSignIn onSignedIn={load} />
 
   return (
-    <PrivateShell
-      actions={
-        state.status === 'ready' && (
-          <button type="button" onClick={signOut} className="text-sm font-semibold text-text-secondary hover:text-text">
-            Sign out
-          </button>
-        )
-      }
-    >
-      {state.status === 'login' && (
-        <AdminLogin
-          wrong={state.wrong}
-          onSubmit={(pw) => {
-            setState({ status: 'loading' })
-            setPassword(pw)
-            load(pw)
-          }}
-        />
-      )}
+    <PrivateShell actions={state.status === 'ready' && <AdminSignOut />}>
       {state.status === 'loading' && <p className="text-text-secondary">Loading clients...</p>}
       {state.status === 'setup' && <SetupNotice />}
       {state.status === 'error' && (
@@ -78,18 +41,19 @@ export default function Clients() {
       {state.status === 'ready' && (
         <ClientList
           clients={state.clients}
-          password={password}
-          onAdded={(client) => setState({ status: 'ready', clients: [client, ...state.clients] })}
+          logins={state.logins}
+          onAdded={(client) => setState((s) => ({ ...s, clients: [client, ...s.clients] }))}
           onChanged={(client) =>
             setState((s) => ({ ...s, clients: s.clients.map((c) => (c.id === client.id ? client : c)) }))
           }
+          onSignedOut={() => setState({ status: 'login' })}
         />
       )}
     </PrivateShell>
   )
 }
 
-function ClientList({ clients, password, onAdded, onChanged }) {
+function ClientList({ clients, logins, onAdded, onChanged, onSignedOut }) {
   const [adding, setAdding] = useState(clients.length === 0)
   const [filter, setFilter] = useState('all')
   // Clients that need attention come first.
@@ -107,7 +71,12 @@ function ClientList({ clients, password, onAdded, onChanged }) {
   // Saves a change to one client from this page (the work log) and swaps in
   // the saved record.
   async function change(id, changes) {
-    onChanged(await changeClient(password, id, changes))
+    try {
+      onChanged(await changeClient(id, changes))
+    } catch (err) {
+      if (err.status === 401) onSignedOut()
+      throw err
+    }
   }
 
   return (
@@ -127,7 +96,6 @@ function ClientList({ clients, password, onAdded, onChanged }) {
       {adding && (
         <div className="mb-10">
           <AddClient
-            password={password}
             onCancel={clients.length ? () => setAdding(false) : null}
             onAdded={(c) => {
               setAdding(false)
@@ -166,7 +134,7 @@ function ClientList({ clients, password, onAdded, onChanged }) {
               </p>
             )}
             {shown.map((r) => (
-              <ClientRow key={r.client.id} row={r} />
+              <ClientRow key={r.client.id} row={r} login={logins?.[r.client.id]} />
             ))}
           </div>
 
@@ -201,7 +169,7 @@ const DOC_TONE = {
   signed: 'border-blue text-blue',
 }
 
-function ClientRow({ row }) {
+function ClientRow({ row, login }) {
   const { client: c, stage, phase, progress, month, docs, attention } = row
   const lastNote = logEntries([c])[0]
 
@@ -262,10 +230,10 @@ function ClientRow({ row }) {
       <div className="flex flex-wrap gap-3 lg:flex-col lg:items-stretch">
         {/* `!` because the site-wide `a { color: inherit }` rule in index.css
             sits outside Tailwind's layers and would otherwise win. */}
-        <Link to={`/clients/${c.id}`} className="h-11 px-5 rounded-full bg-text text-ink! text-sm font-bold flex items-center justify-center">
+        <Link to={`/admin/${c.id}`} className="h-11 px-5 rounded-full bg-text text-ink! text-sm font-bold flex items-center justify-center">
           Open
         </Link>
-        <CopyLinkButton id={c.id} />
+        <LoginChip login={login} />
       </div>
     </article>
   )
@@ -279,7 +247,7 @@ function Bar({ value }) {
   )
 }
 
-function AddClient({ password, onAdded, onCancel }) {
+function AddClient({ onAdded, onCancel }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -298,7 +266,7 @@ function AddClient({ password, onAdded, onCancel }) {
     setSaving(true)
     setError('')
     try {
-      onAdded(await createClient(password, details))
+      onAdded(await createClient(details))
     } catch (err) {
       setError(err.message)
       setSaving(false)

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom'
 import Nav from './components/Nav'
 import CursorGlow from './components/CursorGlow'
 import Footer from './components/sections/Footer'
@@ -16,15 +16,30 @@ const Disclaimer = lazy(() => import('./pages/Disclaimer'))
 const Pay = lazy(() => import('./pages/Pay'))
 const Books = lazy(() => import('./pages/Books'))
 const Refer = lazy(() => import('./pages/Refer'))
-const ClientProgress = lazy(() => import('./pages/ClientProgress'))
-const Clients = lazy(() => import('./pages/Clients'))
+const Portal = lazy(() => import('./pages/Portal'))
+const Admin = lazy(() => import('./pages/Admin'))
 const ClientEdit = lazy(() => import('./pages/ClientEdit'))
+const ClientPreview = lazy(() => import('./pages/ClientEdit').then((m) => ({ default: m.ClientPreview })))
 const Finance = lazy(() => import('./pages/Finance'))
 const ClientDocEdit = lazy(() => import('./pages/ClientDoc').then((m) => ({ default: m.ClientDocEdit })))
 const ClientDocView = lazy(() => import('./pages/ClientDoc').then((m) => ({ default: m.ClientDocView })))
 
-// Client progress and finance pages are private: no site menu or footer.
-const isPrivatePath = (path) => /^\/(progress|clients|finance)(\/|$)/.test(path)
+// Client progress, admin and finance pages are private: no site menu or footer.
+const isPrivatePath = (path) => /^\/(progress|clients|admin|finance)(\/|$)/.test(path)
+
+// /clients/<proposal|agreement> is the signed-in client's document. Lino's old
+// editor links (/clients/<client id>/...) now live under /admin.
+function ClientsSub() {
+  const { sub, doc } = useParams()
+  if (!doc && ['proposal', 'agreement'].includes(sub)) {
+    return (
+      <Suspense fallback={null}>
+        <ClientDocView doc={sub} />
+      </Suspense>
+    )
+  }
+  return <Navigate to={`/admin/${sub}${doc ? `/${doc}` : ''}`} replace />
+}
 
 function App() {
   const { pathname } = useLocation()
@@ -110,24 +125,27 @@ function App() {
               </Suspense>
             }
           />
-          <Route
-            path="/progress/:id"
-            element={
-              <Suspense fallback={null}>
-                <ClientProgress />
-              </Suspense>
-            }
-          />
+          {/* Old private links: clients now sign in at /clients. */}
+          <Route path="/progress/*" element={<Navigate to="/clients" replace />} />
           <Route
             path="/clients"
             element={
               <Suspense fallback={null}>
-                <Clients />
+                <Portal />
+              </Suspense>
+            }
+          />
+          <Route path="/clients/:sub/:doc?" element={<ClientsSub />} />
+          <Route
+            path="/admin"
+            element={
+              <Suspense fallback={null}>
+                <Admin />
               </Suspense>
             }
           />
           <Route
-            path="/clients/:id"
+            path="/admin/:id"
             element={
               <Suspense fallback={null}>
                 <ClientEdit />
@@ -135,18 +153,18 @@ function App() {
             }
           />
           <Route
-            path="/clients/:id/:doc"
+            path="/admin/:id/preview"
             element={
               <Suspense fallback={null}>
-                <ClientDocEdit />
+                <ClientPreview />
               </Suspense>
             }
           />
           <Route
-            path="/progress/:id/:doc"
+            path="/admin/:id/:doc"
             element={
               <Suspense fallback={null}>
-                <ClientDocView />
+                <ClientDocEdit />
               </Suspense>
             }
           />

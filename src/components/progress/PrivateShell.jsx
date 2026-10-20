@@ -27,11 +27,12 @@ export function Notice({ title, children }) {
   )
 }
 
-// Shown on Lino's pages until the Vercel storage and password are set up.
+// Shown until the Vercel storage and the FINANCE_PASSWORD (which also opens
+// /admin) are set up.
 export function SetupNotice() {
   return (
     <Notice title="Almost ready">
-      <p>The client pages need two settings in Vercel before they can save anything: the storage connection and your admin password.</p>
+      <p>The client pages need two settings in Vercel before they can work: the storage connection and your finance password.</p>
       <p>The step-by-step instructions are in the project thread.</p>
     </Notice>
   )
