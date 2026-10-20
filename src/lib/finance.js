@@ -46,6 +46,11 @@ export const markInvoicePaid = (id, date, receivedBy) =>
   call('invoice-paid', { method: 'POST', body: { id, date, receivedBy } }).then((d) => d.invoice)
 export const voidInvoice = (id) => call('invoice-void', { method: 'POST', body: { id } }).then((d) => d.invoice)
 export const deleteInvoice = (id) => call('invoice-delete', { method: 'POST', body: { id } })
+export const fetchBooks = (year) => call(year ? `books&year=${year}` : 'books')
+export const fetchSettings = () => call('settings')
+export const saveSettings = (settings) => call('settings-save', { method: 'POST', body: { settings } }).then((d) => d.settings)
+export const addMove = (move) => call('move-add', { method: 'POST', body: { move } }).then((d) => d.move)
+export const deleteMove = (id) => call('move-delete', { method: 'POST', body: { id } })
 
 // "$1,234.50" or "12" -> 123450 cents; null when it isn't an amount.
 export function toCents(text) {
@@ -112,7 +117,8 @@ export const SECTIONS = [
   { key: 'income', name: 'Income', icon: 'income' },
   { key: 'invoices', name: 'Invoices', icon: 'invoice' },
   { key: 'expenses', name: 'Expenses', icon: 'expense' },
-  { key: 'gst', name: 'GST & Year-End', short: 'GST', icon: 'gst', soon: 'GST totals, the year-end close and balance sheets to 2030 come after income and expenses.' },
+  { key: 'gst', name: 'GST & Year-End', short: 'GST', icon: 'gst' },
   { key: 'export', name: 'Export', icon: 'export', soon: 'Excel and PDF exports for your accountant come with the GST and year-end update.' },
   { key: 'access', name: 'Access', icon: 'access', soon: 'A limited bookkeeper login (view and add only) can be added here later.' },
+  { key: 'settings', name: 'Settings', icon: 'settings' },
 ]

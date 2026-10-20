@@ -6,6 +6,8 @@ import Dashboard from '../components/finance/Dashboard'
 import Expenses from '../components/finance/Expenses'
 import Income from '../components/finance/Income'
 import Invoices from '../components/finance/Invoices'
+import GstYearEnd from '../components/finance/GstYearEnd'
+import Settings from '../components/finance/Settings'
 import { SECTIONS, fetchSummary, fetchStatus, signOutFinance, syncStripe } from '../lib/finance'
 import { useNoIndex } from '../lib/clientProgress'
 import usePageMeta from '../lib/usePageMeta'
@@ -92,6 +94,10 @@ export default function Finance() {
         <Income onChanged={refresh} />
       ) : current.key === 'invoices' ? (
         <Invoices onChanged={refresh} />
+      ) : current.key === 'gst' ? (
+        <GstYearEnd onChanged={refresh} />
+      ) : current.key === 'settings' ? (
+        <Settings onChanged={refresh} />
       ) : (
         <div className="max-w-xl rounded-2xl border border-fin-line bg-fin-panel p-6 md:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-fin-muted">Coming next</p>

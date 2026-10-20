@@ -57,9 +57,14 @@ export default function FinanceShell({ children, role, ownerName, onSignOut }) {
             Finance
           </span>
         </div>
-        <button type="button" onClick={onSignOut} className="text-sm font-semibold text-fin-muted">
-          Sign out
-        </button>
+        <div className="flex items-center gap-4">
+          <NavLink to="/finance/settings" className={({ isActive }) => `text-sm font-semibold ${isActive ? 'text-text' : 'text-fin-muted'}`}>
+            Settings
+          </NavLink>
+          <button type="button" onClick={onSignOut} className="text-sm font-semibold text-fin-muted">
+            Sign out
+          </button>
+        </div>
       </header>
 
       <main className="flex-1 min-w-0 px-4 md:px-10 pt-6 md:pt-9 pb-32 md:pb-16">{children}</main>

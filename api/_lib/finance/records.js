@@ -9,19 +9,24 @@
 // invoice:  { id, number (set when sent), clientId, client, email, issued, dueDays, due, lines: [{ description, service, amount }],
 //             subtotal, gst, note, status: 'draft' | 'open' | 'paid' | 'void', sentOn, sentBy: 'stripe' | 'self', paidOn,
 //             stripeInvoiceId, payUrl, pdfUrl, createdAt, updatedAt }
-// settings: { ownerName, gstRegistered, gstRegisteredOn, gstFiling: 'Annual' | 'Quarterly', openingCash, openingDate }
+// move:     { id, date, type (books.js MOVE_TYPES), amount, note, createdAt }   owner & tax money, neither income nor expense
+// settings: { ownerName, gstRegistered, gstRegisteredOn, gstFiling: 'Annual' | 'Quarterly', gstNumber, openingCash, openingDate,
+//             equipment, otherOwed }   equipment and otherOwed are typed values for today's balance sheet
 import { randomBytes } from 'node:crypto'
 import { redis } from '../store.js'
 
-export const KINDS = ['income', 'expense', 'invoice']
+export const KINDS = ['income', 'expense', 'invoice', 'move']
 
 export const DEFAULT_SETTINGS = {
   ownerName: 'Lino',
   gstRegistered: false,
   gstRegisteredOn: null,
   gstFiling: 'Annual',
+  gstNumber: '',
   openingCash: 0,
   openingDate: null,
+  equipment: 0,
+  otherOwed: 0,
 }
 
 export async function listRecords(kind) {
