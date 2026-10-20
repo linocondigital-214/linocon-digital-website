@@ -39,6 +39,13 @@ export const syncStripe = (force = false) => call('stripe-sync', { method: 'POST
 export const addIncome = (income) => call('income-add', { method: 'POST', body: { income } }).then((d) => d.income)
 export const editIncome = (id, income) => call('income-edit', { method: 'POST', body: { id, income } }).then((d) => d.income)
 export const deleteIncome = (id) => call('income-delete', { method: 'POST', body: { id } })
+export const fetchInvoices = () => call('invoices')
+export const saveInvoice = (id, invoice) => call('invoice-save', { method: 'POST', body: { id, invoice } }).then((d) => d.invoice)
+export const sendInvoice = (id, stripe) => call('invoice-send', { method: 'POST', body: { id, stripe } }).then((d) => d.invoice)
+export const markInvoicePaid = (id, date, receivedBy) =>
+  call('invoice-paid', { method: 'POST', body: { id, date, receivedBy } }).then((d) => d.invoice)
+export const voidInvoice = (id) => call('invoice-void', { method: 'POST', body: { id } }).then((d) => d.invoice)
+export const deleteInvoice = (id) => call('invoice-delete', { method: 'POST', body: { id } })
 
 // "$1,234.50" or "12" -> 123450 cents; null when it isn't an amount.
 export function toCents(text) {
@@ -103,7 +110,7 @@ export function greeting(date = new Date()) {
 export const SECTIONS = [
   { key: '', name: 'Dashboard', short: 'Home', icon: 'dashboard' },
   { key: 'income', name: 'Income', icon: 'income' },
-  { key: 'invoices', name: 'Invoices', icon: 'invoice', soon: 'Invoices with GST added and a Pay now button through Stripe come in the next update.' },
+  { key: 'invoices', name: 'Invoices', icon: 'invoice' },
   { key: 'expenses', name: 'Expenses', icon: 'expense' },
   { key: 'gst', name: 'GST & Year-End', short: 'GST', icon: 'gst', soon: 'GST totals, the year-end close and balance sheets to 2030 come after income and expenses.' },
   { key: 'export', name: 'Export', icon: 'export', soon: 'Excel and PDF exports for your accountant come with the GST and year-end update.' },
