@@ -8,6 +8,7 @@ import { BOOKS } from '../lib/books'
 const SERVICE_ITEMS = [
   ...SERVICES.map((s) => ({ to: servicePath(s), name: s.name, menu: s.menu })),
   { to: BOOKS.path, name: BOOKS.name, menu: BOOKS.menu, badge: BOOKS.comingSoon ? 'Soon' : null },
+  { to: '/switch', name: 'Switching to LinoCon', menu: 'Already have a website? See how to move it to us.' },
 ]
 const STEP_ITEMS = LIVE_STEPS.map((s) => ({ to: stepPath(s), name: `${s.n} ${s.name}`, menu: s.menu }))
 

@@ -46,6 +46,13 @@ export default function BookCall() {
             Tell us a bit about your business, then pick a time that works for you. No
             obligation — just a real conversation about where the leverage is.
           </p>
+          <p className="text-text-secondary mt-4 max-w-xl">
+            Moving from another provider?{' '}
+            <Link to="/switch" className="underline underline-offset-4">
+              See what to get ready
+            </Link>{' '}
+            before the call.
+          </p>
         </Reveal>
 
         {(status === 'form' || status === 'submitting') && (

@@ -26,11 +26,11 @@ const FAQS = [
   },
   {
     q: 'Can you help if I already have a website?',
-    a: "Absolutely. You don't always need a brand-new website. If your existing site is outdated, difficult to navigate, slow, or lacking a solid SEO foundation, we can identify what needs improvement and recommend the most practical next step. That may mean optimizing your existing website rather than rebuilding it. A [free audit](#audit) is a good place to start.",
+    a: "Absolutely. You don't always need a brand-new website. If your existing site is outdated, difficult to navigate, slow, or lacking a solid SEO foundation, we can identify what needs improvement and recommend the most practical next step. That may mean optimizing your existing website rather than rebuilding it. A [free audit](#audit) is a good place to start. Moving from another provider? See [how switching works](/switch).",
   },
   {
     q: 'What do you need from me?',
-    a: "We start with a short strategy call to understand your business, goals, customers, and what you want your website to accomplish. If you have a logo, photos, written content, brand guidelines, or other materials, you can provide them. Don't have everything ready? We'll tell you what we need and guide you through the process.",
+    a: "We start with a short strategy call to understand your business, goals, customers, and what you want your website to accomplish. If you have a logo, photos, written content, brand guidelines, or other materials, you can provide them. Don't have everything ready? We'll tell you what we need and guide you through the process. Already have a website and accounts? Here's [what to get ready](/switch#gather).",
   },
   {
     q: 'Do you work with businesses outside Canada?',
