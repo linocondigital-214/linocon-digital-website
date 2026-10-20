@@ -12,7 +12,7 @@ import {
   statusLabel,
 } from '../../lib/clientDocs'
 import { dateLabel, today } from '../../lib/clientProgress'
-import { AcceptedBlock, SignatureName, SignedBy, signedAtLabel } from './ESign'
+import { AcceptedBlock, SignatureName, SignaturePad, SignMode, SignedBy, signedAtLabel } from './ESign'
 
 // A proposal or service agreement, laid out as a printable page.
 // Lino's copy (`editable`) adds the status, the fields to fill in and a way to
@@ -432,7 +432,7 @@ function Signatures({ values, state, editable, onChange }) {
       <div className="text-xs text-ink/60 pt-1">{label}</div>
     </div>
   )
-  const owner = state.ownerName ? { name: state.ownerName, at: state.ownerAt } : null
+  const owner = state.ownerName ? { name: state.ownerName, at: state.ownerAt, drawing: state.ownerDrawing } : null
   return (
     <section className="print-keep mt-10 pt-8 border-t border-ink/15">
       <h2 className="font-display font-bold text-xl text-ink">Signatures</h2>
@@ -477,26 +477,36 @@ function Signatures({ values, state, editable, onChange }) {
 // Lino signs for LinoCon Digital by typing their name. Not printed.
 function OwnerSign({ owner, onChange }) {
   const [name, setName] = useState('')
+  const [mode, setMode] = useState('type')
+  const [drawing, setDrawing] = useState('')
   if (owner) {
     return (
       <button
         type="button"
-        onClick={() => onChange([{ path: ['ownerName'], value: null }, { path: ['ownerAt'], value: null }])}
+        onClick={() =>
+          onChange([
+            { path: ['ownerName'], value: null },
+            { path: ['ownerAt'], value: null },
+            { path: ['ownerDrawing'], value: null },
+          ])
+        }
         className="no-print text-sm font-semibold text-ink/50 text-left"
       >
         Remove your signature
       </button>
     )
   }
+  const ready = name.trim().length >= 2 && (mode === 'type' || drawing)
   return (
     <form
-      className="no-print flex flex-col gap-2 rounded-xl bg-ink/5 p-3"
+      className="no-print flex flex-col gap-3 rounded-xl bg-ink/5 p-3"
       onSubmit={(e) => {
         e.preventDefault()
-        if (name.trim().length < 2) return
+        if (!ready) return
         onChange([
           { path: ['ownerName'], value: name.trim() },
           { path: ['ownerAt'], value: new Date().toISOString() },
+          { path: ['ownerDrawing'], value: mode === 'draw' ? drawing : null },
         ])
       }}
     >
@@ -511,8 +521,15 @@ function OwnerSign({ owner, onChange }) {
         maxLength={100}
         className="h-10 rounded-lg bg-white border border-ink/20 px-3 text-ink outline-none focus:border-blue"
       />
-      {name.trim().length >= 2 && <SignatureName name={name.trim()} />}
-      <button type="submit" className="h-10 px-4 rounded-full bg-ink text-paper text-sm font-bold w-fit">
+      <SignMode mode={mode} setMode={setMode} dark={false} />
+      {mode === 'draw' ? (
+        <div className="rounded-xl border border-ink/15">
+          <SignaturePad value={drawing} onChange={setDrawing} />
+        </div>
+      ) : (
+        name.trim().length >= 2 && <SignatureName name={name.trim()} />
+      )}
+      <button type="submit" disabled={!ready} className="h-10 px-4 rounded-full bg-ink text-paper text-sm font-bold w-fit disabled:opacity-40">
         Sign
       </button>
     </form>

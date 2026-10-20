@@ -13,6 +13,7 @@
 //   worklog: { <entry id>: { date: 'YYYY-MM-DD', text } }   Lino's private notes, never shown to the client
 //   payment: { label, link, portal }   the client's Pay button: Stripe payment link and billing portal
 // }
+import { isDrawing } from './esign.js'
 
 // What the client's own page may see: proposal and agreement drafts stay
 // private until Lino marks them as sent, and the work log is Lino's only.
@@ -57,11 +58,13 @@ export function applyChanges(client, changes) {
     ) {
       throw new BadRequest('Invalid change path')
     }
+    // Lino's drawn countersignature is the one longer text allowed.
+    const isOwnerDrawing = path.length === 3 && path[0] === 'docs' && path[2] === 'ownerDrawing'
     const ok =
       value === null ||
       typeof value === 'boolean' ||
       (typeof value === 'number' && Number.isFinite(value)) ||
-      (typeof value === 'string' && value.length <= 4000)
+      (typeof value === 'string' && (isOwnerDrawing ? isDrawing(value) : value.length <= 4000))
     if (!ok) throw new BadRequest('Invalid change value')
     if (path[0] === 'payment') checkPayment(path, value)
     // A client's e-signature is only written by the client signing

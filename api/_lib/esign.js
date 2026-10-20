@@ -11,7 +11,7 @@ export const SIGNABLE = new Set(['package', 'proposal', 'agreement'])
 // prices), and for the package its own choices.
 export function docFingerprint(client, doc) {
   const docs = client.docs ?? {}
-  const SKIP = new Set(['status', 'sentAt', 'signedAt', 'esign', 'ownerName', 'ownerAt'])
+  const SKIP = new Set(['status', 'sentAt', 'signedAt', 'esign', 'ownerName', 'ownerAt', 'ownerDrawing'])
   const strip = (d = {}) => Object.fromEntries(Object.entries(d).filter(([k]) => !SKIP.has(k)))
   const content =
     doc === 'package'
@@ -31,16 +31,21 @@ function stableJson(value) {
   return JSON.stringify(value ?? null)
 }
 
+// A drawn signature is an SVG path of moves and lines on a 600 x 200 box.
+export const MAX_DRAWING = 20000
+export const isDrawing = (d) => typeof d === 'string' && d.length > 0 && d.length <= MAX_DRAWING && /^[ML0-9 .-]+$/.test(d)
+
 const vancouverDate = (date) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Vancouver' }).format(date)
 
 // Returns 'ok' or why it can't be signed.
-export function signDoc(client, doc, { name, agree, ip, agent }) {
+export function signDoc(client, doc, { name, agree, drawing, ip, agent }) {
   if (!SIGNABLE.has(doc)) return 'unknown'
   const state = client.docs?.[doc]
   if (!state || state.status !== 'sent') return state?.status === 'signed' ? 'signed' : 'not-sent'
   const cleanName = typeof name === 'string' ? name.trim().replace(/\s+/g, ' ') : ''
   if (cleanName.length < 2 || cleanName.length > 100) return 'name'
   if (agree !== true) return 'agree'
+  if (drawing != null && drawing !== '' && !isDrawing(drawing)) return 'drawing'
 
   const now = new Date()
   state.status = 'signed'
@@ -52,6 +57,7 @@ export function signDoc(client, doc, { name, agree, ip, agent }) {
     agent: String(agent ?? '').slice(0, 200),
     fingerprint: docFingerprint(client, doc),
   }
+  if (drawing) state.esign.drawing = drawing
   client.updatedAt = now.toISOString()
   return 'ok'
 }

@@ -5,7 +5,7 @@
 //   POST ?op=invite    { code, email, password }  first sign-in with Lino's invite code
 //   POST ?op=signout
 //   GET  ?op=me        their own progress (drafts and Lino's notes left out)
-//   POST ?op=sign      { doc, name, agree }  e-sign a document Lino has sent
+//   POST ?op=sign      { doc, name, agree, drawing? }  e-sign a document Lino has sent
 // For Lino (signed in to /admin):
 //   GET  ?op=login&id=<client id>   the client's login and any unused invite
 //   POST ?op=login-invite { id }    a new one-time invite code, shown once
@@ -31,6 +31,7 @@ const SIGN_MESSAGES = {
   signed: 'This document is already signed.',
   name: 'Type your full name to sign.',
   agree: 'Tick the box to agree before signing.',
+  drawing: 'That drawing could not be saved. Clear it and try again.',
 }
 
 const failed = (status) => [status === 'locked' ? 429 : ['email', 'weak', 'taken'].includes(status) ? 400 : 401, { error: status, message: MESSAGES[status] }]
@@ -71,6 +72,7 @@ export default route(async (req, res) => {
     const result = signDoc(client, req.body?.doc, {
       name: req.body?.name,
       agree: req.body?.agree,
+      drawing: req.body?.drawing,
       ip: String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() || req.socket?.remoteAddress,
       agent: req.headers['user-agent'],
     })
