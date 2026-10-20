@@ -7,6 +7,7 @@ const PATHS = {
   export: 'M12 15V4m0 0L8 8m4-4 4 4M5 14v6h14v-6',
   access: 'M14.5 9.5a4 4 0 1 1-1.2-2.8M14 10l6 6m-3-3 2-2m-5 5 2-2',
   plus: 'M12 5v14M5 12h14',
+  settings: 'M4 7h10M18 7h2M4 17h4M12 17h8M14 5v4M8 15v4',
 }
 
 export default function Icon({ name, className = 'w-5 h-5' }) {

@@ -1,6 +1,7 @@
 // The dashboard numbers, worked out from the saved records. Cash basis, like
 // the Financial Log sheet: income counts when it's paid, expenses when they're
 // paid. GST only counts from the registration date in Settings.
+import { cashOn } from './books.js'
 
 // Today's date in Vancouver, as 'YYYY-MM-DD'.
 export function today(now = new Date()) {
@@ -69,7 +70,7 @@ function gstStatus({ income, expenses, settings, now }) {
   return { registered: true, label, due, collected, credits, owing: collected - credits }
 }
 
-export function summarize({ income, expenses, invoices, settings, stripe = {} }, now = today()) {
+export function summarize({ income, expenses, invoices, moves = [], settings, stripe = {} }, now = today()) {
   const thisMonth = monthKey(now)
   const lastMonth = shiftMonth(thisMonth, -1)
   const year = now.slice(0, 4)
@@ -100,14 +101,9 @@ export function summarize({ income, expenses, invoices, settings, stripe = {} },
   const overdue = open.filter((inv) => inv.due && inv.due < now)
   const owed = (inv) => inv.subtotal + (inv.gst || 0)
 
-  // Cash: the opening balance Lino types in Settings, plus money in, less
-  // money out since then. Stripe's fees are expenses (stripe.js), so they
-  // count once.
-  const since = (r) => !settings.openingDate || r.date >= settings.openingDate
-  const cash =
-    settings.openingCash +
-    sum(income.filter(since), (i) => i.amount + (i.gst || 0)) -
-    sum(expenses.filter(since), (e) => e.amount)
+  // Cash: the opening balance from Settings plus money in, less money out
+  // since then, with Lino's own money moves (books.js).
+  const cash = cashOn({ income, expenses, moves, settings }, now)
 
   const attention = overdue.map((inv) => ({
     tone: 'late',

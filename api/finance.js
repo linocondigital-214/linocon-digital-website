@@ -5,17 +5,18 @@
 //   POST ?op=signout
 //   GET  ?op=summary   the dashboard numbers
 // Expense calls are listed in _lib/finance/expenseOps.js, income and Stripe
-// calls in _lib/finance/incomeOps.js, invoice calls in _lib/finance/invoiceOps.js.
+// calls in _lib/finance/incomeOps.js, invoice calls in _lib/finance/invoiceOps.js,
+// GST, year-end and settings calls in _lib/finance/booksOps.js.
 import QRCode from 'qrcode'
 import { SetupError } from './_lib/store.js'
 import { checkSetup, currentUser, finishSignIn, isEnrolled, recoveryCodesLeft, sessionCookie, signOut, startSignIn } from './_lib/finance/auth.js'
 import { otpauthUrl } from './_lib/finance/totp.js'
 import { can } from './_lib/finance/roles.js'
-import { getSettings, listRecords } from './_lib/finance/records.js'
 import { summarize } from './_lib/finance/summary.js'
 import { Invalid, expenseOps } from './_lib/finance/expenseOps.js'
 import { incomeOps } from './_lib/finance/incomeOps.js'
 import { invoiceOps } from './_lib/finance/invoiceOps.js'
+import { booksOps, loadBooks } from './_lib/finance/booksOps.js'
 import { StripeProblem, getStripeState } from './_lib/finance/stripe.js'
 
 const MESSAGES = {
@@ -65,20 +66,11 @@ async function handle(req, res) {
 
   if (op === 'summary' && req.method === 'GET') {
     if (!can(user.role, 'view')) return [403, { error: 'role' }]
-    const [income, expenses, invoices, settings, stripe] = await Promise.all([
-      listRecords('income'),
-      listRecords('expense'),
-      listRecords('invoice'),
-      getSettings(),
-      getStripeState(),
-    ])
-    return [
-      200,
-      { role: user.role, summary: summarize({ income, expenses, invoices, settings, stripe }), recoveryCodesLeft: await recoveryCodesLeft() },
-    ]
+    const [books, stripe] = await Promise.all([loadBooks(), getStripeState()])
+    return [200, { role: user.role, summary: summarize({ ...books, stripe }), recoveryCodesLeft: await recoveryCodesLeft() }]
   }
 
-  const result = (await expenseOps(op, req, user)) ?? (await incomeOps(op, req, user)) ?? (await invoiceOps(op, req, user))
+  const result = (await expenseOps(op, req, user)) ?? (await incomeOps(op, req, user)) ?? (await invoiceOps(op, req, user)) ?? (await booksOps(op, req, user))
   if (result) return result
 
   return [404, { error: 'unknown' }]

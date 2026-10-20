@@ -54,7 +54,13 @@ export default function Dashboard({ summary }) {
             : 'Shows once Stripe is connected'}
         </Stat>
         <Stat label="Cash in bank" value={money(summary.cash)}>
-          {summary.cashAsOf ? `Since ${shortDate(summary.cashAsOf)}` : 'Starting balance gets set in a later update'}
+          {summary.cashAsOf ? (
+            `Since ${shortDate(summary.cashAsOf)}`
+          ) : (
+            <Link to="/finance/settings" className="underline hover:text-text">
+              Set your starting balance
+            </Link>
+          )}
         </Stat>
         <Stat label="Unpaid invoices" value={money(unpaid.amount)} alert={unpaid.overdue > 0}>
           {unpaid.count} {unpaid.count === 1 ? 'invoice' : 'invoices'}
