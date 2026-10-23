@@ -15,6 +15,7 @@ import {
 } from '../../lib/finance'
 import { invoiceChoices, invoiceLines } from '../../lib/packages'
 import { invoiceCalendar, nextUnbilled } from '../../lib/invoiceCalendar'
+import EmailOptions from '../EmailOptions'
 
 const todayIso = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Vancouver' }).format(new Date())
 const total = (inv) => inv.subtotal + (inv.gst || 0)
@@ -591,6 +592,26 @@ function Row({ label, value, strong = false, muted = false }) {
   )
 }
 
+// The invoice written out for an email Lino sends themselves.
+function invoiceEmail(inv) {
+  return [
+    `Hi ${inv.client},`,
+    '',
+    `Here is invoice ${inv.number}${inv.fileNo ? ` (file ${inv.fileNo})` : ''}.`,
+    '',
+    ...inv.lines.map((l) => `- ${l.description}: ${money(l.amount)}`),
+    ...(inv.gst ? [`GST (5%): ${money(inv.gst)}`] : []),
+    `Total: ${money(total(inv))}`,
+    `Due: ${shortDate(inv.due)}`,
+    ...(inv.payUrl ? ['', `Pay online: ${inv.payUrl}`] : ['', 'You can pay by e-Transfer to linocondigital@gmail.com.']),
+    ...(inv.note ? ['', inv.note] : []),
+    '',
+    'Thank you,',
+    'Lino',
+    'LinoCon Digital',
+  ].join('\n')
+}
+
 function InvoiceView({ invoice, lists, onBack, onSaved }) {
   const [paying, setPaying] = useState(false)
   const [paid, setPaid] = useState({ date: todayIso(), receivedBy: lists.receivedBy[0] })
@@ -666,6 +687,13 @@ function InvoiceView({ invoice, lists, onBack, onSaved }) {
               Open it
             </a>
           </div>
+        </div>
+      )}
+      {invoice.status === 'open' && invoice.sentBy !== 'stripe' && (
+        <div className="mt-4 rounded-2xl border border-fin-line bg-fin-panel p-5 text-sm">
+          <div className="font-semibold">Send it to your client</div>
+          <div className="text-fin-muted mt-1 mb-3">Opens an email with the invoice written in.</div>
+          <EmailOptions to={invoice.email} subject={`Invoice ${invoice.number} from LinoCon Digital`} body={invoiceEmail(invoice)} label="Email it" primary="h-10 px-4 rounded-full fin-grad text-white font-semibold grid place-items-center" secondary="h-10 px-4 rounded-full border border-fin-line font-semibold grid place-items-center hover:bg-fin-panel-2" />
         </div>
       )}
       {invoice.pdfUrl && (

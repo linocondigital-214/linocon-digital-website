@@ -12,6 +12,7 @@ import {
   statusLabel,
 } from '../../lib/clientDocs'
 import { dateLabel, today } from '../../lib/clientProgress'
+import EmailOptions from '../EmailOptions'
 import { AcceptedBlock, SignatureName, SignaturePad, SignMode, SignedBy, signedAtLabel } from './ESign'
 
 // A proposal or service agreement, laid out as a printable page.
@@ -36,6 +37,7 @@ export default function DocumentView({ client, docKey, editable = false, onChang
         <span className="text-sm text-text-secondary">In the print window, choose "Save as PDF" to download it.</span>
       </div>
 
+      {editable && <SendForSigning client={client} docKey={docKey} />}
       {editable && <Controls client={client} docKey={docKey} onChange={onChange} />}
 
       <article className="print-paper bg-paper text-ink rounded-2xl p-6 sm:p-10 md:p-14 max-w-3xl mx-auto shadow-2xl">
@@ -173,16 +175,42 @@ export function SendSignedCopy({ client, docKey }) {
     'Lino',
     BUSINESS.name,
   ].join('\n')
-  const href = `mailto:${encodeURIComponent(d.email || '')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
   return (
     <div className="rounded-2xl border border-blue/50 bg-blue/10 p-5 flex flex-col gap-3">
       <div className="font-bold">{doc.signatures ? 'Signed by both sides' : 'Accepted by the client'}</div>
       <div className="text-sm text-text-secondary">
         Send the client their copy: click "Print / Save as PDF" above to save the PDF, then email it. The client can also download it from their page.
       </div>
-      <a href={href} className="h-11 px-5 rounded-full bg-gradient-brand text-ink text-sm font-bold flex items-center w-fit">
-        Email the signed copy
-      </a>
+      <EmailOptions to={d.email} subject={subject} body={body} label="Email the signed copy" primary="h-11 px-5 rounded-full bg-gradient-brand text-ink text-sm font-bold flex items-center" secondary="h-11 px-5 rounded-full border border-border text-sm font-semibold flex items-center hover:border-text-tertiary" />
+    </div>
+  )
+}
+
+// Emails the client that the document is ready on their page to read and
+// sign. Shown once Lino has marked it as sent and until it's signed.
+function SendForSigning({ client, docKey }) {
+  const state = docState(client, docKey)
+  if (state.status !== 'sent') return null
+  const doc = DOCS[docKey]
+  const d = client.details
+  const verb = docKey === 'agreement' ? 'sign' : 'accept'
+  const subject = `Your ${doc.name.toLowerCase()} from ${BUSINESS.name}: ${d.name}`
+  const body = [
+    `Hi ${d.contact || d.name},`,
+    '',
+    `Your ${doc.name.toLowerCase()} is ready. You can read it and ${verb} it online on your client page:`,
+    `https://${BUSINESS.website}/clients/${docKey}`,
+    '',
+    'Let me know if you have any questions.',
+    '',
+    'Lino',
+    BUSINESS.name,
+  ].join('\n')
+  return (
+    <div className="no-print max-w-3xl mx-auto mb-6 rounded-2xl border border-border bg-surface p-5 flex flex-col gap-3">
+      <div className="font-bold">Send it to {d.name}</div>
+      <div className="text-sm text-text-secondary">This emails them a link to {verb} it on their client page. You can also attach the PDF.</div>
+      <EmailOptions to={d.email} subject={subject} body={body} label="Email it" primary="h-11 px-5 rounded-full bg-gradient-brand text-ink text-sm font-bold flex items-center" secondary="h-11 px-5 rounded-full border border-border text-sm font-semibold flex items-center hover:border-text-tertiary" />
     </div>
   )
 }
