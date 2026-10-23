@@ -14,6 +14,7 @@ import {
   voidInvoice,
 } from '../../lib/finance'
 import { invoiceChoices, invoiceLines } from '../../lib/packages'
+import { invoiceCalendar, nextUnbilled } from '../../lib/invoiceCalendar'
 
 const todayIso = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Vancouver' }).format(new Date())
 const total = (inv) => inv.subtotal + (inv.gst || 0)
@@ -46,6 +47,8 @@ function Chip({ inv }) {
 
 // /finance/invoices: the list, the form for a new invoice or a draft, and a
 // sent invoice with its Pay now link. ?add=1 opens a new one, ?open=<id> one.
+// ?add=1&file=<file no>&bill=month&month=YYYY-MM opens one filled in from the
+// invoice calendar.
 export default function Invoices({ onChanged }) {
   const [params, setParams] = useSearchParams()
   const [data, setData] = useState({ status: 'loading' })
@@ -73,6 +76,7 @@ export default function Invoices({ onChanged }) {
       key: openId,
       invoice,
       lists: data,
+      start: openId === 'new' && params.get('file') ? { fileNo: params.get('file'), bill: params.get('bill'), month: params.get('month') } : null,
       onBack: close,
       onKeep: keep,
       onSaved: (saved) => {
@@ -95,7 +99,14 @@ export default function Invoices({ onChanged }) {
     return <InvoiceView {...props} />
   }
 
-  return <InvoiceList data={data} onAdd={() => setParams({ add: '1' })} onOpen={(id) => setParams({ open: id })} />
+  return (
+    <InvoiceList
+      data={data}
+      onAdd={() => setParams({ add: '1' })}
+      onOpen={(id) => setParams({ open: id })}
+      onMake={(row) => setParams({ add: '1', file: row.client.fileNo, bill: 'month', month: row.due.month })}
+    />
+  )
 }
 
 function BackOnly({ onBack }) {
@@ -116,7 +127,7 @@ const FILTERS = [
   ['paid', 'Paid'],
 ]
 
-function InvoiceList({ data, onAdd, onOpen }) {
+function InvoiceList({ data, onAdd, onOpen, onMake }) {
   const [filter, setFilter] = useState('all')
   const now = todayIso()
   const open = data.invoices.filter((i) => i.status === 'open')
@@ -150,6 +161,8 @@ function InvoiceList({ data, onAdd, onOpen }) {
         <Tile label="Late" value={late.length} bad={late.length > 0} />
         <Tile label={`Paid in ${monthTitle(now.slice(0, 7)).split(' ')[0]}`} value={money(paidThisMonth.reduce((t, i) => t + total(i), 0))} />
       </div>
+
+      <InvoiceCalendar data={data} today={now} onMake={onMake} onOpen={onOpen} />
 
       <div className="mt-6 flex gap-2 overflow-x-auto">
         {FILTERS.map(([key, name]) => (
@@ -198,6 +211,72 @@ function InvoiceList({ data, onAdd, onOpen }) {
   )
 }
 
+const DUE_TEXT = {
+  made: ['Sent', 'border-fin-good/50 text-fin-good'],
+  draft: ['Draft, not sent', 'border-fin-warn/50 text-fin-warn'],
+  late: ['Late', 'border-fin-bad/50 text-fin-bad'],
+  today: ['Today', 'border-fin-warn/50 text-fin-warn'],
+  week: ['This week', 'border-fin-warn/50 text-fin-warn'],
+  later: ['Coming up', 'border-fin-line text-fin-muted'],
+}
+
+// Monthly invoices from each signed client's schedule: who to bill and when,
+// so nobody is missed. Made ones stay listed for the month for peace of mind.
+function InvoiceCalendar({ data, today, onMake, onOpen }) {
+  const monthAgo = new Date(Date.now() - 31 * 864e5).toISOString().slice(0, 10)
+  const rows = invoiceCalendar(data.clients, data.invoices, today).filter((r) => r.state !== 'made' || r.due.date >= monthAgo)
+  const waiting = rows.filter((r) => ['late', 'today', 'week'].includes(r.state)).length
+  return (
+    <section className="mt-6 rounded-2xl border border-fin-line bg-fin-panel p-4 md:p-5" aria-labelledby="calendar-heading">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 id="calendar-heading" className="font-display font-bold text-xl">
+          Invoice calendar
+        </h2>
+        <span className={`text-sm ${waiting ? 'text-fin-warn font-semibold' : 'text-fin-muted'}`}>
+          {waiting ? `${waiting} to send now` : 'Nothing to send this week'}
+        </span>
+      </div>
+      {rows.length === 0 ? (
+        <div className="pt-2 text-sm text-fin-muted">
+          Monthly invoices show up here once a client signs their service agreement (and pays any deposit).
+        </div>
+      ) : (
+        <ul className="mt-3 flex flex-col gap-2">
+          {rows.map((r) => {
+            const [label, tone] = DUE_TEXT[r.invoice?.status === 'draft' ? 'draft' : r.state]
+            return (
+              <li key={`${r.client.id}-${r.due.month}`} className="rounded-xl border border-fin-line bg-fin-panel-2/60 px-3 py-3 flex flex-wrap items-center gap-3">
+                <span className="w-14 shrink-0 text-center">
+                  <span className="block text-xs uppercase text-fin-muted">{shortDate(r.due.date).split(' ')[0]}</span>
+                  <span className="block font-display font-bold text-xl leading-tight">{Number(r.due.date.slice(8))}</span>
+                </span>
+                <span className="flex-1 min-w-[10rem]">
+                  <span className="flex items-center gap-2">
+                    <span className="font-semibold">{r.client.name}</span>
+                    <span className={`text-xs font-semibold border rounded-full px-2 py-0.5 ${tone}`}>{label}</span>
+                  </span>
+                  <span className="block text-sm text-fin-muted">
+                    Month {r.due.n} · {r.client.fileNo}
+                  </span>
+                </span>
+                {r.invoice ? (
+                  <button type="button" onClick={() => onOpen(r.invoice.id)} className="h-10 px-4 rounded-full border border-fin-line text-sm font-semibold">
+                    View
+                  </button>
+                ) : (
+                  <button type="button" onClick={() => onMake(r)} className="h-10 px-4 rounded-full fin-grad text-white text-sm font-semibold">
+                    Make invoice
+                  </button>
+                )}
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </section>
+  )
+}
+
 function Tile({ label, value, bad = false }) {
   return (
     <div className={`rounded-2xl border bg-fin-panel p-3 sm:p-4 ${bad ? 'border-fin-bad/50' : 'border-fin-line'}`}>
@@ -218,7 +297,7 @@ const lineCents = (text) => {
   return cents === null ? null : t.startsWith('-') ? -cents : cents
 }
 
-function InvoiceForm({ invoice, lists, onBack, onKeep, onSaved, onDeleted }) {
+function InvoiceForm({ invoice, lists, start, onBack, onKeep, onSaved, onDeleted }) {
   const isNew = !invoice
   // Set once the draft is saved, so sending again after a problem doesn't make a second one.
   const [savedId, setSavedId] = useState(invoice?.id)
@@ -230,6 +309,7 @@ function InvoiceForm({ invoice, lists, onBack, onKeep, onSaved, onDeleted }) {
     dueDays: invoice?.dueDays ?? 14,
     note: invoice?.note ?? '',
     fileNo: invoice?.fileNo ?? '',
+    forMonth: invoice?.forMonth ?? '',
   }))
   const [lines, setLines] = useState(() =>
     invoice ? invoice.lines.map((l) => ({ ...l, amount: centsToText(l.amount) })) : [emptyLine()],
@@ -247,7 +327,7 @@ function InvoiceForm({ invoice, lists, onBack, onKeep, onSaved, onDeleted }) {
   }
 
   // Typing a signed client's file number picks them and fills in the lines.
-  const [fileInput, setFileInput] = useState(invoice?.fileNo ?? '')
+  const [fileInput, setFileInput] = useState(invoice?.fileNo ?? start?.fileNo ?? '')
   const [what, setWhat] = useState('')
   const fileClient = lists.clients.find((c) => c.fileNo && c.fileNo === cleanFileNo(fileInput))
   const choices = fileClient?.package ? invoiceChoices(fileClient.package) : []
@@ -257,10 +337,18 @@ function InvoiceForm({ invoice, lists, onBack, onKeep, onSaved, onDeleted }) {
     setError('')
     const pick = choice || what || choices[0]?.value
     setWhat(pick ?? '')
-    setForm((f) => ({ ...f, clientId: fileClient.id, email: fileClient.email || f.email, fileNo: fileClient.fileNo }))
+    // A monthly bill counts for the client's next month on the invoice calendar.
+    const forMonth = ['month', 'all'].includes(pick) ? (choice === start?.bill && start?.month) || nextUnbilled(fileClient, lists.invoices) : ''
+    setForm((f) => ({ ...f, clientId: fileClient.id, email: fileClient.email || f.email, fileNo: fileClient.fileNo, forMonth }))
     const filled = pick ? invoiceLines(fileClient.package, pick, fileClient.fileNo) : []
     setLines(filled.length ? filled.map((l) => ({ ...l, amount: centsToText(l.amount) })) : [emptyLine()])
   }
+
+  // Opened from the invoice calendar: fill it in straight away.
+  useEffect(() => {
+    if (start?.fileNo && fileClient) fillFromFile(start.bill)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const cents = lines.map((l) => lineCents(l.amount) ?? 0)
   const subtotal = cents.reduce((t, c) => t + c, 0)

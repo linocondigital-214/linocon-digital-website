@@ -29,6 +29,7 @@ function localApi() {
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify(body))
         }
+        res.send = (body) => res.end(body)
         const { default: handler } = await server.ssrLoadModule(`/api/${match[1]}.js`)
         await handler(req, res)
       })
