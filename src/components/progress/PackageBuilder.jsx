@@ -1,3 +1,4 @@
+import EmailOptions from '../EmailOptions'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BUSINESS } from '../../lib/clientDocs'
@@ -63,11 +64,6 @@ export default function PackageBuilder({ client, onChange, adminBase }) {
   const discounts = parseList(pkg.discounts)
   const saveList = (key, list) => set([key], list.length ? JSON.stringify(list) : null)
 
-  function emailClient() {
-    const subject = `Your LinoCon Digital package: ${client.details.name}`
-    const href = `mailto:${encodeURIComponent(client.details.email || '')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(packageEmail(client, pkg))}`
-    window.location.href = href
-  }
 
   // A single service clears the other ticks; a bundle or mix and match keeps them.
   function choosePackage(value) {
@@ -260,9 +256,6 @@ export default function PackageBuilder({ client, onChange, adminBase }) {
           <button type="button" onClick={() => window.print()} className="h-11 px-5 rounded-full bg-gradient-brand text-ink text-sm font-bold">
             Print / Save as PDF
           </button>
-          <button type="button" onClick={emailClient} className="h-11 px-5 rounded-full border border-border text-sm font-semibold hover:border-text-tertiary">
-            Email to client
-          </button>
           <button
             type="button"
             onClick={toAgreement}
@@ -272,8 +265,16 @@ export default function PackageBuilder({ client, onChange, adminBase }) {
             Next: service agreement &rarr;
           </button>
         </div>
+        <EmailOptions
+          to={client.details.email}
+          subject={`Your LinoCon Digital package: ${client.details.name}`}
+          body={packageEmail(client, pkg)}
+          label="Email to client"
+          primary="h-11 px-5 rounded-full border border-border text-sm font-semibold flex items-center hover:border-text-tertiary"
+          secondary="h-11 px-5 rounded-full border border-border text-sm font-semibold flex items-center hover:border-text-tertiary"
+        />
         <div className="text-sm text-text-secondary">
-          In the print window, choose "Save as PDF" to download it. "Email to client" opens your email with the package written in; attach the
+          In the print window, choose "Save as PDF" to download it. "Email to client" opens Gmail with the package written in; attach the
           PDF before you send. "Next" fills the proposal and service agreement with this package.
         </div>
       </div>
