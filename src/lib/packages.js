@@ -262,3 +262,58 @@ export function packageEmail(client, pkg) {
   )
   return parts.join('\n')
 }
+
+// What a new invoice in /finance can bill from a signed package, found by the
+// client's file number. Only the choices that make sense for this package.
+export function invoiceChoices(pkg) {
+  const calc = calcPackage(pkg)
+  const split = calc.onceTotal > 0 && !['0', '100'].includes(calc.depositPct)
+  return [
+    split && { value: 'deposit', label: `Deposit (${calc.depositPct}% of one-time work)` },
+    split && { value: 'balance', label: 'Balance of one-time work' },
+    calc.onceTotal > 0 && { value: 'once', label: 'All one-time work' },
+    calc.monthTotal > 0 && { value: 'month', label: 'Monthly services, one month' },
+    calc.onceTotal > 0 && calc.monthTotal > 0 && { value: 'all', label: 'One-time work + first month' },
+  ].filter(Boolean)
+}
+
+// The invoice's lines for one of those choices: { description, service, amount }
+// with amount in cents (below zero for savings and discounts).
+export function invoiceLines(pkg, what, fileNo) {
+  const calc = calcPackage(pkg)
+  const bundleService = { launch: 'Launch Bundle', allin: 'Launch Bundle', grow: 'Grow Bundle' }[calc.bundle.key]
+  const serviceOf = (label) => {
+    const named = ['Website Creation', 'SEO Setup', 'Backlink Building', 'Grow Plan'].find((s) => s === label)
+    if (named) return named
+    if (label === 'Extra work') return 'Extra Work'
+    if (label === 'Launch Bundle saving') return 'Launch Bundle'
+    if (label === 'Grow Bundle saving') return 'Grow Bundle'
+    return 'Other'
+  }
+  const toLine = (l, suffix = '') => ({
+    description: `${l.label}${l.detail ? ` (${l.detail})` : ''}${suffix}`.slice(0, 120),
+    service: serviceOf(l.label),
+    amount: l.cents,
+  })
+  const work = calc.items.filter((i) => i.billing === 'once').map((i) => i.name)
+  const workText = work.length ? work.join(' + ') : 'one-time work'
+  const oneService = bundleService ?? (work.length === 1 ? serviceOf(work[0]) : 'Other')
+  const file = fileNo ? `, file ${fileNo}` : ''
+
+  let lines
+  if (what === 'deposit') {
+    lines = [{ description: `Deposit (${calc.depositPct}%) for ${workText}${file}`, service: oneService, amount: calc.deposit }]
+  } else if (what === 'balance') {
+    lines = [{ description: `Balance for ${workText}${file}`, service: oneService, amount: calc.onceTotal - calc.deposit }]
+  } else {
+    const once = what === 'month' ? [] : calc.once.map((l) => toLine(l))
+    const month = what === 'once' ? [] : calc.month.map((l) => toLine(l, ', one month'))
+    lines = [...once, ...month].filter((l) => l.amount !== 0)
+  }
+  // An invoice holds up to 10 lines; a longer package becomes one line.
+  if (lines.length > 10) {
+    const amount = lines.reduce((t, l) => t + l.amount, 0)
+    lines = [{ description: `Services as in your package${file}`, service: oneService, amount }]
+  }
+  return lines.filter((l) => l.amount !== 0)
+}

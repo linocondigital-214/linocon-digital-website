@@ -40,7 +40,8 @@ export function cleanInvoice(input = {}, clients, settings) {
   const lines = (Array.isArray(input.lines) ? input.lines : []).slice(0, 10).map((l) => ({
     description: text(l?.description, 120),
     service: SERVICES.includes(l?.service) ? l.service : 'Other',
-    amount: Number.isInteger(l?.amount) && l.amount > 0 && l.amount <= 100_000_000 ? l.amount : null,
+    // Below zero for a saving or discount, like a package's bundle saving.
+    amount: Number.isInteger(l?.amount) && l.amount !== 0 && Math.abs(l.amount) <= 100_000_000 ? l.amount : null,
   }))
   if (!lines.length) throw new Invalid('Add at least one line.')
   for (const l of lines) {
@@ -48,6 +49,7 @@ export function cleanInvoice(input = {}, clients, settings) {
     if (!l.amount) throw new Invalid(`Type an amount for “${l.description}”.`)
   }
   const subtotal = lines.reduce((t, l) => t + l.amount, 0)
+  if (subtotal <= 0) throw new Invalid('The invoice total has to be more than $0.')
   const gst = chargesGst(settings, issued) ? Math.round(subtotal * GST_RATE) : 0
   return {
     clientId: client?.id ?? null,
@@ -60,6 +62,7 @@ export function cleanInvoice(input = {}, clients, settings) {
     subtotal,
     gst,
     note: text(input.note, 500),
+    fileNo: text(input.fileNo, 20).toUpperCase(),
   }
 }
 
@@ -68,6 +71,18 @@ export async function nextNumber(issued) {
   const year = issued.slice(0, 4)
   const n = await redis(['INCR', `fin:invoice:counter:${year}`])
   return `LCD-${year}-${String(n).padStart(3, '0')}`
+}
+
+// Stripe's extra boxes on the invoice, skipping empty ones.
+function customFields(pairs) {
+  return Object.fromEntries(
+    pairs
+      .filter(([, value]) => value)
+      .flatMap(([name, value], i) => [
+        [`custom_fields[${i + 1}][name]`, name],
+        [`custom_fields[${i + 1}][value]`, value],
+      ]),
+  )
 }
 
 async function findCustomer(invoice) {
@@ -93,7 +108,10 @@ export async function sendThroughStripe(invoice, settings) {
     'metadata[lcd_invoice]': invoice.id,
     'custom_fields[0][name]': 'Invoice',
     'custom_fields[0][value]': invoice.number,
-    ...(settings.gstNumber ? { 'custom_fields[1][name]': 'GST no.', 'custom_fields[1][value]': settings.gstNumber } : {}),
+    ...customFields([
+      ['File no.', invoice.fileNo],
+      ['GST no.', settings.gstNumber],
+    ]),
   })
   try {
     const items = invoice.lines.map((l) => ({ amount: l.amount, description: l.description }))

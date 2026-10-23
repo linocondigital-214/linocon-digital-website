@@ -1,12 +1,15 @@
 // The invoice calls behind /api/finance:
-//   GET  ?op=invoices        every invoice (newest first), clients and choices for the form
+//   GET  ?op=invoices        every invoice (newest first), clients and choices for the form;
+//                            clients with a signed agreement come with their file number
+//                            and package, so typing the file number fills in an invoice
 //   POST ?op=invoice-save    { id?, invoice }  a new draft, or changes to a draft
 //   POST ?op=invoice-send    { id, stripe }    stripe: true has Stripe email it with a Pay now link;
 //                                              false marks it sent by Lino (owner only)
 //   POST ?op=invoice-paid    { id, date, receivedBy }  paid outside Stripe; adds the income (owner only)
 //   POST ?op=invoice-void    { id }  (owner only)
 //   POST ?op=invoice-delete  { id }  drafts only (owner only)
-import { listClients } from '../store.js'
+import { listClients, saveClient } from '../store.js'
+import { ensureFileNo } from '../fileNo.js'
 import { can } from './roles.js'
 import { RECEIVED_BY, SERVICES } from './income.js'
 import { DUE_DAYS, chargesGst, cleanInvoice, markPaidInStripe, nextNumber, sendThroughStripe, voidInStripe } from './invoices.js'
@@ -33,12 +36,18 @@ export async function invoiceOps(op, req, user) {
   if (op === 'invoices' && get) {
     if (!can(user.role, 'view')) return denied
     const [invoices, clients, settings] = await Promise.all([listRecords('invoice'), listClients(), getSettings()])
+    for (const c of clients) if (await ensureFileNo(c)) await saveClient(c)
     return [
       200,
       {
         invoices: invoices.sort(byNewest),
         clients: clients
-          .map((c) => ({ id: c.id, name: c.details.name, email: c.details.email ?? '' }))
+          .map((c) => ({
+            id: c.id,
+            name: c.details.name,
+            email: c.details.email ?? '',
+            ...(c.fileNo ? { fileNo: c.fileNo, package: c.docs?.package ?? null } : {}),
+          }))
           .sort((a, b) => a.name.localeCompare(b.name)),
         services: SERVICES,
         dueDays: DUE_DAYS,

@@ -13,6 +13,7 @@
 import { route, isAdmin } from './_lib/http.js'
 import { getClient, isClientId, saveClient } from './_lib/store.js'
 import { signDoc } from './_lib/esign.js'
+import { ensureFileNo } from './_lib/fileNo.js'
 import { publicView } from './_lib/client.js'
 import { MIN_PASSWORD, acceptInvite, currentClient, inviteClient, loginStatus, removeLogin, sessionCookie, signIn, signOut } from './_lib/portal.js'
 
@@ -77,6 +78,7 @@ export default route(async (req, res) => {
       agent: req.headers['user-agent'],
     })
     if (result !== 'ok') return [result === 'signed' ? 409 : 400, { error: result, message: SIGN_MESSAGES[result] }]
+    await ensureFileNo(client)
     await saveClient(client)
     return [200, { client: publicView(client) }]
   }

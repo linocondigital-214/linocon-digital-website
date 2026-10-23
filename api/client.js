@@ -5,6 +5,7 @@ import { deleteClient, getClient, isClientId, saveClient } from './_lib/store.js
 import { applyChanges, BadRequest } from './_lib/client.js'
 import { removeLogin } from './_lib/portal.js'
 import { withSignChecks } from './_lib/esign.js'
+import { ensureFileNo } from './_lib/fileNo.js'
 
 export default route(async (req) => {
   if (!(await isAdmin(req))) return [401, { error: 'signin' }]
@@ -13,7 +14,10 @@ export default route(async (req) => {
 
   if (req.method === 'GET') {
     const client = await getClient(id)
-    return client ? [200, { client: withSignChecks(client) }] : [404, { error: 'not-found' }]
+    if (!client) return [404, { error: 'not-found' }]
+    // Agreements signed before file numbers existed get theirs here.
+    if (await ensureFileNo(client)) await saveClient(client)
+    return [200, { client: withSignChecks(client) }]
   }
 
   if (req.method === 'PATCH') {
@@ -25,6 +29,7 @@ export default route(async (req) => {
       if (err instanceof BadRequest) return [400, { error: 'bad-request', message: err.message }]
       throw err
     }
+    await ensureFileNo(client)
     await saveClient(client)
     return [200, { client: withSignChecks(client) }]
   }
