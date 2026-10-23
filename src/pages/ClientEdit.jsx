@@ -43,6 +43,11 @@ export default function ClientEdit() {
             <Link to="/admin" className="text-sm font-semibold text-text-secondary! hover:text-text! mr-auto">
               &larr; All clients
             </Link>
+            {state.client?.fileNo && (
+              <span className="text-sm text-text-secondary" title="Type this into a new invoice in Finance">
+                File no. <strong className="font-mono text-text">{state.client.fileNo}</strong>
+              </span>
+            )}
             <a href="#worklog" className="h-11 px-5 rounded-full border border-border text-sm font-semibold flex items-center hover:border-text-tertiary">
               Work log
             </a>

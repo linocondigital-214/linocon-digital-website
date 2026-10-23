@@ -13,6 +13,7 @@ import {
   toCents,
   voidInvoice,
 } from '../../lib/finance'
+import { invoiceChoices, invoiceLines } from '../../lib/packages'
 
 const todayIso = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Vancouver' }).format(new Date())
 const total = (inv) => inv.subtotal + (inv.gst || 0)
@@ -208,7 +209,14 @@ function Tile({ label, value, bad = false }) {
 
 const field = 'w-full h-12 rounded-xl bg-fin-panel-2 border border-fin-line px-4 text-text outline-none focus:border-fin-blue'
 const OTHER = '__other'
+const cleanFileNo = (value) => String(value ?? '').toUpperCase().replace(/\s+/g, '')
 const emptyLine = () => ({ description: '', service: '', amount: '' })
+// Like toCents, with a minus sign allowed for a saving or discount.
+const lineCents = (text) => {
+  const t = String(text ?? '').trim()
+  const cents = toCents(t.startsWith('-') ? t.slice(1) : t)
+  return cents === null ? null : t.startsWith('-') ? -cents : cents
+}
 
 function InvoiceForm({ invoice, lists, onBack, onKeep, onSaved, onDeleted }) {
   const isNew = !invoice
@@ -221,6 +229,7 @@ function InvoiceForm({ invoice, lists, onBack, onKeep, onSaved, onDeleted }) {
     email: invoice?.email ?? firstClient?.email ?? '',
     dueDays: invoice?.dueDays ?? 14,
     note: invoice?.note ?? '',
+    fileNo: invoice?.fileNo ?? '',
   }))
   const [lines, setLines] = useState(() =>
     invoice ? invoice.lines.map((l) => ({ ...l, amount: centsToText(l.amount) })) : [emptyLine()],
@@ -237,7 +246,23 @@ function InvoiceForm({ invoice, lists, onBack, onKeep, onSaved, onDeleted }) {
     setForm((f) => ({ ...f, clientId: id, email: client ? client.email : f.email }))
   }
 
-  const cents = lines.map((l) => toCents(l.amount) ?? 0)
+  // Typing a signed client's file number picks them and fills in the lines.
+  const [fileInput, setFileInput] = useState(invoice?.fileNo ?? '')
+  const [what, setWhat] = useState('')
+  const fileClient = lists.clients.find((c) => c.fileNo && c.fileNo === cleanFileNo(fileInput))
+  const choices = fileClient?.package ? invoiceChoices(fileClient.package) : []
+
+  function fillFromFile(choice) {
+    if (!fileClient) return setError('No signed agreement has that file number. Check it on the client’s agreement in Admin.')
+    setError('')
+    const pick = choice || what || choices[0]?.value
+    setWhat(pick ?? '')
+    setForm((f) => ({ ...f, clientId: fileClient.id, email: fileClient.email || f.email, fileNo: fileClient.fileNo }))
+    const filled = pick ? invoiceLines(fileClient.package, pick, fileClient.fileNo) : []
+    setLines(filled.length ? filled.map((l) => ({ ...l, amount: centsToText(l.amount) })) : [emptyLine()])
+  }
+
+  const cents = lines.map((l) => lineCents(l.amount) ?? 0)
   const subtotal = cents.reduce((t, c) => t + c, 0)
   const gst = lists.gst ? Math.round(subtotal * 0.05) : 0
 
@@ -248,9 +273,9 @@ function InvoiceForm({ invoice, lists, onBack, onKeep, onSaved, onDeleted }) {
       ...form,
       clientId: form.clientId === OTHER ? null : form.clientId,
       dueDays: Number(form.dueDays),
-      lines: lines.map((l) => ({ description: l.description, service: l.service || 'Other', amount: toCents(l.amount) })),
+      lines: lines.map((l) => ({ description: l.description, service: l.service || 'Other', amount: lineCents(l.amount) })),
     }
-    const bad = lines.findIndex((l) => l.amount.trim() && toCents(l.amount) === null)
+    const bad = lines.findIndex((l) => l.amount.trim() && lineCents(l.amount) === null)
     if (bad >= 0) return setError('Type each amount like 349.99.')
     setBusy(send || 'save')
     try {
@@ -299,6 +324,46 @@ function InvoiceForm({ invoice, lists, onBack, onKeep, onSaved, onDeleted }) {
       <h1 className="font-display font-bold text-3xl pt-3">{isNew ? 'New invoice' : 'Draft invoice'}</h1>
 
       <fieldset disabled={Boolean(busy)} className="mt-6 flex flex-col gap-5">
+        <div className="rounded-2xl border border-fin-line bg-fin-panel p-4 flex flex-col gap-3">
+          <Label text="File number (optional)" hint="From a signed service agreement. It fills in the client and what they signed up for.">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+              <input
+                value={fileInput}
+                onChange={(e) => setFileInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    fillFromFile()
+                  }
+                }}
+                placeholder="LCF-2026-001"
+                autoComplete="off"
+                className={`${field} min-w-0 uppercase`}
+              />
+              <button type="button" onClick={() => fillFromFile()} className="h-12 px-5 rounded-full fin-grad text-white font-bold">
+                Fill in
+              </button>
+            </div>
+          </Label>
+          {fileClient && (
+            <div className="text-sm">
+              <span className="text-fin-good font-semibold">{fileClient.name}</span>
+              {!choices.length && <span className="text-fin-muted"> · no package saved, so add the lines yourself.</span>}
+            </div>
+          )}
+          {fileClient && choices.length > 0 && form.fileNo === fileClient.fileNo && (
+            <Label text="What to bill">
+              <select value={what} onChange={(e) => fillFromFile(e.target.value)} className={field}>
+                {choices.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            </Label>
+          )}
+        </div>
+
         <div className="grid sm:grid-cols-2 gap-4">
           <Label text="Client">
             <select value={form.clientId} onChange={pickClient} className={field}>
@@ -340,7 +405,7 @@ function InvoiceForm({ invoice, lists, onBack, onKeep, onSaved, onDeleted }) {
                 </select>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-fin-muted">$</span>
-                  <input inputMode="decimal" placeholder="0.00" value={l.amount} onChange={setLine(i, 'amount')} aria-label="Amount" className={`${field} pl-7`} />
+                  <input inputMode="text" placeholder="0.00" value={l.amount} onChange={setLine(i, 'amount')} aria-label="Amount" className={`${field} pl-7`} />
                 </div>
                 {lines.length > 1 && (
                   <button type="button" onClick={() => setLines((ls) => ls.filter((_, n) => n !== i))} className="col-span-2 text-left text-xs text-fin-muted hover:text-fin-bad">
@@ -479,6 +544,7 @@ function InvoiceView({ invoice, lists, onBack, onSaved }) {
 
       <div className="mt-6 rounded-2xl border border-fin-line bg-fin-panel p-5 grid grid-cols-2 gap-4 text-sm">
         <Fact label="Bill to" value={invoice.client} />
+        {invoice.fileNo && <Fact label="File no." value={invoice.fileNo} />}
         <Fact label="Email" value={invoice.email || '—'} />
         <Fact label="Sent" value={`${shortDate(invoice.sentOn ?? invoice.issued)}${invoice.sentBy === 'stripe' ? ' by Stripe' : ''}`} />
         <Fact label={invoice.status === 'paid' ? 'Paid' : 'Due'} value={shortDate(invoice.status === 'paid' ? invoice.paidOn : invoice.due)} />

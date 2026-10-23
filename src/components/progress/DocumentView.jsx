@@ -248,6 +248,11 @@ export function StatusCard({ client, docKey, onChange }) {
           {state.esign.ip && <span className="text-text-secondary"> · from {state.esign.ip}</span>}
         </div>
       )}
+      {docKey === 'agreement' && client.fileNo && (
+        <div className="text-sm pt-3">
+          File number <strong className="font-mono">{client.fileNo}</strong>. Type it into a new invoice in Finance to fill in what they signed up for.
+        </div>
+      )}
       {client.signChanged?.includes(docKey) && (
         <div className="text-sm text-orange pt-2">
           This has changed since the client signed it. To have them sign the new version, set it back to Sent.
