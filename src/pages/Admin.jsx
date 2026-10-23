@@ -4,6 +4,7 @@ import PrivateShell, { SetupNotice, Notice } from '../components/progress/Privat
 import { AdminSignIn, AdminSignOut } from '../components/progress/AdminClientGate'
 import { LoginChip } from '../components/progress/ClientLogin'
 import { WorkLogForm, WorkLogList } from '../components/progress/WorkLog'
+import { ScheduleSection } from '../components/progress/Schedule'
 import { SERVICES, changeClient, createClient, fetchClients, forgetOldPassword, monthLabel, percent } from '../lib/clientProgress'
 import { agoLabel, logEntries, summary, thisMonthKey } from '../lib/clientOverview'
 import usePageMeta from '../lib/usePageMeta'
@@ -18,7 +19,7 @@ export default function Admin() {
   const load = useCallback(() => {
     forgetOldPassword()
     fetchClients()
-      .then(({ clients, logins }) => setState({ status: 'ready', clients, logins }))
+      .then(({ clients, logins, paidOn }) => setState({ status: 'ready', clients, logins, paidOn }))
       .catch((err) => {
         if (err.status === 401) setState({ status: 'login' })
         else setState({ status: err.code === 'setup' ? 'setup' : 'error' })
@@ -42,6 +43,7 @@ export default function Admin() {
         <ClientList
           clients={state.clients}
           logins={state.logins}
+          paidOn={state.paidOn}
           onAdded={(client) => setState((s) => ({ ...s, clients: [client, ...s.clients] }))}
           onChanged={(client) =>
             setState((s) => ({ ...s, clients: s.clients.map((c) => (c.id === client.id ? client : c)) }))
@@ -53,7 +55,7 @@ export default function Admin() {
   )
 }
 
-function ClientList({ clients, logins, onAdded, onChanged, onSignedOut }) {
+function ClientList({ clients, logins, paidOn, onAdded, onChanged, onSignedOut }) {
   const [adding, setAdding] = useState(clients.length === 0)
   const [filter, setFilter] = useState('all')
   // Clients that need attention come first.
@@ -107,6 +109,7 @@ function ClientList({ clients, logins, onAdded, onChanged, onSignedOut }) {
 
       {clients.length > 0 && (
         <>
+          <ScheduleSection clients={clients} paidOn={paidOn} onChange={change} />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3" role="tablist" aria-label="Filter clients">
             {FILTERS.map((f) => (
               <button

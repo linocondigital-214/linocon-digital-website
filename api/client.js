@@ -6,6 +6,11 @@ import { applyChanges, BadRequest } from './_lib/client.js'
 import { removeLogin } from './_lib/portal.js'
 import { withSignChecks } from './_lib/esign.js'
 import { ensureFileNo } from './_lib/fileNo.js'
+import { firstPaidByClient } from './_lib/paid.js'
+
+// What Lino's pages get: the client, which signed documents changed, and the
+// date of their first paid invoice (it starts the schedule of work).
+const forAdmin = async (client) => ({ ...withSignChecks(client), paidOn: (await firstPaidByClient())[client.id] ?? null })
 
 export default route(async (req) => {
   if (!(await isAdmin(req))) return [401, { error: 'signin' }]
@@ -17,7 +22,7 @@ export default route(async (req) => {
     if (!client) return [404, { error: 'not-found' }]
     // Agreements signed before file numbers existed get theirs here.
     if (await ensureFileNo(client)) await saveClient(client)
-    return [200, { client: withSignChecks(client) }]
+    return [200, { client: await forAdmin(client) }]
   }
 
   if (req.method === 'PATCH') {
@@ -31,7 +36,7 @@ export default route(async (req) => {
     }
     await ensureFileNo(client)
     await saveClient(client)
-    return [200, { client: withSignChecks(client) }]
+    return [200, { client: await forAdmin(client) }]
   }
 
   if (req.method === 'DELETE') {

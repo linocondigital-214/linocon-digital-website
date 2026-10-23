@@ -4,10 +4,13 @@
 //   POST ?op=password  step 1: the password
 //   POST ?op=code      step 2: the 6-digit code (or a recovery code)
 //   POST ?op=signout
+//   POST ?op=calendar-link { renew? }  the private link to the schedule's calendar feed
+//   GET  ?op=calendar&key=<key>        the feed itself (.ics), for Lino's phone calendar
 import QRCode from 'qrcode'
 import { route } from './_lib/http.js'
 import { checkSetup, currentUser, finishSignIn, sessionCookie, signOut, startSignIn } from './_lib/finance/auth.js'
 import { otpauthUrl } from './_lib/finance/totp.js'
+import { calendarFeed, calendarKey } from './_lib/calendarFeed.js'
 
 const MESSAGES = {
   wrong: "That didn't match. Try again.",
@@ -17,7 +20,7 @@ const MESSAGES = {
 
 const failed = (status) => [status === 'locked' ? 429 : 401, { error: status, message: MESSAGES[status] }]
 
-export default route(async (req, res) => {
+const handler = route(async (req, res) => {
   const op = req.query?.op
   const post = req.method === 'POST'
 
@@ -53,5 +56,18 @@ export default route(async (req, res) => {
     return [200, { signedIn: false }]
   }
 
+  if (op === 'calendar-link' && post) {
+    const user = await currentUser(req, 'admin')
+    if (user?.role !== 'owner') return [401, { error: 'signin' }]
+    const key = await calendarKey(Boolean(req.body?.renew))
+    const host = req.headers['x-forwarded-host'] ?? req.headers.host
+    return [200, { url: `https://${host}/api/admin?op=calendar&key=${key}` }]
+  }
+
   return [404, { error: 'unknown' }]
 })
+
+export default function admin(req, res) {
+  if (req.query?.op === 'calendar' && req.method === 'GET') return calendarFeed(req, res)
+  return handler(req, res)
+}

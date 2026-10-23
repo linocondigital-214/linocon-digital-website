@@ -1,7 +1,8 @@
 // The invoice calls behind /api/finance:
 //   GET  ?op=invoices        every invoice (newest first), clients and choices for the form;
 //                            clients with a signed agreement come with their file number
-//                            and package, so typing the file number fills in an invoice
+//                            and package, so typing the file number fills in an invoice,
+//                            and monthly clients with the dates their invoices are due
 //   POST ?op=invoice-save    { id?, invoice }  a new draft, or changes to a draft
 //   POST ?op=invoice-send    { id, stripe }    stripe: true has Stripe email it with a Pay now link;
 //                                              false marks it sent by Lino (owner only)
@@ -10,6 +11,8 @@
 //   POST ?op=invoice-delete  { id }  drafts only (owner only)
 import { listClients, saveClient } from '../store.js'
 import { ensureFileNo } from '../fileNo.js'
+import { firstPaidByClient } from '../paid.js'
+import { addDays, clientSchedule } from '../schedule.js'
 import { can } from './roles.js'
 import { RECEIVED_BY, SERVICES } from './income.js'
 import { DUE_DAYS, chargesGst, cleanInvoice, markPaidInStripe, nextNumber, sendThroughStripe, voidInStripe } from './invoices.js'
@@ -37,6 +40,10 @@ export async function invoiceOps(op, req, user) {
     if (!can(user.role, 'view')) return denied
     const [invoices, clients, settings] = await Promise.all([listRecords('invoice'), listClients(), getSettings()])
     for (const c of clients) if (await ensureFileNo(c)) await saveClient(c)
+    const paid = await firstPaidByClient()
+    // Monthly invoices due up to two months ahead, for the invoice calendar.
+    const until = addDays(today(), 62)
+    const dueOf = (c) => clientSchedule(c, paid[c.id], until).items.filter((i) => i.kind === 'invoice').map(({ date, month, n }) => ({ date, month, n }))
     return [
       200,
       {
@@ -46,7 +53,7 @@ export async function invoiceOps(op, req, user) {
             id: c.id,
             name: c.details.name,
             email: c.details.email ?? '',
-            ...(c.fileNo ? { fileNo: c.fileNo, package: c.docs?.package ?? null } : {}),
+            ...(c.fileNo ? { fileNo: c.fileNo, package: c.docs?.package ?? null, due: dueOf(c) } : {}),
           }))
           .sort((a, b) => a.name.localeCompare(b.name)),
         services: SERVICES,

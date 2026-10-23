@@ -1,3 +1,4 @@
+import { ScheduleCard } from '../components/progress/Schedule'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import PrivateShell from '../components/progress/PrivateShell'
 import AdminClientGate, { AdminSignIn, AdminSignOut } from '../components/progress/AdminClientGate'
@@ -62,6 +63,7 @@ export default function ClientEdit() {
             </button>
           </div>
           {state.client && <ClientLogin client={state.client} />}
+          {state.client && <ScheduleCard client={state.client} onChange={onChange} />}
           <ProgressBoard client={state.client} editable onChange={onChange} docBase={`/admin/${id}`} />
           <section id="worklog" className="mt-16 pt-10 border-t border-border scroll-mt-24" aria-labelledby="worklog-heading">
             <h2 id="worklog-heading" className="font-display font-bold text-2xl md:text-3xl">

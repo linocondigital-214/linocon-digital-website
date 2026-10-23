@@ -12,6 +12,8 @@
 //              fields: { <field>: text }, text: { <section id>: text } } }
 //   worklog: { <entry id>: { date: 'YYYY-MM-DD', text } }   Lino's private notes, never shown to the client
 //   payment: { label, link, portal }   the client's Pay button: Stripe payment link and billing portal
+//   schedule: { depositOn: 'YYYY-MM-DD' }  deposit received outside /finance (see api/_lib/schedule.js)
+//   fileNo:  'LCF-2026-001'   set once the agreement is signed (api/_lib/fileNo.js)
 // }
 import { isDrawing } from './esign.js'
 
@@ -28,7 +30,7 @@ export function publicView(client) {
 
 const DETAIL_FIELDS = ['name', 'website', 'contact', 'email', 'serviceArea', 'startDate']
 const SERVICES = ['website', 'seo', 'backlinks', 'grow']
-const EDITABLE = new Set(['details', 'has', 'done', 'na', 'signoff', 'numbers', 'months', 'docs', 'worklog', 'payment'])
+const EDITABLE = new Set(['details', 'has', 'done', 'na', 'signoff', 'numbers', 'months', 'docs', 'worklog', 'payment', 'schedule'])
 const FORBIDDEN = new Set(['__proto__', 'constructor', 'prototype'])
 const MAX_SIZE = 200_000
 
@@ -67,6 +69,9 @@ export function applyChanges(client, changes) {
       (typeof value === 'string' && (isOwnerDrawing ? isDrawing(value) : value.length <= 4000))
     if (!ok) throw new BadRequest('Invalid change value')
     if (path[0] === 'payment') checkPayment(path, value)
+    if (path[0] === 'schedule' && !(path.length === 2 && path[1] === 'depositOn' && (value === null || /^\d{4}-\d{2}-\d{2}$/.test(value)))) {
+      throw new BadRequest('Invalid change path')
+    }
     // A client's e-signature is only written by the client signing
     // (api/_lib/esign.js). Lino can clear it, never write it.
     if (path[0] === 'docs' && path[2] === 'esign' && !(path.length === 3 && value === null)) {

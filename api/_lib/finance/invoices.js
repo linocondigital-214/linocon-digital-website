@@ -63,6 +63,8 @@ export function cleanInvoice(input = {}, clients, settings) {
     gst,
     note: text(input.note, 500),
     fileNo: text(input.fileNo, 20).toUpperCase(),
+    // Which month of a monthly client's schedule this bills (the invoice calendar).
+    forMonth: /^\d{4}-\d{2}$/.test(input.forMonth ?? '') ? input.forMonth : '',
   }
 }
 

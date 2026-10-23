@@ -172,3 +172,6 @@ export function useNoIndex() {
     return () => meta.remove()
   }, [])
 }
+
+// The private link to the schedule's calendar feed, for Lino's phone calendar.
+export const fetchCalendarLink = (renew = false) => post('/api/admin?op=calendar-link', { renew })
