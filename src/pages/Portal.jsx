@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import PrivateShell, { Notice } from '../components/progress/PrivateShell'
 import ProgressBoard from '../components/progress/ProgressBoard'
-import { ClientSteps } from '../components/progress/Journey'
+import { ClientSteps, PayNow } from '../components/progress/Journey'
 import { fetchMyProgress, portalInvite, portalSignIn, portalSignOut } from '../lib/clientProgress'
 import usePageMeta from '../lib/usePageMeta'
 
@@ -49,6 +49,7 @@ export default function Portal() {
       )}
       {state.status === 'ready' && (
         <>
+          <PayNow client={state.client} onClient={(client) => setState({ status: 'ready', client })} />
           <ClientSteps client={state.client} onClient={(client) => setState({ status: 'ready', client })} />
           <ProgressBoard client={state.client} docBase="/clients" />
         </>

@@ -17,6 +17,7 @@
 //   infoSentAt: when the client finished the "What you already have" checklist
 //   journey: { <step key>: 'YYYY-MM-DD' }  steps Lino marked as done by hand (src/lib/journey.js)
 //   fileNo:  'LCF-2026-001'   set once the agreement is signed (api/_lib/fileNo.js)
+//   etransfer: { <invoice number>: ISO }  the client said they sent an e-Transfer for it
 //   notified: { <milestone>: ISO }  progress emails already sent (api/_lib/progressMail.js)
 // }
 import { isDrawing } from './esign.js'

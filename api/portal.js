@@ -19,7 +19,7 @@ import { signDoc } from './_lib/esign.js'
 import { ensureFileNo } from './_lib/fileNo.js'
 import { publicView } from './_lib/client.js'
 import { billingFor } from './_lib/paid.js'
-import { notifyProgress } from './_lib/progressMail.js'
+import { etransferNotice, notifyProgress } from './_lib/progressMail.js'
 import { askChanges, saveHas, saveWishes } from './_lib/clientInput.js'
 import { MIN_PASSWORD, acceptInvite, currentClient, inviteClient, loginStatus, removeLogin, sessionCookie, signIn, signOut } from './_lib/portal.js'
 
@@ -47,6 +47,7 @@ const INPUT_MESSAGES = {
   'not-sent': 'This document isn’t waiting for your answer.',
   note: 'Type what you would like changed.',
   has: 'That answer could not be saved. Refresh the page and try again.',
+  invoice: 'That invoice is already paid or no longer open. Refresh the page.',
 }
 
 // The client's own page also shows their unpaid invoices, to pay from their steps.
@@ -118,6 +119,23 @@ export default route(async (req, res) => {
     client.updatedAt = new Date().toISOString()
     await notifyProgress(client)
     await saveClient(client)
+    return [200, { client: await clientView(client) }]
+  }
+
+  // The client says they sent an Interac e-Transfer for one of their unpaid invoices.
+  if (op === 'etransfer' && post) {
+    const clientId = await currentClient(req)
+    if (!clientId) return [401, { error: 'signin' }]
+    const client = await getClient(clientId)
+    if (!client) return [404, { error: 'not-found' }]
+    const { unpaid } = await billingFor(clientId)
+    const invoice = unpaid.find((i) => i.number && i.number === req.body?.number)
+    if (!invoice) return [400, { error: 'invoice', message: INPUT_MESSAGES.invoice }]
+    if (!client.etransfer?.[invoice.number]) {
+      client.etransfer = { ...client.etransfer, [invoice.number]: new Date().toISOString() }
+      await saveClient(client)
+      await etransferNotice(client, invoice)
+    }
     return [200, { client: await clientView(client) }]
   }
 

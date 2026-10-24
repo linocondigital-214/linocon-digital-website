@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { WISH_CHOICES, WISH_WHEN, hasWebsite, whenLabel, wishLabel } from '../../../api/_lib/wishes.js'
 import { INTAKE } from '../../lib/clientChecklist'
-import { askDocChanges, dateLabel, saveMyInfo, sendWishes, today } from '../../lib/clientProgress'
+import { askDocChanges, dateLabel, saidEtransfer, saveMyInfo, sendWishes, today } from '../../lib/clientProgress'
 import { CONTACT_EMAIL, notifyLino } from '../../lib/leads'
 import { currentStep, journeySteps } from '../../lib/journey'
 import { money } from '../../lib/packages'
@@ -256,7 +256,7 @@ export function ClientSteps({ client, onClient }) {
   )
 }
 
-// The client's next unpaid invoice, with Stripe's Pay now page.
+// Under the Pay step: points to the Pay now box at the top of the page.
 function PayInvoice({ owing, payment }) {
   if (!owing) {
     return (
@@ -266,17 +266,125 @@ function PayInvoice({ owing, payment }) {
     )
   }
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-3">
-      {owing.payUrl && (
-        <a href={owing.payUrl} target="_blank" rel="noreferrer" className={primary}>
-          Pay {money(owing.total)} now
-        </a>
+    <div className="mt-3">
+      <a href="#pay-now" className={primary}>
+        Pay {money(owing.total)} now
+      </a>
+    </div>
+  )
+}
+
+const ETRANSFER_TO = CONTACT_EMAIL
+
+// At the top of the client's page while an invoice is unpaid: Pay now, by
+// card (Stripe's page for the invoice) or by Interac e-Transfer.
+export function PayNow({ client, onClient }) {
+  const unpaid = client.billing?.unpaid ?? []
+  if (!unpaid.length) return null
+  return (
+    <section id="pay-now" className={`${card} border-blue`} aria-labelledby="pay-heading">
+      <h2 id="pay-heading" className="font-display font-bold text-2xl">
+        {unpaid.length > 1 ? 'Invoices to pay' : 'Your invoice is ready'}
+      </h2>
+      <div className="mt-4 flex flex-col gap-4">
+        {unpaid.map((inv) => (
+          <PayOne key={inv.number || inv.due} inv={inv} client={client} onClient={onClient} />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function PayOne({ inv, client, onClient }) {
+  const [how, setHow] = useState('') // '' | 'choose' | 'etransfer'
+  const [state, setState] = useState({ status: 'idle' })
+  const [copied, setCopied] = useState('')
+  const told = inv.number && client.etransfer?.[inv.number]
+
+  const copy = (text, what) => {
+    navigator.clipboard?.writeText(text).then(() => setCopied(what), () => {})
+  }
+
+  async function sent() {
+    setState({ status: 'saving' })
+    try {
+      onClient(await saidEtransfer(inv.number))
+      setState({ status: 'idle' })
+    } catch (err) {
+      setState({ status: 'error', message: err.message })
+    }
+  }
+
+  return (
+    <div className="rounded-xl border border-border p-4">
+      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+        <div className="text-2xl font-bold mr-auto">{money(inv.total)}</div>
+        <div className="text-sm text-text-secondary">
+          Invoice{inv.number ? ` ${inv.number}` : ''}
+          {inv.due ? ` · due ${dateLabel(inv.due)}` : ''}
+        </div>
+      </div>
+      {told ? (
+        <div className="mt-3 rounded-lg border border-blue/50 bg-blue/10 p-3 text-sm">
+          Thanks, you told us you sent an e-Transfer on {dateLabel(told)}. This invoice shows as paid once it arrives.
+        </div>
+      ) : how === '' ? (
+        <button type="button" onClick={() => setHow('choose')} className={`${primary} mt-4`}>
+          Pay now
+        </button>
+      ) : (
+        <div className="mt-4 flex flex-col gap-3">
+          <div className="font-semibold">How would you like to pay?</div>
+          <div className="grid sm:grid-cols-2 gap-2">
+            {inv.payUrl ? (
+              <a href={inv.payUrl} target="_blank" rel="noreferrer" className={`${chip} h-auto min-h-12 justify-center py-3`}>
+                Credit or debit card
+              </a>
+            ) : (
+              <div className="rounded-xl border border-border px-4 py-3 text-sm text-text-secondary">
+                Card: use the Pay button in the invoice email we sent you.
+              </div>
+            )}
+            <button
+              type="button"
+              aria-pressed={how === 'etransfer'}
+              onClick={() => setHow('etransfer')}
+              className={`${chip} h-auto min-h-12 justify-center py-3 ${how === 'etransfer' ? 'border-blue bg-blue/15' : ''}`}
+            >
+              Interac e-Transfer
+            </button>
+          </div>
+          {how === 'etransfer' && (
+            <div className="rounded-xl border border-border bg-surface-2 p-4 text-sm flex flex-col gap-3">
+              <div>In your bank's app, send an Interac e-Transfer with these details:</div>
+              <EtransferRow label="Send to" value={ETRANSFER_TO} onCopy={() => copy(ETRANSFER_TO, 'email')} copied={copied === 'email'} />
+              <EtransferRow label="Amount" value={money(inv.total)} onCopy={() => copy((inv.total / 100).toFixed(2), 'amount')} copied={copied === 'amount'} />
+              {inv.number && <EtransferRow label="Message" value={inv.number} onCopy={() => copy(inv.number, 'number')} copied={copied === 'number'} />}
+              <div className="text-text-secondary">Put the invoice number in the message so we can match your payment.</div>
+              {state.status === 'error' && <p className="text-orange">{state.message}</p>}
+              {inv.number && (
+                <div>
+                  <button type="button" onClick={sent} disabled={state.status === 'saving'} className={primary}>
+                    {state.status === 'saving' ? 'Sending...' : "I've sent the e-Transfer"}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       )}
-      <span className="text-sm text-text-secondary">
-        Invoice{owing.number ? ` ${owing.number}` : ''}, {money(owing.total)}
-        {owing.due ? `, due ${dateLabel(owing.due)}` : ''}
-        {!owing.payUrl && '. It is in your email, with how to pay it.'}
-      </span>
+    </div>
+  )
+}
+
+function EtransferRow({ label, value, onCopy, copied }) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+      <span className="w-20 text-text-secondary">{label}</span>
+      <b className="mr-auto break-all">{value}</b>
+      <button type="button" onClick={onCopy} className="text-blue font-semibold">
+        {copied ? 'Copied' : 'Copy'}
+      </button>
     </div>
   )
 }
