@@ -99,6 +99,7 @@ export async function invoiceOps(op, req, user) {
     const stripe = viaStripe ? await sendThroughStripe(ready, settings) : {}
     const sent = stamp({ ...ready, ...stripe, status: 'open', sentOn: issued, sentBy: viaStripe ? 'stripe' : 'self' })
     await saveRecord('invoice', sent)
+    await notifyClients([sent.clientId])
     return [200, { invoice: sent }]
   }
 

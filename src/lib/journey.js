@@ -132,10 +132,13 @@ export function journeySteps(client, { joined, invited } = {}) {
       key: 'pay',
       name: 'Client pays',
       done: paid,
-      turn: 'client',
+      // Once the client says an e-Transfer is on its way, Lino marks it paid.
+      turn: owing && client.etransfer?.[owing.number] ? 'you' : 'client',
       line: paid
         ? `Paid ${dateLabel(paidOn || client.schedule.depositOn)}`
-        : owing
+        : owing && client.etransfer?.[owing.number]
+          ? `Client says they sent an e-Transfer for ${owing.number} (${money(owing.total)}) on ${dateLabel(client.etransfer[owing.number])}. Mark it paid in Finance once it arrives`
+          : owing
           ? `Waiting for invoice${owing.number ? ` ${owing.number}` : ''} (${money(owing.total)})${owing.due ? `, due ${dateLabel(owing.due)}` : ''}`
           : 'Waiting for the client to pay the invoice',
       owing,

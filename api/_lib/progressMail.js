@@ -38,6 +38,17 @@ export const MILESTONES = [
     done: (c) => signed(c, 'agreement') && c.docs.agreement.ownerName,
     client: () => ['Your service agreement is signed', 'Your service agreement is now signed by both of us, and a copy is on your client page. Your invoice comes next, by email.'],
   },
+  {
+    key: 'invoice',
+    by: 'you',
+    done: (c, x) => x.invoiced,
+    client: (c, x) => [
+      'Your invoice is ready',
+      x.owing
+        ? `Your invoice${x.owing.number ? ` ${x.owing.number}` : ''} for ${(x.owing.total / 100).toLocaleString('en-CA', { style: 'currency', currency: 'CAD' })} is ready. Sign in to your client page and press Pay now to pay by card or Interac e-Transfer.`
+        : 'Your invoice is ready. Sign in to your client page to see it.',
+    ],
+  },
   { key: 'paid', by: 'client', done: (c, x) => x.paid, lino: 'paid their invoice', next: 'Work has started. Check the target launch date on their profile.' },
   {
     key: 'start',
@@ -89,7 +100,7 @@ export async function notifyProgress(client) {
   const [billing, login] = await Promise.all([billingFor(client.id), loginStatus(client.id)])
   const paidOn = billing.paidOn || client.schedule?.depositOn || null
   const when = workStart(client, paidOn)
-  const facts = { joined: Boolean(login.account), paid: Boolean(paidOn), start: when.start, launch: launchDate(client, when.start) }
+  const facts = { joined: Boolean(login.account), invoiced: billing.invoiced, owing: billing.unpaid[0], paid: Boolean(paidOn), start: when.start, launch: launchDate(client, when.start) }
   const done = new Set(MILESTONES.filter((m) => m.done(client, facts)).map((m) => m.key))
   const first = !client.notified
   const notified = { ...client.notified }
@@ -126,5 +137,19 @@ export async function notifyClients(ids) {
   for (const id of new Set(ids)) {
     const client = id && (await getClient(id))
     if (client && (await notifyProgress(client))) await saveClient(client)
+  }
+}
+
+// The client pressed "I've sent the e-Transfer" on their page: tell Lino to
+// look for it and mark the invoice paid in Finance once it arrives.
+export async function etransferNotice(client, invoice) {
+  const m = {
+    lino: `says they sent an e-Transfer for invoice ${invoice.number} (${(invoice.total / 100).toLocaleString('en-CA', { style: 'currency', currency: 'CAD' })})`,
+    next: 'Accept the e-Transfer in your bank, then mark the invoice paid in Finance.',
+  }
+  try {
+    await sendMail(toLino(client, m))
+  } catch (err) {
+    console.error('etransfer email', err)
   }
 }
