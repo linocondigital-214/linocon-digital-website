@@ -178,3 +178,7 @@ export function useNoIndex() {
 
 // The private link to the schedule's calendar feed, for Lino's phone calendar.
 export const fetchCalendarLink = (renew = false) => post('/api/admin?op=calendar-link', { renew })
+
+// Designed emails sent from the site (api/_lib/mail.js), to the client's saved address.
+export const mailStatus = () => api('/api/admin?op=mail-status')
+export const sendClientEmail = (id, { subject, html, text }) => post('/api/admin?op=send-email', { id, subject, html, text })

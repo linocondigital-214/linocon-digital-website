@@ -6,11 +6,15 @@
 //   POST ?op=signout
 //   POST ?op=calendar-link { renew? }  the private link to the schedule's calendar feed
 //   GET  ?op=calendar&key=<key>        the feed itself (.ics), for Lino's phone calendar
+//   GET  ?op=mail-status               whether emails can be sent from the site
+//   POST ?op=send-email { id, subject, html, text }  a designed email to that client's saved address
 import QRCode from 'qrcode'
 import { route } from './_lib/http.js'
 import { checkSetup, currentUser, finishSignIn, sessionCookie, signOut, startSignIn } from './_lib/finance/auth.js'
 import { otpauthUrl } from './_lib/finance/totp.js'
 import { calendarFeed, calendarKey } from './_lib/calendarFeed.js'
+import { getClient, isClientId } from './_lib/store.js'
+import { isEmail, mailReady, sendMail } from './_lib/mail.js'
 
 const MESSAGES = {
   wrong: "That didn't match. Try again.",
@@ -62,6 +66,35 @@ const handler = route(async (req, res) => {
     const key = await calendarKey(Boolean(req.body?.renew))
     const host = req.headers['x-forwarded-host'] ?? req.headers.host
     return [200, { url: `https://${host}/api/admin?op=calendar&key=${key}` }]
+  }
+
+  if (op === 'mail-status' && req.method === 'GET') {
+    const user = await currentUser(req, 'admin')
+    if (user?.role !== 'owner') return [401, { error: 'signin' }]
+    return [200, { ready: mailReady() }]
+  }
+
+  if (op === 'send-email' && post) {
+    const user = await currentUser(req, 'admin')
+    if (user?.role !== 'owner') return [401, { error: 'signin' }]
+    const { id, subject, html, text } = req.body ?? {}
+    if (!mailReady()) return [503, { error: 'mail-setup', message: 'Sending from the site is not set up yet.' }]
+    if (!isClientId(id)) return [404, { error: 'not-found' }]
+    const client = await getClient(id)
+    if (!client) return [404, { error: 'not-found' }]
+    // Only ever to the address saved for this client.
+    const to = client.details?.email?.trim()
+    if (!isEmail(to)) return [400, { error: 'no-email', message: 'Add the client\'s email address first.' }]
+    const bad = (s, max) => typeof s !== 'string' || !s.trim() || s.length > max
+    if (bad(subject, 200) || /[\r\n]/.test(subject) || bad(html, 300000) || bad(text, 50000)) return [400, { error: 'bad-request' }]
+    try {
+      await sendMail({ to, subject, html, text })
+    } catch (err) {
+      console.error(err)
+      const auth = err?.code === 'EAUTH'
+      return [502, { error: auth ? 'mail-auth' : 'mail', message: auth ? "Gmail didn't accept the app password. Check GMAIL_APP_PASSWORD in Vercel." : "The email didn't send. Try again in a minute." }]
+    }
+    return [200, { sent: true, to }]
   }
 
   return [404, { error: 'unknown' }]

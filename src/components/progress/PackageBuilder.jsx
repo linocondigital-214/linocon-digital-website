@@ -1,4 +1,5 @@
-import EmailOptions, { gmailLink } from '../EmailOptions'
+import { gmailLink } from '../EmailOptions'
+import SendEmail from './SendEmail'
 import { copyEmail } from '../../lib/brandEmail'
 import { packageHtml, packageSubject } from '../../lib/packageMail'
 import { useEffect, useRef, useState } from 'react'
@@ -268,7 +269,7 @@ export default function PackageBuilder({ client, onChange, adminBase }) {
 
         <Totals calc={calc} />
 
-        <SendPackage client={client} pkg={pkg} calc={calc} onNext={toAgreement} />
+        <SendPackage client={client} pkg={pkg} calc={calc} onNext={toAgreement} onChange={onChange} />
       </div>
 
       <PackageSummary client={client} />
@@ -580,18 +581,19 @@ function Tick() {
   )
 }
 
-// Sends the package: one click copies the designed email, opens the print
-// window to save the PDF, then opens Gmail. A browser can't attach a file to
-// Gmail by itself, so Lino pastes the email and attaches the saved PDF.
-function SendPackage({ client, pkg, calc, onNext }) {
+// Sends the package: one click emails the designed package straight to the
+// client from the site and marks the package as Sent, so the "View my
+// package" button in the email works. The Gmail way (copy, save the PDF,
+// paste) stays behind a toggle.
+function SendPackage({ client, pkg, calc, onNext, onChange }) {
   const [state, setState] = useState('idle') // 'idle' | 'sent' | 'blocked'
   const [preview, setPreview] = useState(false)
-  const [plain, setPlain] = useState(false)
   const previewRef = useRef(null)
   const html = packageHtml(client, pkg)
   const text = packageEmail(client, pkg)
   const gmail = gmailLink(client.details.email, packageSubject(client), '')
   const btn = 'h-11 px-5 rounded-full border border-border text-sm font-semibold inline-flex items-center hover:border-text-tertiary'
+  const status = client.docs?.package?.status || 'draft'
 
   // The saved PDF is named after the page title.
   function printPdf() {
@@ -601,7 +603,14 @@ function SendPackage({ client, pkg, calc, onNext }) {
     document.title = title
   }
 
-  async function send() {
+  function markSent() {
+    if (status !== 'draft') return
+    const changes = [{ path: ['docs', 'package', 'status'], value: 'sent' }]
+    if (!client.docs?.package?.sentAt) changes.push({ path: ['docs', 'package', 'sentAt'], value: today() })
+    onChange(changes)
+  }
+
+  async function sendYourself() {
     const copied = copyEmail(html, text, previewRef.current)
     printPdf()
     const tab = window.open(gmail, '_blank')
@@ -612,9 +621,39 @@ function SendPackage({ client, pkg, calc, onNext }) {
 
   return (
     <div className="no-print flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <button type="button" onClick={send} disabled={calc.empty} className="h-11 px-5 rounded-full bg-gradient-brand text-ink text-sm font-bold disabled:opacity-40">
-          Email to client with Gmail
+      {calc.empty ? (
+        <div className="text-sm text-text-secondary">Choose a package above, then you can send it.</div>
+      ) : (
+        <SendEmail client={client} subject={packageSubject(client)} html={html} text={text} label={`Send the package to ${client.details.name}`} onSent={markSent}>
+          <div className="flex flex-col gap-3">
+            <button type="button" onClick={sendYourself} className={`${btn} self-start`}>
+              Copy the email, save the PDF, open Gmail
+            </button>
+            {state !== 'idle' && (
+              <div className="rounded-xl border border-blue/50 bg-blue/10 p-4 text-sm flex flex-col gap-2">
+                <b>Now in Gmail:</b>
+                <div>1. Click in the message box and press <b>Ctrl+V</b> (<b>Cmd+V</b> on a Mac) to paste the designed email.</div>
+                <div>
+                  2. If you like, click the paperclip and attach the PDF you just saved (it's in your <b>Downloads</b> folder, named "LinoCon Digital package -{' '}
+                  {client.details.name}").
+                </div>
+                <div>3. Press Send, then mark the package as Sent above so {client.details.name} can see it on their page.</div>
+                {state === 'blocked' && (
+                  <a href={gmail} target="_blank" rel="noreferrer" className="self-start mt-1 h-11 px-5 rounded-full bg-gradient-brand text-ink font-bold inline-flex items-center">
+                    Open Gmail
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+        </SendEmail>
+      )}
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="button" onClick={() => setPreview(!preview)} aria-expanded={preview} className={btn}>
+          {preview ? 'Hide the email' : 'Preview the email'}
+        </button>
+        <button type="button" onClick={printPdf} className={btn}>
+          Print / Save as PDF
         </button>
         <button
           type="button"
@@ -625,44 +664,11 @@ function SendPackage({ client, pkg, calc, onNext }) {
           Next: service agreement &rarr;
         </button>
       </div>
-      {state === 'idle' ? (
-        <div className="text-sm text-text-secondary">
-          One click does three things: copies the designed email, opens the print window so you can choose <b className="text-text">Save as PDF</b>, then opens
-          Gmail with the address and subject filled in.
-        </div>
-      ) : (
-        <div className="rounded-xl border border-blue/50 bg-blue/10 p-4 text-sm flex flex-col gap-2">
-          <b>Now in Gmail:</b>
-          <div>1. Click in the message box and press <b>Ctrl+V</b> (<b>Cmd+V</b> on a Mac) to paste the designed email.</div>
-          <div>
-            2. Click the paperclip and attach the PDF you just saved (it's in your <b>Downloads</b> folder, named "LinoCon Digital package - {client.details.name}").
-          </div>
-          <div>3. Press Send, then mark the package as Sent above so {client.details.name} can see it on their page.</div>
-          {state === 'blocked' && (
-            <a href={gmail} target="_blank" rel="noreferrer" className="self-start mt-1 h-11 px-5 rounded-full bg-gradient-brand text-ink font-bold inline-flex items-center">
-              Open Gmail
-            </a>
-          )}
-        </div>
-      )}
-      <div className="flex flex-wrap items-center gap-2">
-        <button type="button" onClick={printPdf} className={btn}>
-          Print / Save as PDF only
-        </button>
-        <button type="button" onClick={() => setPreview(!preview)} aria-expanded={preview} className={btn}>
-          {preview ? 'Hide the email' : 'Preview the email'}
-        </button>
-        <button type="button" onClick={() => setPlain(!plain)} aria-expanded={plain} className={btn}>
-          Plain text email instead
-        </button>
-      </div>
       {/* Kept in the page (hidden until previewed) so the copy fallback can select it. */}
       <div className={preview ? 'rounded-lg overflow-hidden bg-[#f2f2f4] max-h-[640px] overflow-y-auto' : 'sr-only'}>
         {/* Built from escaped values in src/lib/packageMail.js. */}
         <div ref={previewRef} dangerouslySetInnerHTML={{ __html: html }} />
       </div>
-      {plain && <EmailOptions to={client.details.email} subject={packageSubject(client)} body={text} label="Email it" primary={btn} secondary={btn} />}
-      {!client.details.email && <div className="text-xs text-text-tertiary">No email saved for this client, so type it in Gmail.</div>}
     </div>
   )
 }

@@ -57,7 +57,7 @@ export function packageHtml(client, pkg) {
   const rows = [
     heading(
       `Your package${first ? `, ${first}` : ''}.`,
-      `Here is the package we put together for <b style="color:${C.text};">${business}</b>${business.endsWith('.') ? '' : '.'} The full package is attached as a PDF.`,
+      `Here is the package we put together for <b style="color:${C.text};">${business}</b>${business.endsWith('.') ? '' : '.'} Everything is below.`,
     ),
     totals(calc),
     note &&
@@ -68,7 +68,7 @@ export function packageHtml(client, pkg) {
     calc.month.length && priceTable('EACH MONTH', calc.month, calc.monthTotal, ' / month', calc.gst),
     client.joined && button(`${SITE}/clients/package`, 'View my package', 'Sign in to your client page to accept it or ask for changes.'),
     steps("WHAT'S NEXT", [
-      ['Look it over', 'Read the package and the attached PDF.'],
+      ['Look it over', client.joined ? 'Read it below or on your client page, where you can also save it as a PDF.' : 'Read it below, and reply with any questions.'],
       ['Accept or ask for changes', client.joined ? 'Do it on your client page, or just reply to this email.' : 'Just reply to this email.'],
       ['Sign the service agreement', "Once you're happy, we send the agreement to sign online, and work starts after the deposit."],
     ]),
