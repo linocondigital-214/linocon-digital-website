@@ -142,7 +142,7 @@ export async function acceptInvite(req, code, email, password) {
   await redis(['SET', KEYS.email(cleaned), clientId])
   await redis(['DEL', KEYS.code(normalized)])
   await redis(['DEL', KEYS.invite(clientId)])
-  return { status: 'ok', session: await startSession(req, account) }
+  return { status: 'ok', clientId, session: await startSession(req, account) }
 }
 
 // A made-up hash to compare against when the email isn't known, so a wrong

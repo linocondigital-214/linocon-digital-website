@@ -7,6 +7,7 @@ import { loginStatus, removeLogin } from './_lib/portal.js'
 import { withSignChecks } from './_lib/esign.js'
 import { ensureFileNo } from './_lib/fileNo.js'
 import { billingFor } from './_lib/paid.js'
+import { notifyProgress } from './_lib/progressMail.js'
 
 // What Lino's pages get: the client, which signed documents changed, and the
 // date of their first paid invoice (it starts the schedule of work), and
@@ -25,8 +26,10 @@ export default route(async (req) => {
   if (req.method === 'GET') {
     const client = await getClient(id)
     if (!client) return [404, { error: 'not-found' }]
-    // Agreements signed before file numbers existed get theirs here.
-    if (await ensureFileNo(client)) await saveClient(client)
+    // Agreements signed before file numbers existed get theirs here, and a
+    // payment made since the last visit sends its progress emails.
+    const fileNo = await ensureFileNo(client)
+    if ((await notifyProgress(client)) || fileNo) await saveClient(client)
     return [200, { client: await forAdmin(client) }]
   }
 
@@ -40,6 +43,7 @@ export default route(async (req) => {
       throw err
     }
     await ensureFileNo(client)
+    await notifyProgress(client)
     await saveClient(client)
     return [200, { client: await forAdmin(client) }]
   }

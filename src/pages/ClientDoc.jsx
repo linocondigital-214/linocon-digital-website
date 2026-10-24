@@ -6,7 +6,6 @@ import DocumentView from '../components/progress/DocumentView'
 import PackageBuilder, { PackageSummary } from '../components/progress/PackageBuilder'
 import { SignBox } from '../components/progress/ESign'
 import { AskChanges } from '../components/progress/Journey'
-import { notifyLino } from '../lib/leads'
 import { DOCS, docState, isShared } from '../lib/clientDocs'
 import { fetchMyProgress } from '../lib/clientProgress'
 import useAdminClient, { SAVING_TEXT } from '../lib/useAdminClient'
@@ -89,7 +88,6 @@ export function ClientDocView({ doc }) {
           )}
           {docState(state.client, doc).status === 'sent' && (
             <SignBox docKey={doc} docName={DOCS[doc].name} onSigned={(client) => {
-              notifyLino(client, DOCS[doc].signatures ? `signed the ${DOCS[doc].name.toLowerCase()}` : `accepted the ${DOCS[doc].name.toLowerCase()}`)
               setState({ status: 'ready', client })
               window.scrollTo({ top: 0, behavior: 'smooth' })
             }} />

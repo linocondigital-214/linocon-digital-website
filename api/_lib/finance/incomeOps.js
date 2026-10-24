@@ -9,6 +9,7 @@ import { can } from './roles.js'
 import { RECEIVED_BY, SERVICES, cleanIncome, cleanLabels } from './income.js'
 import { deleteRecord, getRecord, getSettings, isRecordId, listRecords, newRecordId, saveRecord } from './records.js'
 import { getStripeState, syncStripe } from './stripe.js'
+import { notifyClients } from '../progressMail.js'
 
 const denied = [403, { error: 'role', message: 'Your login can’t do that.' }]
 const byDate = (a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)
@@ -37,7 +38,10 @@ export async function incomeOps(op, req, user) {
 
   if (op === 'stripe-sync' && post) {
     if (!can(user.role, 'add')) return denied
-    return [200, { stripe: await syncStripe({ force: Boolean(req.body?.force) }) }]
+    const stripe = await syncStripe({ force: Boolean(req.body?.force) })
+    // Invoices paid through Stripe since the last sync send their progress emails.
+    await notifyClients((await listRecords('invoice')).filter((i) => i.status === 'paid').map((i) => i.clientId))
+    return [200, { stripe }]
   }
 
   if (op === 'income-add' && post) {
