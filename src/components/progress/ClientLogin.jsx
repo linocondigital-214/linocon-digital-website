@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { dateLabel, fetchClientLogin, inviteClientLogin, removeClientLogin } from '../../lib/clientProgress'
 import { agoLabel } from '../../lib/clientOverview'
+import EmailOptions from '../EmailOptions'
 
 // The client's own login to linocondigital.com/clients, on their admin page.
 // Lino creates a one-time invite code and sends it to the client, who uses it
@@ -106,11 +107,16 @@ function InviteCode({ client, code }) {
   const first = client.details.contact?.split(' ')[0]
   const message = `Hi${first ? ` ${first}` : ''}, your private progress page with LinoCon Digital is ready.
 
-1. Go to linocondigital.com/clients
+1. Go to https://linocondigital.com/clients
 2. Tap "I have an invite code" and type: ${code.code}
 3. Enter your email and choose a password.
 
-The code works once and expires on ${dateLabel(code.expires)}. After that, sign in with your email and password.`
+The code works once and expires on ${dateLabel(code.expires)}. After that, sign in at the same page with your email and password.
+
+On your page you can follow our progress, and read and sign your proposal and service agreement.
+
+Lino
+LinoCon Digital`
 
   const copy = (text, what) =>
     navigator.clipboard
@@ -126,8 +132,19 @@ The code works once and expires on ${dateLabel(code.expires)}. After that, sign 
         Send this to {client.details.name}. It works once and expires on {dateLabel(code.expires)}.
       </p>
       <pre className="mt-4 whitespace-pre-wrap rounded-lg border border-border bg-surface p-4 text-sm text-text-secondary font-sans">{message}</pre>
-      <div className="flex flex-wrap gap-3 pt-4">
-        <button type="button" onClick={() => copy(message, 'message')} className="h-11 px-5 rounded-full bg-text text-ink text-sm font-bold">
+      <div className="pt-4">
+        <EmailOptions
+          to={client.details.email}
+          subject="Your LinoCon Digital client page: how to sign in"
+          body={message}
+          label="Email invite"
+          primary="h-11 px-5 rounded-full bg-gradient-brand text-ink text-sm font-bold flex items-center"
+          secondary="h-11 px-5 rounded-full border border-border text-sm font-semibold flex items-center hover:border-text-tertiary"
+        />
+        {!client.details.email && <p className="text-xs text-text-tertiary pt-2">No email saved for this client, so type it in Gmail.</p>}
+      </div>
+      <div className="flex flex-wrap gap-3 pt-3">
+        <button type="button" onClick={() => copy(message, 'message')} className="h-11 px-5 rounded-full border border-border text-sm font-semibold hover:border-text-tertiary">
           {copied === 'message' ? 'Message copied' : 'Copy message'}
         </button>
         <button type="button" onClick={() => copy(code.code, 'code')} className="h-11 px-5 rounded-full border border-border text-sm font-semibold hover:border-text-tertiary">
