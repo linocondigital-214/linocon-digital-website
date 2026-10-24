@@ -3,8 +3,8 @@ import { mailStatus, sendClientEmail } from '../../lib/clientProgress'
 
 const btn = 'h-11 px-5 rounded-full border border-border text-sm font-semibold hover:border-text-tertiary inline-flex items-center'
 
-// One button that sends a designed email straight to the client from
-// linocondigital@gmail.com (see api/_lib/mail.js), so it arrives with its
+// One button that sends a designed email straight to the client (see
+// api/_lib/mail.js), so it arrives with its
 // look. Until sending is set up, it shows the one-time steps. `children` is
 // the do-it-yourself Gmail way, kept behind a toggle.
 export default function SendEmail({ client, subject, html, text, label, onSent, children }) {
@@ -40,7 +40,7 @@ export default function SendEmail({ client, subject, html, text, label, onSent, 
         <MailSetup />
       ) : state === 'sent' ? (
         <div className="rounded-xl border border-blue/50 bg-blue/10 p-4 text-sm">
-          <b>Sent to {email}.</b> {client.details.name} gets the designed email, and a copy is in your Gmail <b>Sent</b> folder.
+          <b>Sent to {email}.</b> {client.details.name} gets the designed email, and a copy is in your Gmail.
           <button type="button" onClick={send} className="block mt-2 text-text-secondary underline">
             Send it again
           </button>
@@ -58,7 +58,7 @@ export default function SendEmail({ client, subject, html, text, label, onSent, 
           <span className="text-sm text-text-secondary">
             {email ? (
               <>
-                Goes to <b className="text-text">{email}</b> from linocondigital@gmail.com, exactly as the preview shows.
+                Goes to <b className="text-text">{email}</b>, exactly as the preview shows.
               </>
             ) : (
               'Add the client’s email address in their details first.'
@@ -79,29 +79,38 @@ export default function SendEmail({ client, subject, html, text, label, onSent, 
   )
 }
 
-// Shown until GMAIL_APP_PASSWORD is in Vercel.
+// Shown until RESEND_API_KEY (or GMAIL_APP_PASSWORD) is in Vercel. The
+// domain's DNS is at Spaceship, where the site's domain was bought.
 function MailSetup() {
+  const link = (href, text) => (
+    <a href={href} target="_blank" rel="noreferrer" className="underline">
+      {text}
+    </a>
+  )
   return (
     <div className="rounded-xl border border-orange/60 bg-orange/10 p-4 text-sm flex flex-col gap-2">
       <b>One-time setup so the site can send this email for you</b>
       <div>
-        1. Open{' '}
-        <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noreferrer" className="underline">
-          myaccount.google.com/apppasswords
-        </a>{' '}
-        signed in as <b>linocondigital@gmail.com</b>. If Google says it isn’t available, turn on <b>2-Step Verification</b> first, then open the link again.
+        1. Go to {link('https://resend.com/signup', 'resend.com')} and sign up with <b>linocondigital@gmail.com</b> (the free plan is enough).
       </div>
       <div>
-        2. Type the name <b>LinoCon website</b> and click <b>Create</b>. Copy the 16-letter password Google shows.
+        2. In Resend, click <b>Domains</b>, then <b>Add Domain</b>. Type <b>linocondigital.com</b> and click <b>Add</b>. Resend shows a few records, each with a Type, a Name and a Value.
       </div>
       <div>
-        3. In Vercel, open the linocon-digital-website project, then <b>Settings</b>, <b>Environment Variables</b>. Add the name <b>GMAIL_APP_PASSWORD</b>, paste the password as the value,
-        and click <b>Save</b>.
+        3. In a new tab, sign in to {link('https://www.spaceship.com', 'Spaceship')} (where you bought the domain). Open <b>linocondigital.com</b>, then its <b>DNS records</b>. Click <b>Add record</b> for each record Resend shows, copying the Type, Name and Value exactly, and save.
       </div>
       <div>
-        4. Go to <b>Deployments</b>, click the three dots on the top one, and choose <b>Redeploy</b>. Then reload this page.
+        4. Back in Resend, click <b>Verify DNS Records</b>. It can take from a few minutes to a few hours to show <b>Verified</b>.
       </div>
-      <div className="text-text-secondary">Only paste that password into Vercel, never into a chat or email.</div>
+      <div>
+        5. In Resend, click <b>API Keys</b>, then <b>Create API Key</b>. Name it <b>LinoCon website</b>, keep <b>Sending access</b>, click <b>Add</b>, and copy the key.
+      </div>
+      <div>
+        6. In Vercel, open the linocon-digital-website project, then <b>Settings</b>, <b>Environment Variables</b>. Add the name <b>RESEND_API_KEY</b>, paste the key as the value, and click <b>Save</b>. Then go to <b>Deployments</b>, click the three dots on the top one, and choose <b>Redeploy</b>.
+      </div>
+      <div className="text-text-secondary">
+        Only paste that key into Vercel, never into a chat or email. Emails then come from lino@linocondigital.com, replies go to your Gmail, and a copy of each one lands in your Gmail inbox.
+      </div>
     </div>
   )
 }

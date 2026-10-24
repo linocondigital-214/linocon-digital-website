@@ -14,7 +14,7 @@ import { checkSetup, currentUser, finishSignIn, sessionCookie, signOut, startSig
 import { otpauthUrl } from './_lib/finance/totp.js'
 import { calendarFeed, calendarKey } from './_lib/calendarFeed.js'
 import { getClient, isClientId } from './_lib/store.js'
-import { isEmail, mailReady, sendMail } from './_lib/mail.js'
+import { isEmail, MailError, mailReady, sendMail } from './_lib/mail.js'
 
 const MESSAGES = {
   wrong: "That didn't match. Try again.",
@@ -90,9 +90,9 @@ const handler = route(async (req, res) => {
     try {
       await sendMail({ to, subject, html, text })
     } catch (err) {
+      if (err instanceof MailError) return [502, { error: err.code, message: err.message }]
       console.error(err)
-      const auth = err?.code === 'EAUTH'
-      return [502, { error: auth ? 'mail-auth' : 'mail', message: auth ? "Gmail didn't accept the app password. Check GMAIL_APP_PASSWORD in Vercel." : "The email didn't send. Try again in a minute." }]
+      return [502, { error: 'mail', message: "The email didn't send. Try again in a minute." }]
     }
     return [200, { sent: true, to }]
   }
