@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { dateLabel, fetchClientLogin, inviteClientLogin, removeClientLogin } from '../../lib/clientProgress'
 import { agoLabel } from '../../lib/clientOverview'
-import EmailOptions, { gmailLink } from '../EmailOptions'
+import { gmailLink } from '../EmailOptions'
+import SendEmail from './SendEmail'
 import { INVITE_SUBJECT, inviteHtml, inviteText } from '../../lib/inviteEmail'
 import { copyEmail } from '../../lib/brandEmail'
 
@@ -106,7 +107,6 @@ export default function ClientLogin({ client }) {
 
 function InviteCode({ client, code }) {
   const [copied, setCopied] = useState('')
-  const [showPlain, setShowPlain] = useState(false)
   const html = inviteHtml(client, code)
   const text = inviteText(client, code)
   const preview = useRef(null)
@@ -135,29 +135,33 @@ function InviteCode({ client, code }) {
         Send this to {client.details.name}. It works once and expires on {dateLabel(code.expires)}.
       </p>
 
-      <h3 className="font-bold pt-6">Send the welcome email</h3>
-      <ol className="mt-3 flex flex-col gap-3 text-sm">
-        <li className="flex flex-wrap items-center gap-3">
-          <span className="text-text-secondary w-5">1.</span>
-          <button type="button" onClick={copyDesigned} className="h-11 px-5 rounded-full bg-gradient-brand text-ink text-sm font-bold">
-            {copied === 'designed' ? 'Copied. Now open Gmail' : 'Copy the welcome email'}
-          </button>
-        </li>
-        <li className="flex flex-wrap items-center gap-3">
-          <span className="text-text-secondary w-5">2.</span>
-          <a href={gmailLink(client.details.email, INVITE_SUBJECT, '')} target="_blank" rel="noreferrer" className={btn}>
-            Open Gmail
-          </a>
-          <span className="text-text-secondary">The email address and subject are filled in.</span>
-        </li>
-        <li className="flex gap-3">
-          <span className="text-text-secondary w-5">3.</span>
-          <span className="text-text-secondary">
-            Click in the message box, press <b className="text-text">Ctrl+V</b> (<b className="text-text">Cmd+V</b> on a Mac), then Send.
-          </span>
-        </li>
-      </ol>
-      {!client.details.email && <p className="text-xs text-text-tertiary pt-2">No email saved for this client, so type it in Gmail.</p>}
+      <h3 className="font-bold pt-6 pb-3">Send the welcome email</h3>
+      <SendEmail client={client} subject={INVITE_SUBJECT} html={html} text={text} label="Send the welcome email">
+        <div>
+          <ol className="mt-3 flex flex-col gap-3 text-sm">
+            <li className="flex flex-wrap items-center gap-3">
+              <span className="text-text-secondary w-5">1.</span>
+              <button type="button" onClick={copyDesigned} className="h-11 px-5 rounded-full bg-gradient-brand text-ink text-sm font-bold">
+                {copied === 'designed' ? 'Copied. Now open Gmail' : 'Copy the welcome email'}
+              </button>
+            </li>
+            <li className="flex flex-wrap items-center gap-3">
+              <span className="text-text-secondary w-5">2.</span>
+              <a href={gmailLink(client.details.email, INVITE_SUBJECT, '')} target="_blank" rel="noreferrer" className={btn}>
+                Open Gmail
+              </a>
+              <span className="text-text-secondary">The email address and subject are filled in.</span>
+            </li>
+            <li className="flex gap-3">
+              <span className="text-text-secondary w-5">3.</span>
+              <span className="text-text-secondary">
+                Click in the message box, press <b className="text-text">Ctrl+V</b> (<b className="text-text">Cmd+V</b> on a Mac), then Send.
+              </span>
+            </li>
+          </ol>
+          {!client.details.email && <p className="text-xs text-text-tertiary pt-2">No email saved for this client, so type it in Gmail.</p>}
+        </div>
+      </SendEmail>
 
       <p className="text-xs font-bold uppercase tracking-wider text-text-secondary pt-6 pb-2">What your client will see</p>
       <div className="rounded-lg overflow-hidden bg-[#f2f2f4] max-h-[560px] overflow-y-auto">
@@ -169,25 +173,7 @@ function InviteCode({ client, code }) {
         <button type="button" onClick={copyCode} className={btn}>
           {copied === 'code' ? 'Code copied' : 'Copy code only'}
         </button>
-        <button type="button" onClick={() => setShowPlain(!showPlain)} aria-expanded={showPlain} className={btn}>
-          Plain text email instead
-        </button>
       </div>
-      {showPlain && (
-        <div className="pt-4">
-          <pre className="whitespace-pre-wrap rounded-lg border border-border bg-surface p-4 text-sm text-text-secondary font-sans">{text}</pre>
-          <div className="pt-3">
-            <EmailOptions
-              to={client.details.email}
-              subject={INVITE_SUBJECT}
-              body={text}
-              label="Email it"
-              primary={btn}
-              secondary={btn}
-            />
-          </div>
-        </div>
-      )}
     </div>
   )
 }

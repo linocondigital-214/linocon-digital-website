@@ -254,7 +254,7 @@ export function packageEmail(client, pkg) {
   if (calc.onceTotal > 0 && calc.depositPct !== '0') parts.push(`To start: ${money(calc.deposit + calc.depositGst)} deposit before work begins.`, '')
   if (pkg.opt?.note) parts.push(pkg.opt.note, '')
   parts.push(
-    "I've attached the full package as a PDF. Once you're happy with it, I'll send the service agreement to sign.",
+    "Once you're happy with it, I'll send the service agreement to sign.",
     '',
     'Lino',
     'LinoCon Digital',
