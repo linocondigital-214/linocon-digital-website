@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { WISH_CHOICES, WISH_WHEN, hasWebsite, whenLabel, wishLabel } from '../../../api/_lib/wishes.js'
 import { INTAKE } from '../../lib/clientChecklist'
-import { askDocChanges, dateLabel, saidEtransfer, saveMyInfo, sendWishes, today } from '../../lib/clientProgress'
+import { askDocChanges, cardPayLink, dateLabel, saidEtransfer, saveMyInfo, sendWishes, today } from '../../lib/clientProgress'
 import { CONTACT_EMAIL, notifyLino } from '../../lib/leads'
 import { currentStep, journeySteps } from '../../lib/journey'
 import { money } from '../../lib/packages'
@@ -265,13 +265,7 @@ function PayInvoice({ owing, payment }) {
       </div>
     )
   }
-  return (
-    <div className="mt-3">
-      <a href="#pay-now" className={primary}>
-        Pay {money(owing.total)} now
-      </a>
-    </div>
-  )
+  return <div className="text-sm text-text-secondary pt-1">Pay {money(owing.total)} with the Pay now button at the top of this page, by card or Interac e-Transfer.</div>
 }
 
 const ETRANSFER_TO = CONTACT_EMAIL
@@ -305,6 +299,16 @@ function PayOne({ inv, client, onClient }) {
     navigator.clipboard?.writeText(text).then(() => setCopied(what), () => {})
   }
 
+  // Stripe's secure page for this invoice, in this tab.
+  async function payByCard() {
+    setState({ status: 'card' })
+    try {
+      window.location.assign(inv.payUrl || (await cardPayLink(inv.number)))
+    } catch (err) {
+      setState({ status: 'error', message: err.message })
+    }
+  }
+
   async function sent() {
     setState({ status: 'saving' })
     try {
@@ -336,15 +340,9 @@ function PayOne({ inv, client, onClient }) {
         <div className="mt-4 flex flex-col gap-3">
           <div className="font-semibold">How would you like to pay?</div>
           <div className="grid sm:grid-cols-2 gap-2">
-            {inv.payUrl ? (
-              <a href={inv.payUrl} target="_blank" rel="noreferrer" className={`${chip} h-auto min-h-12 justify-center py-3`}>
-                Credit or debit card
-              </a>
-            ) : (
-              <div className="rounded-xl border border-border px-4 py-3 text-sm text-text-secondary">
-                Card: use the Pay button in the invoice email we sent you.
-              </div>
-            )}
+            <button type="button" onClick={payByCard} disabled={state.status === 'card'} className={`${chip} h-auto min-h-12 justify-center py-3`}>
+              {state.status === 'card' ? 'Opening Stripe...' : 'Credit or debit card'}
+            </button>
             <button
               type="button"
               aria-pressed={how === 'etransfer'}
@@ -354,6 +352,7 @@ function PayOne({ inv, client, onClient }) {
               Interac e-Transfer
             </button>
           </div>
+          {state.status === 'error' && <p className="text-sm text-orange">{state.message}</p>}
           {how === 'etransfer' && (
             <div className="rounded-xl border border-border bg-surface-2 p-4 text-sm flex flex-col gap-3">
               <div>In your bank's app, send an Interac e-Transfer with these details:</div>
@@ -361,7 +360,6 @@ function PayOne({ inv, client, onClient }) {
               <EtransferRow label="Amount" value={money(inv.total)} onCopy={() => copy((inv.total / 100).toFixed(2), 'amount')} copied={copied === 'amount'} />
               {inv.number && <EtransferRow label="Message" value={inv.number} onCopy={() => copy(inv.number, 'number')} copied={copied === 'number'} />}
               <div className="text-text-secondary">Put the invoice number in the message so we can match your payment.</div>
-              {state.status === 'error' && <p className="text-orange">{state.message}</p>}
               {inv.number && (
                 <div>
                   <button type="button" onClick={sent} disabled={state.status === 'saving'} className={primary}>

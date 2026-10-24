@@ -94,9 +94,10 @@ async function findCustomer(invoice) {
   return made.id
 }
 
-// Creates the invoice in Stripe and has Stripe email it. If a step fails
+// Creates the invoice in Stripe and has Stripe email it (unless email is
+// false: the client's page asks for one to pay by card). If a step fails
 // part way, the half-made Stripe draft is removed so nothing goes out.
-export async function sendThroughStripe(invoice, settings) {
+export async function sendThroughStripe(invoice, settings, { email = true } = {}) {
   if (!invoice.email) throw new Invalid('Add the client’s email so Stripe can send the invoice.')
   const customer = await findCustomer(invoice)
   const draft = await stripePost('invoices', {
@@ -122,7 +123,7 @@ export async function sendThroughStripe(invoice, settings) {
       await stripePost('invoiceitems', { customer, invoice: draft.id, currency: 'cad', ...item })
     }
     const final = await stripePost(`invoices/${draft.id}/finalize`, { auto_advance: 'false' })
-    await stripePost(`invoices/${draft.id}/send`)
+    if (email) await stripePost(`invoices/${draft.id}/send`)
     return { stripeInvoiceId: draft.id, payUrl: final.hosted_invoice_url ?? null, pdfUrl: final.invoice_pdf ?? null }
   } catch (err) {
     await stripeDelete(`invoices/${draft.id}`).catch(() => {})
