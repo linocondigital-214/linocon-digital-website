@@ -5,6 +5,7 @@ import AdminClientGate, { AdminSignIn, AdminSignOut } from '../components/progre
 import DocumentView from '../components/progress/DocumentView'
 import PackageBuilder, { PackageSummary } from '../components/progress/PackageBuilder'
 import { SignBox } from '../components/progress/ESign'
+import { AskChanges } from '../components/progress/Journey'
 import { DOCS, docState, isShared } from '../lib/clientDocs'
 import { fetchMyProgress } from '../lib/clientProgress'
 import useAdminClient, { SAVING_TEXT } from '../lib/useAdminClient'
@@ -90,6 +91,9 @@ export function ClientDocView({ doc }) {
               setState({ status: 'ready', client })
               window.scrollTo({ top: 0, behavior: 'smooth' })
             }} />
+          )}
+          {docState(state.client, doc).status === 'sent' && !DOCS[doc].signatures && (
+            <AskChanges client={state.client} docKey={doc} docName={DOCS[doc].name} onClient={(client) => setState({ status: 'ready', client })} />
           )}
         </>
       )}

@@ -21,6 +21,8 @@ import {
 } from '../../lib/packages'
 import { DocMark, SendSignedCopy, StatusCard } from './DocumentView'
 import { AcceptedBlock } from './ESign'
+import { suggestPackage } from '../../../api/_lib/wishes.js'
+import { WishesSummary } from './Journey'
 
 const input = 'min-w-0 rounded-xl bg-ink border border-border px-4 outline-none focus:border-blue [color-scheme:dark]'
 const newId = () => Math.random().toString(36).slice(2, 8)
@@ -89,6 +91,18 @@ export default function PackageBuilder({ client, onChange, adminBase }) {
             Pick what this client gets. Every price can be changed for this client only. The summary below updates as you go.
           </div>
         </div>
+
+        {client.wishes?.sentAt && (
+          <div className={card}>
+            <span className="font-bold">What {client.details.name} asked for</span>
+            <WishesSummary wishes={client.wishes} />
+            {suggestPackage(client.wishes) && (
+              <div className="text-sm text-text-secondary mt-3">
+                Suggested from their answers: <b className="text-text">{suggestPackage(client.wishes)}</b>. You decide.
+              </div>
+            )}
+          </div>
+        )}
 
         <StatusCard client={client} docKey="package" onChange={onChange} />
         <SendSignedCopy client={client} docKey="package" />

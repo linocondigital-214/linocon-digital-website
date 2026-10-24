@@ -6,6 +6,9 @@
 //   POST ?op=signout
 //   GET  ?op=me        their own progress (drafts and Lino's notes left out)
 //   POST ?op=sign      { doc, name, agree, drawing? }  e-sign a document Lino has sent
+//   POST ?op=wishes    { hasSite, site, picks, when, note }  what they want (step 2)
+//   POST ?op=changes   { doc, note }  ask for changes to the package or proposal
+//   POST ?op=has       { answers: [{ id, value?, note? }], done? }  what they already have
 // For Lino (signed in to /admin):
 //   GET  ?op=login&id=<client id>   the client's login and any unused invite
 //   POST ?op=login-invite { id }    a new one-time invite code, shown once
@@ -15,6 +18,7 @@ import { getClient, isClientId, saveClient } from './_lib/store.js'
 import { signDoc } from './_lib/esign.js'
 import { ensureFileNo } from './_lib/fileNo.js'
 import { publicView } from './_lib/client.js'
+import { askChanges, saveHas, saveWishes } from './_lib/clientInput.js'
 import { MIN_PASSWORD, acceptInvite, currentClient, inviteClient, loginStatus, removeLogin, sessionCookie, signIn, signOut } from './_lib/portal.js'
 
 const MESSAGES = {
@@ -33,6 +37,14 @@ const SIGN_MESSAGES = {
   name: 'Type your full name to sign.',
   agree: 'Tick the box to agree before signing.',
   drawing: 'That drawing could not be saved. Clear it and try again.',
+}
+
+const INPUT_MESSAGES = {
+  wishes: 'Answer whether you have a website, and pick at least one thing you want.',
+  unknown: 'This document can’t be changed.',
+  'not-sent': 'This document isn’t waiting for your answer.',
+  note: 'Type what you would like changed.',
+  has: 'That answer could not be saved. Refresh the page and try again.',
 }
 
 const failed = (status) => [status === 'locked' ? 429 : ['email', 'weak', 'taken'].includes(status) ? 400 : 401, { error: status, message: MESSAGES[status] }]
@@ -79,6 +91,20 @@ export default route(async (req, res) => {
     })
     if (result !== 'ok') return [result === 'signed' ? 409 : 400, { error: result, message: SIGN_MESSAGES[result] }]
     await ensureFileNo(client)
+    await saveClient(client)
+    return [200, { client: publicView(client) }]
+  }
+
+  if ((op === 'wishes' || op === 'changes' || op === 'has') && post) {
+    const clientId = await currentClient(req)
+    if (!clientId) return [401, { error: 'signin' }]
+    const client = await getClient(clientId)
+    if (!client) return [404, { error: 'not-found' }]
+    const body = req.body ?? {}
+    const result =
+      op === 'wishes' ? saveWishes(client, body) : op === 'changes' ? askChanges(client, body.doc, body.note) : saveHas(client, body.answers, body.done)
+    if (result !== 'ok') return [400, { error: result, message: INPUT_MESSAGES[result] }]
+    client.updatedAt = new Date().toISOString()
     await saveClient(client)
     return [200, { client: publicView(client) }]
   }
