@@ -3,6 +3,7 @@ import { dateLabel, fetchClientLogin, inviteClientLogin, removeClientLogin } fro
 import { agoLabel } from '../../lib/clientOverview'
 import EmailOptions, { gmailLink } from '../EmailOptions'
 import { INVITE_SUBJECT, inviteHtml, inviteText } from '../../lib/inviteEmail'
+import { copyEmail } from '../../lib/brandEmail'
 
 // The client's own login to linocondigital.com/clients, on their admin page.
 // Lino creates a one-time invite code and sends it to the client, who uses it
@@ -116,24 +117,8 @@ function InviteCode({ client, code }) {
     setTimeout(() => setCopied(''), 2500)
   }
 
-  // Copies the designed email so it pastes into Gmail with its look. Falls
-  // back to selecting the preview and copying it, which keeps the look too.
-  async function copyDesigned() {
-    try {
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }), 'text/plain': new Blob([text], { type: 'text/plain' }) }),
-      ])
-      return flash('designed')
-    } catch {
-      const range = document.createRange()
-      range.selectNodeContents(preview.current)
-      const selection = window.getSelection()
-      selection.removeAllRanges()
-      selection.addRange(range)
-      const ok = document.execCommand('copy')
-      selection.removeAllRanges()
-      if (ok) flash('designed')
-    }
+  const copyDesigned = async () => {
+    if (await copyEmail(html, text, preview.current)) flash('designed')
   }
 
   const copyCode = () =>

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { WISH_CHOICES, WISH_WHEN, hasWebsite, whenLabel, wishLabel } from '../../../api/_lib/wishes.js'
 import { INTAKE } from '../../lib/clientChecklist'
 import { askDocChanges, dateLabel, saveMyInfo, sendWishes, today } from '../../lib/clientProgress'
-import { CONTACT_EMAIL, sendLead } from '../../lib/leads'
+import { CONTACT_EMAIL, notifyLino } from '../../lib/leads'
 import { currentStep, journeySteps } from '../../lib/journey'
 import { HasItem } from './ProgressBoard'
 
@@ -11,10 +11,6 @@ const card = 'rounded-2xl border border-border bg-surface p-5 md:p-6 mb-10 scrol
 const chip = 'h-10 px-4 rounded-full border border-border text-sm font-semibold inline-flex items-center hover:border-text-tertiary'
 const primary = 'h-11 px-5 rounded-full bg-gradient-brand text-ink text-sm font-bold inline-flex items-center justify-center disabled:opacity-60'
 const field = 'rounded-xl bg-ink border border-border px-4 outline-none focus:border-blue text-text'
-
-// Lets Lino know by email when a client does their part. Best effort: the
-// answers are saved either way and show in /admin.
-const tellLino = (client, what) => sendLead(`Client update: ${client.details.name} ${what}`, { Client: client.details.name, Update: what, Open: 'https://linocondigital.com/admin' })
 
 function StepIcon({ step, current }) {
   if (step.done) return <span className="w-7 h-7 shrink-0 rounded-full bg-gradient-brand text-ink grid place-items-center text-sm font-bold">&#10003;</span>
@@ -255,7 +251,7 @@ function WishesForm({ client, onClient }) {
     setState({ status: 'saving' })
     try {
       const saved = await sendWishes({ hasSite, site, picks, when, note })
-      tellLino(client, 'sent what they want')
+      notifyLino(client, 'sent what they want')
       onClient(saved)
     } catch (err) {
       setState({ status: 'error', message: err.message })
@@ -356,7 +352,7 @@ function InfoForm({ client, onClient }) {
     setBusy(true)
     try {
       const saved = await saveMyInfo([], true)
-      tellLino(client, 'finished the "What you already have" checklist')
+      notifyLino(client, 'finished the "What you already have" checklist')
       onClient(saved)
     } catch (err) {
       setError(err.message)
@@ -409,7 +405,7 @@ export function AskChanges({ client, docKey, docName, onClient }) {
     setState({ status: 'saving' })
     try {
       const saved = await askDocChanges(docKey, note)
-      tellLino(client, `asked for changes to the ${docName.toLowerCase()}`)
+      notifyLino(client, `asked for changes to the ${docName.toLowerCase()}`)
       setOpen(false)
       setNote('')
       setState({ status: 'idle' })
