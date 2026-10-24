@@ -13,6 +13,8 @@ import {
 } from '../../lib/clientDocs'
 import { dateLabel, today } from '../../lib/clientProgress'
 import EmailOptions from '../EmailOptions'
+import SendEmail from './SendEmail'
+import { readyHtml, readySubject, readyText, signedHtml, signedSubject, signedText } from '../../lib/docMail'
 import { AcceptedBlock, SignatureName, SignaturePad, SignMode, SignedBy, signedAtLabel } from './ESign'
 
 // A proposal or service agreement, laid out as a printable page.
@@ -37,7 +39,7 @@ export default function DocumentView({ client, docKey, editable = false, onChang
         <span className="text-sm text-text-secondary">In the print window, choose "Save as PDF" to download it.</span>
       </div>
 
-      {editable && <SendForSigning client={client} docKey={docKey} />}
+      {editable && <SendForSigning client={client} docKey={docKey} onChange={onChange} />}
       {editable && <Controls client={client} docKey={docKey} onChange={onChange} />}
 
       <article className="print-paper bg-paper text-ink rounded-2xl p-6 sm:p-10 md:p-14 max-w-3xl mx-auto shadow-2xl">
@@ -146,8 +148,8 @@ function Controls({ client, docKey, onChange }) {
 }
 
 // Once both sides have signed (the agreement) or the client has accepted
-// (proposal), Lino sends the client their copy: an email opens with a link to
-// the signed copy on their page, where they can save it as a PDF.
+// (proposal), Lino sends the client their copy: a designed email with a link
+// to the signed copy on their page, where they can save it as a PDF.
 export function SendSignedCopy({ client, docKey }) {
   const state = docState(client, docKey)
   const doc = DOCS[docKey]
@@ -160,57 +162,61 @@ export function SendSignedCopy({ client, docKey }) {
       </div>
     )
   }
-  const d = client.details
-  const subject = `Your signed ${doc.name.toLowerCase()}: ${d.name}`
-  const body = [
-    `Hi ${d.contact || state.esign.name},`,
-    '',
-    doc.signatures
-      ? `Thank you for signing. The ${doc.name.toLowerCase()} is now signed by both of us.`
-      : `Thank you for accepting the ${doc.name.toLowerCase()}.`,
-    '',
-    `Your copy is on your client page: https://${BUSINESS.website}/clients/${docKey}`,
-    'Sign in, open it and click "Save as PDF" to keep a copy. I have also attached it to this email.',
-    '',
-    'Lino',
-    BUSINESS.name,
-  ].join('\n')
+  const subject = signedSubject(client, docKey)
+  const text = signedText(client, docKey, state.esign.name)
   return (
     <div className="rounded-2xl border border-blue/50 bg-blue/10 p-5 flex flex-col gap-3">
       <div className="font-bold">{doc.signatures ? 'Signed by both sides' : 'Accepted by the client'}</div>
-      <div className="text-sm text-text-secondary">
-        Send the client their copy: click "Print / Save as PDF" above to save the PDF, then email it. The client can also download it from their page.
-      </div>
-      <EmailOptions to={d.email} subject={subject} body={body} label="Email the signed copy" primary="h-11 px-5 rounded-full bg-gradient-brand text-ink text-sm font-bold flex items-center" secondary="h-11 px-5 rounded-full border border-border text-sm font-semibold flex items-center hover:border-text-tertiary" />
+      <div className="text-sm text-text-secondary">Send the client their copy. The email links to it on their page, where they can save it as a PDF.</div>
+      <SendEmail client={client} subject={subject} html={signedHtml(client, docKey, state.esign.name)} text={text} label="Email the signed copy">
+        <EmailOptions to={client.details.email} subject={subject} body={text} label="Email it" primary={btnPrimary} secondary={btnSecondary} />
+      </SendEmail>
     </div>
   )
 }
 
-// Emails the client that the document is ready on their page to read and
-// sign. Shown once Lino has marked it as sent and until it's signed.
-function SendForSigning({ client, docKey }) {
+const btnPrimary = 'h-11 px-5 rounded-full bg-gradient-brand text-ink text-sm font-bold flex items-center'
+const btnSecondary = 'h-11 px-5 rounded-full border border-border text-sm font-semibold flex items-center hover:border-text-tertiary'
+
+// Emails the client a designed "ready to review" email with a link to the
+// document on their page, and marks it as Sent so they can see it. Hidden
+// once it's signed or accepted.
+function SendForSigning({ client, docKey, onChange }) {
+  const [preview, setPreview] = useState(false)
   const state = docState(client, docKey)
-  if (state.status !== 'sent') return null
+  if (state.status === 'signed') return null
   const doc = DOCS[docKey]
   const d = client.details
   const verb = docKey === 'agreement' ? 'sign' : 'accept'
-  const subject = `Your ${doc.name.toLowerCase()} from ${BUSINESS.name}: ${d.name}`
-  const body = [
-    `Hi ${d.contact || d.name},`,
-    '',
-    `Your ${doc.name.toLowerCase()} is ready. You can read it and ${verb} it online on your client page:`,
-    `https://${BUSINESS.website}/clients/${docKey}`,
-    '',
-    'Let me know if you have any questions.',
-    '',
-    'Lino',
-    BUSINESS.name,
-  ].join('\n')
+  const subject = readySubject(client, docKey)
+  const html = readyHtml(client, docKey)
+  const text = readyText(client, docKey)
+
+  function markSent() {
+    if (state.status === 'sent') return
+    const changes = [{ path: ['docs', docKey, 'status'], value: 'sent' }]
+    if (!state.sentAt) changes.push({ path: ['docs', docKey, 'sentAt'], value: today() })
+    onChange(changes)
+  }
+
   return (
     <div className="no-print max-w-3xl mx-auto mb-6 rounded-2xl border border-border bg-surface p-5 flex flex-col gap-3">
-      <div className="font-bold">Send it to {d.name}</div>
-      <div className="text-sm text-text-secondary">This emails them a link to {verb} it on their client page. You can also attach the PDF.</div>
-      <EmailOptions to={d.email} subject={subject} body={body} label="Email it" primary="h-11 px-5 rounded-full bg-gradient-brand text-ink text-sm font-bold flex items-center" secondary="h-11 px-5 rounded-full border border-border text-sm font-semibold flex items-center hover:border-text-tertiary" />
+      <div className="font-bold">Send the {doc.name.toLowerCase()} to {d.name}</div>
+      <div className="text-sm text-text-secondary">
+        This emails them a link to read and {verb} it on their client page{state.status === 'sent' ? '' : ', and marks it as Sent so they can see it'}. Fill everything in below first.
+      </div>
+      <SendEmail client={client} subject={subject} html={html} text={text} label={`Send the ${doc.name.toLowerCase()}`} onSent={markSent}>
+        <EmailOptions to={d.email} subject={subject} body={text} label="Email it" primary={btnPrimary} secondary={btnSecondary} />
+      </SendEmail>
+      <button type="button" onClick={() => setPreview(!preview)} aria-expanded={preview} className={`${btnSecondary} self-start`}>
+        {preview ? 'Hide the email' : 'Preview the email'}
+      </button>
+      {preview && (
+        <div className="rounded-lg overflow-hidden bg-[#f2f2f4] max-h-[560px] overflow-y-auto">
+          {/* Built from escaped values in src/lib/docMail.js. */}
+          <div dangerouslySetInnerHTML={{ __html: html }} />
+        </div>
+      )}
     </div>
   )
 }
