@@ -18,6 +18,7 @@ import { getClient, isClientId, saveClient } from './_lib/store.js'
 import { signDoc } from './_lib/esign.js'
 import { ensureFileNo } from './_lib/fileNo.js'
 import { publicView } from './_lib/client.js'
+import { billingFor } from './_lib/paid.js'
 import { askChanges, saveHas, saveWishes } from './_lib/clientInput.js'
 import { MIN_PASSWORD, acceptInvite, currentClient, inviteClient, loginStatus, removeLogin, sessionCookie, signIn, signOut } from './_lib/portal.js'
 
@@ -47,6 +48,9 @@ const INPUT_MESSAGES = {
   has: 'That answer could not be saved. Refresh the page and try again.',
 }
 
+// The client's own page also shows their unpaid invoices, to pay from their steps.
+const clientView = async (client) => ({ ...publicView(client), billing: await billingFor(client.id) })
+
 const failed = (status) => [status === 'locked' ? 429 : ['email', 'weak', 'taken'].includes(status) ? 400 : 401, { error: status, message: MESSAGES[status] }]
 
 export default route(async (req, res) => {
@@ -74,7 +78,7 @@ export default route(async (req, res) => {
     if (!clientId) return [401, { error: 'signin' }]
     const client = await getClient(clientId)
     if (!client) return [404, { error: 'not-found' }]
-    return [200, { client: publicView(client) }]
+    return [200, { client: await clientView(client) }]
   }
 
   if (op === 'sign' && post) {
@@ -92,7 +96,7 @@ export default route(async (req, res) => {
     if (result !== 'ok') return [result === 'signed' ? 409 : 400, { error: result, message: SIGN_MESSAGES[result] }]
     await ensureFileNo(client)
     await saveClient(client)
-    return [200, { client: publicView(client) }]
+    return [200, { client: await clientView(client) }]
   }
 
   if ((op === 'wishes' || op === 'changes' || op === 'has') && post) {
@@ -106,7 +110,7 @@ export default route(async (req, res) => {
     if (result !== 'ok') return [400, { error: result, message: INPUT_MESSAGES[result] }]
     client.updatedAt = new Date().toISOString()
     await saveClient(client)
-    return [200, { client: publicView(client) }]
+    return [200, { client: await clientView(client) }]
   }
 
   if (op?.startsWith('login')) {
