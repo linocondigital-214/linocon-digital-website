@@ -59,7 +59,9 @@ const field = 'h-12 rounded-xl bg-ink border border-border px-4 outline-none foc
 const button = 'h-12 px-6 rounded-full bg-gradient-brand text-ink font-bold disabled:opacity-60'
 
 function SignIn({ onSignedIn }) {
-  const [mode, setMode] = useState('signin') // 'signin' | 'invite'
+  // The welcome email's button opens /clients#invite=<code> with the code filled in.
+  const [invite] = useState(() => new URLSearchParams(window.location.hash.slice(1)).get('invite')?.slice(0, 20) ?? '')
+  const [mode, setMode] = useState(invite ? 'invite' : 'signin') // 'signin' | 'invite'
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -104,7 +106,8 @@ function SignIn({ onSignedIn }) {
               required
               autoComplete="off"
               autoCapitalize="characters"
-              autoFocus
+              autoFocus={!invite}
+              defaultValue={invite}
               placeholder="ABCD-EFGH-JKLM"
               className={`${field} font-mono tracking-wider text-text`}
             />
@@ -112,7 +115,7 @@ function SignIn({ onSignedIn }) {
         )}
         <label className="flex flex-col gap-2 text-sm font-semibold text-text-secondary">
           Email
-          <input name="email" type="email" required autoComplete="email" autoFocus={mode === 'signin'} className={`${field} text-text`} />
+          <input name="email" type="email" required autoComplete="email" autoFocus={mode === 'signin' || Boolean(invite)} className={`${field} text-text`} />
         </label>
         <label className="flex flex-col gap-2 text-sm font-semibold text-text-secondary">
           {mode === 'invite' ? 'Choose a password' : 'Password'}
