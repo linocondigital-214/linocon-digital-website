@@ -59,6 +59,7 @@ export const DOC_FIELDS = [
   { key: 'extraRate', label: 'Rate for extra work', placeholder: 'e.g. $____ per hour', doc: 'agreement' },
   { key: 'growTerm', label: 'Grow plan minimum term', placeholder: 'e.g. 3 months', service: 'grow', doc: 'agreement' },
   { key: 'noticeDays', label: 'Notice to cancel (days)', placeholder: 'e.g. 30', doc: 'agreement' },
+  { key: 'launchWeeks', label: 'Weeks from start to launch', placeholder: 'e.g. 6', service: 'website', doc: 'agreement' },
   { key: 'clientSigner', label: 'Client signer name and title', placeholder: 'e.g. Alex Smith, Owner', doc: 'agreement' },
 ]
 
@@ -91,7 +92,7 @@ const PROPOSAL = [
   {
     id: 'next',
     title: 'Next steps',
-    text: 'To go ahead, reply to let us know you accept this proposal. We will then send a Service Agreement to sign. Work begins once the agreement is signed and the deposit is received. This proposal is valid until {{validUntil}}.',
+    text: 'To go ahead, sign this proposal online on your client page. Once we have signed it too, we will send a Service Agreement to sign. Work begins once the agreement is signed and the deposit is received. This proposal is valid until {{validUntil}}.',
   },
 ]
 
@@ -102,6 +103,12 @@ const AGREEMENT = [
     text: 'This Service Agreement is made on {{agreementDate}} between {{agency}}, of {{agencyPlace}} ("LinoCon Digital", "we"), and {{business}} ("the Client", "you").',
   },
   { id: 'services', title: '2. Services', auto: 'scope' },
+  {
+    id: 'launch',
+    title: '2a. Target launch',
+    services: ['website'],
+    text: 'We aim to launch your website about {{launchWeeks}} weeks after work starts. Work starts once this agreement is signed and the deposit is paid. Your target launch date is shown on your client page, and it may move if we are waiting on content, logins or approvals from you.',
+  },
   {
     id: 'scope-changes',
     title: '3. Changes to the scope',
@@ -185,6 +192,7 @@ export const DOCS = {
       { value: 'signed', label: 'Accepted' },
     ],
     signatures: false,
+    askChanges: true,
   },
   proposal: {
     key: 'proposal',
@@ -194,9 +202,11 @@ export const DOCS = {
     statuses: [
       { value: 'draft', label: 'Draft' },
       { value: 'sent', label: 'Sent' },
-      { value: 'signed', label: 'Accepted' },
+      { value: 'signed', label: 'Signed' },
     ],
-    signatures: false,
+    // The client signs first, then Lino countersigns (like the agreement).
+    signatures: true,
+    askChanges: true,
   },
   agreement: {
     key: 'agreement',

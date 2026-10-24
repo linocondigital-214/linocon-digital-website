@@ -5,6 +5,7 @@ import { INTAKE } from '../../lib/clientChecklist'
 import { askDocChanges, dateLabel, saveMyInfo, sendWishes, today } from '../../lib/clientProgress'
 import { CONTACT_EMAIL, notifyLino } from '../../lib/leads'
 import { currentStep, journeySteps } from '../../lib/journey'
+import { money } from '../../lib/packages'
 import { HasItem } from './ProgressBoard'
 
 const card = 'rounded-2xl border border-border bg-surface p-5 md:p-6 mb-10 scroll-mt-24'
@@ -44,7 +45,14 @@ export function JourneyCard({ client, onChange }) {
         <Link to={`${base}/proposal`} className={chip}>Proposal</Link>
       </>
     ),
+    countersign: client.docs?.proposal?.status === 'signed' && <Link to={`${base}/proposal`} className={chip}>Sign the proposal</Link>,
     agreement: <Link to={`${base}/agreement`} className={chip}>Open agreement</Link>,
+    invoice: client.fileNo && (
+      <Link to={`/finance/invoices?add=1&file=${encodeURIComponent(client.fileNo)}`} className={chip}>
+        Make the invoice
+      </Link>
+    ),
+    pay: <Link to="/finance/invoices" className={chip}>See invoices</Link>,
     info: <Link to={`${base}/preview`} className={chip}>See their answers</Link>,
   }
 
@@ -88,11 +96,15 @@ export function JourneyCard({ client, onChange }) {
                     <span className="font-semibold text-text-secondary">Target launch date</span>
                     <input
                       type="date"
-                      value={client.schedule?.launchOn || ''}
+                      value={client.schedule?.launchOn || s.launch || ''}
                       onChange={(e) => onChange([{ path: ['schedule', 'launchOn'], value: e.target.value || null }])}
                       className="h-10 rounded-lg bg-ink border border-border px-3 text-text [color-scheme:dark]"
                     />
-                    <span className="text-text-tertiary">The client sees this on their page.</span>
+                    <span className="text-text-tertiary">
+                      {!client.schedule?.launchOn && s.launch
+                        ? `From the agreement: ${client.docs.agreement.fields.launchWeeks} weeks after work starts. Change it if needed. The client sees it on their page.`
+                        : 'The client sees this on their page.'}
+                    </span>
                   </label>
                 )}
                 {!s.done && (
@@ -162,15 +174,19 @@ const CLIENT_TEXT = {
   wishes: ['Tell us what you need', 'Thanks, we have your answers.'],
   review: ['We review your current website', 'Done.'],
   package: ['We pick the right package for you', 'Done.'],
-  proposal: ['Review your package and proposal', 'You accepted them.'],
+  proposal: ['Accept your package and sign the proposal', 'Done. Thank you.'],
+  countersign: ['We sign the proposal too', 'Signed by both of us. You can print or save it.'],
   agreement: ['Sign the service agreement', 'Signed by you and LinoCon Digital.'],
+  invoice: ['We send your invoice', 'Sent to your email.'],
+  pay: ['Pay your invoice', 'Paid. Thank you.'],
+  start: ['We start your project', 'Your project has started.'],
   info: ['Tell us what you already have', 'Thanks, we have your checklist.'],
-  start: ['Pay the deposit, then we plan your launch', 'Your project has started.'],
 }
 
 export function ClientSteps({ client, onClient }) {
   const steps = numbered(journeySteps(client, { joined: true }))
   const now = currentStep(steps)
+  const launch = steps.find((s) => s.key === 'start')?.launch
   const [infoOpen, setInfoOpen] = useState(false)
 
   return (
@@ -181,8 +197,8 @@ export function ClientSteps({ client, onClient }) {
       <div className="text-text-secondary pt-1">
         {now ? (now.turn === 'client' ? 'Your next step is below.' : 'Nothing to do right now. We are working on the next step.') : 'Every step is done.'}
       </div>
-      {client.schedule?.launchOn && (
-        <div className="mt-4 rounded-xl border border-blue/50 bg-blue/10 px-4 py-3 font-semibold">Target launch: {dateLabel(client.schedule.launchOn)}</div>
+      {launch && (
+        <div className="mt-4 rounded-xl border border-blue/50 bg-blue/10 px-4 py-3 font-semibold">Target launch: {dateLabel(launch)}</div>
       )}
       <ol className="mt-5 flex flex-col gap-3">
         {steps.map((s) => {
@@ -205,6 +221,14 @@ export function ClientSteps({ client, onClient }) {
                     <Link to="/clients/proposal" className={chip}>Open your proposal</Link>
                   </div>
                 )}
+                {s.key === 'countersign' && isNow && (
+                  <div className="text-sm text-text-secondary pt-1">Thanks for signing. LinoCon Digital signs next, then you can print or save your copy.</div>
+                )}
+                {s.key === 'countersign' && s.done && (
+                  <div className="mt-3">
+                    <Link to="/clients/proposal" className={chip}>Print or save your proposal</Link>
+                  </div>
+                )}
                 {s.key === 'proposal' && isNow && s.changes && (
                   <div className="text-sm text-text-secondary pt-1">You asked for changes. We will update it and let you know.</div>
                 )}
@@ -222,15 +246,38 @@ export function ClientSteps({ client, onClient }) {
                     Start it now
                   </button>
                 )}
-                {s.key === 'start' && isNow && s.turn === 'client' && client.payment?.link && (
-                  <div className="text-sm text-text-secondary pt-1">Use the Pay button on this page to pay the deposit.</div>
-                )}
+                {s.key === 'pay' && isNow && <PayInvoice owing={s.owing} payment={client.payment} />}
               </div>
             </li>
           )
         })}
       </ol>
     </section>
+  )
+}
+
+// The client's next unpaid invoice, with Stripe's Pay now page.
+function PayInvoice({ owing, payment }) {
+  if (!owing) {
+    return (
+      <div className="text-sm text-text-secondary pt-1">
+        {payment?.link ? 'Use the Pay button on this page, or follow the invoice we emailed you.' : 'Your invoice is in your email, with how to pay it.'}
+      </div>
+    )
+  }
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-3">
+      {owing.payUrl && (
+        <a href={owing.payUrl} target="_blank" rel="noreferrer" className={primary}>
+          Pay {money(owing.total)} now
+        </a>
+      )}
+      <span className="text-sm text-text-secondary">
+        Invoice{owing.number ? ` ${owing.number}` : ''}, {money(owing.total)}
+        {owing.due ? `, due ${dateLabel(owing.due)}` : ''}
+        {!owing.payUrl && '. It is in your email, with how to pay it.'}
+      </span>
+    </div>
   )
 }
 

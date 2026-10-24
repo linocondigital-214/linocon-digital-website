@@ -13,11 +13,11 @@ const READY = {
     title: 'Your proposal is ready',
     intro: (b) => `We've put together a proposal for <b style="color:${C.text};">${b}</b>${dot(b)} It sets out the work, the timeline and the price.`,
     button: 'Review my proposal',
-    note: 'Sign in to your client page to accept it or ask for changes.',
+    note: 'Sign in to your client page to sign it or ask for changes.',
     steps: [
       ['Read it over', 'Everything is on your client page, where you can also save it as a PDF.'],
-      ['Accept or ask for changes', 'One click to accept, or tell us what you would like changed.'],
-      ['Sign the service agreement', "Once you're happy, we send the agreement to sign online."],
+      ['Sign or ask for changes', 'Type your name and press Sign, or tell us what you would like changed.'],
+      ['We sign it too', 'Then you can print or save your copy, and we send the service agreement to sign.'],
     ],
   },
   agreement: {
@@ -54,7 +54,7 @@ export function readyHtml(client, docKey) {
 
 export function readyText(client, docKey) {
   const d = client.details
-  const verb = docKey === 'agreement' ? 'sign' : 'accept'
+  const verb = DOCS[docKey].signatures ? 'sign' : 'accept'
   return [
     `Hi ${firstName(client) || d.name},`,
     '',

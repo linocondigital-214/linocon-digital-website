@@ -4,16 +4,21 @@
 //   2 What they want  the client taps their choices and presses Send
 //   * Review site     only for clients who already have a website
 //   3 Pick package    Lino chooses the package in the package builder
-//   4 Package + proposal  Lino sends both; the client accepts or asks for changes
-//   5 Agreement       the client signs first, then Lino countersigns
-//   6 Their info      the client fills in "What you already have"
-//   7 Paid            deposit in, schedule starts, Lino sets the target launch
+//   4 Package + proposal  Lino sends both; the client accepts the package and
+//                     signs the proposal, or asks for changes
+//   5 Countersign     Lino signs the proposal too; the client can print it
+//   6 Agreement       the client signs first, then Lino countersigns (file number)
+//   7 Invoice         Lino sends the invoice from /finance with the file number
+//   8 Pay             the client pays it with Pay now
+//   9 Start           work starts; target launch from the agreement's weeks
+//  10 Their info      the client fills in "What you already have"
 // Each step is { key, name, done, turn: 'you' | 'client' | null, line }.
 // Lino can mark any step as done by hand (client.journey) for clients who
-// started before these steps existed.
-import { workStart } from '../../api/_lib/schedule.js'
+// started before these steps existed. client.billing comes from the API
+// (api/_lib/paid.js).
+import { addDays, workStart } from '../../api/_lib/schedule.js'
 import { hasWebsite, suggestPackage } from '../../api/_lib/wishes.js'
-import { pkgState } from './packages'
+import { money, pkgState } from './packages'
 import { dateLabel } from './clientProgress'
 
 // A saved timestamp as the local day it happened on.
@@ -25,6 +30,14 @@ const dayOf = (iso) => {
 const status = (client, doc) => client.docs?.[doc]?.status || 'draft'
 const hasPackage = (pkg) => Boolean(pkg.bundle || Object.values(pkg.on ?? {}).some(Boolean) || pkg.custom)
 
+// The target launch: the date Lino set, or the start of work plus the
+// agreement's "Weeks from start to launch".
+export function launchDate(client, start) {
+  if (client.schedule?.launchOn) return client.schedule.launchOn
+  const weeks = parseInt(client.docs?.agreement?.fields?.launchWeeks, 10)
+  return start && weeks > 0 && weeks < 200 ? addDays(start, weeks * 7) : null
+}
+
 export function journeySteps(client, { joined, invited } = {}) {
   const manual = client.journey ?? {}
   const pkg = pkgState(client)
@@ -32,7 +45,13 @@ export function journeySteps(client, { joined, invited } = {}) {
   const accepted = status(client, 'package') === 'signed' && status(client, 'proposal') === 'signed'
   const changes = ['package', 'proposal'].map((d) => client.docs?.[d]).find((d) => d?.status === 'sent' && d.changes)
   const agreement = client.docs?.agreement ?? {}
-  const when = workStart(client, client.paidOn)
+  const paidOn = client.paidOn ?? client.billing?.paidOn ?? null
+  const when = workStart(client, paidOn)
+  const proposal = client.docs?.proposal ?? {}
+  const billing = client.billing ?? { invoiced: false, unpaid: [] }
+  const owing = billing.unpaid?.[0]
+  const paid = Boolean(paidOn || client.schedule?.depositOn)
+  const launch = launchDate(client, when.start)
 
   const steps = [
     {
@@ -73,13 +92,24 @@ export function journeySteps(client, { joined, invited } = {}) {
       done: accepted,
       turn: changes ? 'you' : sent('package') && sent('proposal') ? 'client' : 'you',
       line: accepted
-        ? 'Client accepted the package and proposal'
+        ? 'Client accepted the package and signed the proposal'
         : changes
           ? 'Client asked for changes'
           : sent('package') && sent('proposal')
-            ? 'Waiting for the client to accept or ask for changes'
+            ? 'Waiting for the client to accept the package and sign the proposal'
             : 'Mark the package and proposal as Sent so the client can see them',
       changes: changes?.changes,
+    },
+    {
+      key: 'countersign',
+      name: 'Sign the proposal',
+      done: proposal.status === 'signed' && Boolean(proposal.ownerName),
+      turn: 'you',
+      line: proposal.ownerName
+        ? 'Signed by both of you'
+        : proposal.status === 'signed'
+          ? 'Client signed. Sign it on your side, then send them their signed copy'
+          : 'You sign once the client has signed',
     },
     {
       key: 'agreement',
@@ -89,11 +119,46 @@ export function journeySteps(client, { joined, invited } = {}) {
       line:
         agreement.status === 'signed'
           ? agreement.ownerName
-            ? 'Signed by both of you'
+            ? `Signed by both of you${client.fileNo ? `. File number ${client.fileNo}` : ''}`
             : 'Client signed. Countersign it now'
           : agreement.status === 'sent'
             ? 'Waiting for the client to sign first'
             : 'Mark the agreement as Sent so the client can sign it',
+    },
+    {
+      key: 'invoice',
+      name: 'Send the invoice',
+      done: Boolean(billing.invoiced || paid),
+      turn: 'you',
+      line: billing.invoiced || paid
+        ? 'Invoice sent'
+        : client.fileNo
+          ? `Make the invoice in Finance with file number ${client.fileNo}, then send it`
+          : 'Make the invoice once the agreement is signed',
+    },
+    {
+      key: 'pay',
+      name: 'Client pays',
+      done: paid,
+      turn: 'client',
+      line: paid
+        ? `Paid ${dateLabel(paidOn || client.schedule.depositOn)}`
+        : owing
+          ? `Waiting for invoice${owing.number ? ` ${owing.number}` : ''} (${money(owing.total)})${owing.due ? `, due ${dateLabel(owing.due)}` : ''}`
+          : 'Waiting for the client to pay the invoice',
+      owing,
+    },
+    {
+      key: 'start',
+      name: 'Start the project',
+      done: Boolean(when.start && paid && launch),
+      turn: 'you',
+      line: !when.start || !paid
+        ? 'Work starts once the invoice is paid'
+        : launch
+          ? `Work started ${dateLabel(when.start)}. Target launch ${dateLabel(launch)}`
+          : `Work started ${dateLabel(when.start)}. Set the target launch date`,
+      launch,
     },
     {
       key: 'info',
@@ -103,19 +168,6 @@ export function journeySteps(client, { joined, invited } = {}) {
       line: client.infoSentAt
         ? `Client finished the checklist ${dateLabel(dayOf(client.infoSentAt))}`
         : 'Client fills in "What you already have" on their page',
-    },
-    {
-      key: 'start',
-      name: 'Paid: plan the work',
-      done: Boolean(when.start && client.schedule?.launchOn),
-      turn: when.start ? 'you' : 'client',
-      line: !when.start
-        ? when.waiting === 'deposit'
-          ? 'Waiting for the deposit'
-          : 'Starts once the agreement is signed and the deposit is paid'
-        : client.schedule?.launchOn
-          ? `Work started ${dateLabel(when.start)}. Target launch ${dateLabel(client.schedule.launchOn)}`
-          : `Work started ${dateLabel(when.start)}. Set the target launch date`,
     },
   ].filter(Boolean)
 

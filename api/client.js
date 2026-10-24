@@ -6,14 +6,15 @@ import { applyChanges, BadRequest } from './_lib/client.js'
 import { loginStatus, removeLogin } from './_lib/portal.js'
 import { withSignChecks } from './_lib/esign.js'
 import { ensureFileNo } from './_lib/fileNo.js'
-import { firstPaidByClient } from './_lib/paid.js'
+import { billingFor } from './_lib/paid.js'
 
 // What Lino's pages get: the client, which signed documents changed, and the
 // date of their first paid invoice (it starts the schedule of work), and
 // whether they have set up their login yet.
 const forAdmin = async (client) => {
   const login = await loginStatus(client.id)
-  return { ...withSignChecks(client), paidOn: (await firstPaidByClient())[client.id] ?? null, joined: Boolean(login.account), invited: Boolean(login.invite) }
+  const billing = await billingFor(client.id)
+  return { ...withSignChecks(client), billing, paidOn: billing.paidOn, joined: Boolean(login.account), invited: Boolean(login.invite) }
 }
 
 export default route(async (req) => {

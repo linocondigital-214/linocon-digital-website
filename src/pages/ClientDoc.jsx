@@ -94,7 +94,7 @@ export function ClientDocView({ doc }) {
               window.scrollTo({ top: 0, behavior: 'smooth' })
             }} />
           )}
-          {docState(state.client, doc).status === 'sent' && !DOCS[doc].signatures && (
+          {docState(state.client, doc).status === 'sent' && DOCS[doc].askChanges && (
             <AskChanges client={state.client} docKey={doc} docName={DOCS[doc].name} onClient={(client) => setState({ status: 'ready', client })} />
           )}
         </>
