@@ -23,6 +23,7 @@ import { etransferNotice, notifyProgress } from './_lib/progressMail.js'
 import { sendThroughStripe } from './_lib/finance/invoices.js'
 import { getSettings, listRecords, saveRecord } from './_lib/finance/records.js'
 import { stripeKey } from './_lib/finance/stripe.js'
+import { sendReminders } from './_lib/reminders.js'
 import { askChanges, saveHas, saveWishes } from './_lib/clientInput.js'
 import { MIN_PASSWORD, acceptInvite, currentClient, inviteClient, loginStatus, removeLogin, sessionCookie, signIn, signOut } from './_lib/portal.js'
 
@@ -64,6 +65,13 @@ export default route(async (req, res) => {
   const post = req.method === 'POST'
 
   if (op === 'status' && req.method === 'GET') return [200, { signedIn: Boolean(await currentClient(req)) }]
+
+  // Called once a day by .github/workflows/reminders.yml. Safe to call any
+  // time: it only sends reminders that are due and not sent yet.
+  if (op === 'reminders' && req.method === 'GET') {
+    const { skipped, sent } = await sendReminders()
+    return [200, { skipped, count: sent.length }]
+  }
 
   if ((op === 'signin' || op === 'invite') && post) {
     const { code, email, password } = req.body ?? {}
