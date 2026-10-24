@@ -298,7 +298,6 @@ function WishesForm({ client, onClient }) {
     setState({ status: 'saving' })
     try {
       const saved = await sendWishes({ hasSite, site, picks, when, note })
-      notifyLino(client, 'sent what they want')
       onClient(saved)
     } catch (err) {
       setState({ status: 'error', message: err.message })
@@ -399,7 +398,6 @@ function InfoForm({ client, onClient }) {
     setBusy(true)
     try {
       const saved = await saveMyInfo([], true)
-      notifyLino(client, 'finished the "What you already have" checklist')
       onClient(saved)
     } catch (err) {
       setError(err.message)

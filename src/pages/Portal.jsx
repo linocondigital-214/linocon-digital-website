@@ -4,7 +4,6 @@ import ProgressBoard from '../components/progress/ProgressBoard'
 import { ClientSteps } from '../components/progress/Journey'
 import { fetchMyProgress, portalInvite, portalSignIn, portalSignOut } from '../lib/clientProgress'
 import usePageMeta from '../lib/usePageMeta'
-import { notifyLino } from '../lib/leads'
 
 // /clients: each client signs in with their own email and password and sees
 // only their own progress. Their first sign-in uses the invite code Lino sent
@@ -13,11 +12,9 @@ export default function Portal() {
   const [state, setState] = useState({ status: 'loading' })
   usePageMeta(state.client ? `${state.client.details.name} progress` : 'Client sign-in')
 
-  // joined: they just set up their login with an invite code.
-  const load = useCallback((joined) => {
+  const load = useCallback(() => {
     fetchMyProgress()
       .then((client) => {
-        if (joined === true) notifyLino(client, 'set up their client login')
         setState({ status: 'ready', client })
       })
       .catch((err) => {
@@ -81,7 +78,7 @@ function SignIn({ onSignedIn }) {
     try {
       if (mode === 'invite') await portalInvite(form.code.value, email, password)
       else await portalSignIn(email, password)
-      onSignedIn(mode === 'invite')
+      onSignedIn()
     } catch (err) {
       setError(err.message || 'Something went wrong. Try again.')
       setBusy(false)

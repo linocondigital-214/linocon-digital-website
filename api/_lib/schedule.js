@@ -62,6 +62,14 @@ export function workStart(client, paidOn) {
   return { start, signed, deposit }
 }
 
+// The target launch: the date Lino set, or the start of work plus the
+// agreement's "Weeks from start to launch".
+export function launchDate(client, start) {
+  if (client.schedule?.launchOn) return client.schedule.launchOn
+  const weeks = parseInt(client.docs?.agreement?.fields?.launchWeeks, 10)
+  return start && weeks > 0 && weeks < 200 ? addDays(start, weeks * 7) : null
+}
+
 export const WAITING_TEXT = {
   agreement: 'Starts once the service agreement is signed',
   deposit: 'Agreement signed. Starts once the deposit is paid',

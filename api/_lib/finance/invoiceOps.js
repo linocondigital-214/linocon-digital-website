@@ -12,6 +12,7 @@
 import { listClients, saveClient } from '../store.js'
 import { ensureFileNo } from '../fileNo.js'
 import { firstPaidByClient } from '../paid.js'
+import { notifyClients } from '../progressMail.js'
 import { addDays, clientSchedule } from '../schedule.js'
 import { can } from './roles.js'
 import { RECEIVED_BY, SERVICES } from './income.js'
@@ -128,6 +129,7 @@ export async function invoiceOps(op, req, user) {
     })
     const paid = stamp({ ...invoice, status: 'paid', paidOn: date })
     await saveRecord('invoice', paid)
+    await notifyClients([paid.clientId])
     return [200, { invoice: paid }]
   }
 

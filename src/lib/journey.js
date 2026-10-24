@@ -16,7 +16,7 @@
 // Lino can mark any step as done by hand (client.journey) for clients who
 // started before these steps existed. client.billing comes from the API
 // (api/_lib/paid.js).
-import { addDays, workStart } from '../../api/_lib/schedule.js'
+import { launchDate, workStart } from '../../api/_lib/schedule.js'
 import { hasWebsite, suggestPackage } from '../../api/_lib/wishes.js'
 import { money, pkgState } from './packages'
 import { dateLabel } from './clientProgress'
@@ -29,14 +29,6 @@ const dayOf = (iso) => {
 
 const status = (client, doc) => client.docs?.[doc]?.status || 'draft'
 const hasPackage = (pkg) => Boolean(pkg.bundle || Object.values(pkg.on ?? {}).some(Boolean) || pkg.custom)
-
-// The target launch: the date Lino set, or the start of work plus the
-// agreement's "Weeks from start to launch".
-export function launchDate(client, start) {
-  if (client.schedule?.launchOn) return client.schedule.launchOn
-  const weeks = parseInt(client.docs?.agreement?.fields?.launchWeeks, 10)
-  return start && weeks > 0 && weeks < 200 ? addDays(start, weeks * 7) : null
-}
 
 export function journeySteps(client, { joined, invited } = {}) {
   const manual = client.journey ?? {}

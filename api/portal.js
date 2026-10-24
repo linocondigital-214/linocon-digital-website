@@ -19,6 +19,7 @@ import { signDoc } from './_lib/esign.js'
 import { ensureFileNo } from './_lib/fileNo.js'
 import { publicView } from './_lib/client.js'
 import { billingFor } from './_lib/paid.js'
+import { notifyProgress } from './_lib/progressMail.js'
 import { askChanges, saveHas, saveWishes } from './_lib/clientInput.js'
 import { MIN_PASSWORD, acceptInvite, currentClient, inviteClient, loginStatus, removeLogin, sessionCookie, signIn, signOut } from './_lib/portal.js'
 
@@ -63,6 +64,10 @@ export default route(async (req, res) => {
     const { code, email, password } = req.body ?? {}
     const result = op === 'signin' ? await signIn(req, email, password) : await acceptInvite(req, code, email, password)
     if (result.status !== 'ok') return failed(result.status)
+    if (op === 'invite') {
+      const client = await getClient(result.clientId)
+      if (client && (await notifyProgress(client))) await saveClient(client)
+    }
     res.setHeader('Set-Cookie', sessionCookie(result.session))
     return [200, { signedIn: true }]
   }
@@ -78,6 +83,7 @@ export default route(async (req, res) => {
     if (!clientId) return [401, { error: 'signin' }]
     const client = await getClient(clientId)
     if (!client) return [404, { error: 'not-found' }]
+    if (await notifyProgress(client)) await saveClient(client)
     return [200, { client: await clientView(client) }]
   }
 
@@ -95,6 +101,7 @@ export default route(async (req, res) => {
     })
     if (result !== 'ok') return [result === 'signed' ? 409 : 400, { error: result, message: SIGN_MESSAGES[result] }]
     await ensureFileNo(client)
+    await notifyProgress(client)
     await saveClient(client)
     return [200, { client: await clientView(client) }]
   }
@@ -109,6 +116,7 @@ export default route(async (req, res) => {
       op === 'wishes' ? saveWishes(client, body) : op === 'changes' ? askChanges(client, body.doc, body.note) : saveHas(client, body.answers, body.done)
     if (result !== 'ok') return [400, { error: result, message: INPUT_MESSAGES[result] }]
     client.updatedAt = new Date().toISOString()
+    await notifyProgress(client)
     await saveClient(client)
     return [200, { client: await clientView(client) }]
   }

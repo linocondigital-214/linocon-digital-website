@@ -17,6 +17,7 @@
 //   infoSentAt: when the client finished the "What you already have" checklist
 //   journey: { <step key>: 'YYYY-MM-DD' }  steps Lino marked as done by hand (src/lib/journey.js)
 //   fileNo:  'LCF-2026-001'   set once the agreement is signed (api/_lib/fileNo.js)
+//   notified: { <milestone>: ISO }  progress emails already sent (api/_lib/progressMail.js)
 // }
 import { isDrawing } from './esign.js'
 
@@ -43,7 +44,8 @@ export function newClient(id, input = {}) {
   const details = Object.fromEntries(DETAIL_FIELDS.map((f) => [f, text(input[f])]))
   details.services = Object.fromEntries(SERVICES.map((s) => [s, Boolean(input.services?.[s])]))
   const now = new Date().toISOString()
-  return { id, createdAt: now, updatedAt: now, details, has: {}, done: {}, na: {}, signoff: {}, numbers: {}, months: {} }
+  // notified: progress emails already sent (api/_lib/progressMail.js).
+  return { id, createdAt: now, updatedAt: now, details, has: {}, done: {}, na: {}, signoff: {}, numbers: {}, months: {}, notified: {} }
 }
 
 // A change is { path: ['done', '<item id>'], value }. A null value removes the

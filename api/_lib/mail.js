@@ -9,6 +9,7 @@
 import nodemailer from 'nodemailer'
 
 const GMAIL = 'linocondigital@gmail.com'
+export const LINO_EMAIL = GMAIL
 const NAME = 'Lino at LinoCon Digital'
 const gmailUser = () => process.env.GMAIL_USER?.trim() || GMAIL
 const gmailPassword = () => process.env.GMAIL_APP_PASSWORD?.replace(/\s+/g, '')
@@ -26,8 +27,9 @@ export class MailError extends Error {
   }
 }
 
-export async function sendMail({ to, subject, html, text }) {
-  if (resendKey()) return sendResend({ to, subject, html, text })
+// copy: false skips the Gmail copy (for emails that already go to Gmail).
+export async function sendMail({ to, subject, html, text, copy = true }) {
+  if (resendKey()) return sendResend({ to, subject, html, text, copy })
   if (!gmailPassword()) {
     console.log('[mail] local only, not sent:', to, subject, html.length)
     return
@@ -41,11 +43,11 @@ export async function sendMail({ to, subject, html, text }) {
   }
 }
 
-async function sendResend({ to, subject, html, text }) {
+async function sendResend({ to, subject, html, text, copy }) {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${resendKey()}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: `${NAME} <${resendFrom()}>`, to: [to], bcc: [GMAIL], reply_to: GMAIL, subject, html, text }),
+    body: JSON.stringify({ from: `${NAME} <${resendFrom()}>`, to: [to], ...(copy && { bcc: [GMAIL] }), reply_to: GMAIL, subject, html, text }),
   })
   if (res.ok) return
   const body = await res.json().catch(() => ({}))
