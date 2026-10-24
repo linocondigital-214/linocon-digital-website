@@ -20,6 +20,9 @@ import { ensureFileNo } from './_lib/fileNo.js'
 import { publicView } from './_lib/client.js'
 import { billingFor } from './_lib/paid.js'
 import { etransferNotice, notifyProgress } from './_lib/progressMail.js'
+import { sendThroughStripe } from './_lib/finance/invoices.js'
+import { getSettings, listRecords, saveRecord } from './_lib/finance/records.js'
+import { stripeKey } from './_lib/finance/stripe.js'
 import { askChanges, saveHas, saveWishes } from './_lib/clientInput.js'
 import { MIN_PASSWORD, acceptInvite, currentClient, inviteClient, loginStatus, removeLogin, sessionCookie, signIn, signOut } from './_lib/portal.js'
 
@@ -48,6 +51,7 @@ const INPUT_MESSAGES = {
   note: 'Type what you would like changed.',
   has: 'That answer could not be saved. Refresh the page and try again.',
   invoice: 'That invoice is already paid or no longer open. Refresh the page.',
+  card: 'Card payment isn’t available right now. Please pay by Interac e-Transfer, or reply to the invoice email.',
 }
 
 // The client's own page also shows their unpaid invoices, to pay from their steps.
@@ -137,6 +141,26 @@ export default route(async (req, res) => {
       await etransferNotice(client, invoice)
     }
     return [200, { client: await clientView(client) }]
+  }
+
+  // Pay by card: Stripe's page for one of the client's unpaid invoices. An
+  // invoice Lino sent himself gets its Stripe copy now (Stripe doesn't email it).
+  if (op === 'card' && post) {
+    const clientId = await currentClient(req)
+    if (!clientId) return [401, { error: 'signin' }]
+    const number = req.body?.number
+    const invoice = (await listRecords('invoice')).find((i) => i.clientId === clientId && i.status === 'open' && number && i.number === number)
+    if (!invoice) return [400, { error: 'invoice', message: INPUT_MESSAGES.invoice }]
+    if (invoice.payUrl) return [200, { url: invoice.payUrl }]
+    if (!stripeKey()) return [503, { error: 'card', message: INPUT_MESSAGES.card }]
+    try {
+      const stripe = await sendThroughStripe(invoice, await getSettings(), { email: false })
+      await saveRecord('invoice', { ...invoice, ...stripe, updatedAt: new Date().toISOString() })
+      return [200, { url: stripe.payUrl }]
+    } catch (err) {
+      console.error('card payment', err)
+      return [502, { error: 'card', message: INPUT_MESSAGES.card }]
+    }
   }
 
   if (op?.startsWith('login')) {

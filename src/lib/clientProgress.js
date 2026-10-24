@@ -152,6 +152,7 @@ export const fetchMyProgress = () => api('/api/portal?op=me').then((d) => d.clie
 export const signDocument = (doc, name, agree, drawing) => post('/api/portal?op=sign', { doc, name, agree, drawing }).then((d) => d.client)
 export const sendWishes = (wishes) => post('/api/portal?op=wishes', wishes).then((d) => d.client)
 export const askDocChanges = (doc, note) => post('/api/portal?op=changes', { doc, note }).then((d) => d.client)
+export const cardPayLink = (number) => post('/api/portal?op=card', { number }).then((d) => d.url)
 export const saidEtransfer = (number) => post('/api/portal?op=etransfer', { number }).then((d) => d.client)
 export const saveMyInfo = (answers, done) => post('/api/portal?op=has', { answers, done }).then((d) => d.client)
 
