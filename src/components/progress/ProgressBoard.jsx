@@ -200,7 +200,7 @@ function StartingPoint({ client, editable, onChange }) {
   )
 }
 
-function HasItem({ item, has, editable, onChange }) {
+export function HasItem({ item, has, editable, onChange }) {
   const value = has[item.id]
   const note = has[`${item.id}.note`]
   const option = HAS_OPTIONS.find((o) => o.value === value)

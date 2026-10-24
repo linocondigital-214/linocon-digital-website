@@ -12,7 +12,10 @@
 //              fields: { <field>: text }, text: { <section id>: text } } }
 //   worklog: { <entry id>: { date: 'YYYY-MM-DD', text } }   Lino's private notes, never shown to the client
 //   payment: { label, link, portal }   the client's Pay button: Stripe payment link and billing portal
-//   schedule: { depositOn: 'YYYY-MM-DD' }  deposit received outside /finance (see api/_lib/schedule.js)
+//   schedule: { depositOn, launchOn: 'YYYY-MM-DD' }  deposit received outside /finance (see api/_lib/schedule.js), target launch
+//   wishes:  what the client wants, sent from their page (api/_lib/wishes.js)
+//   infoSentAt: when the client finished the "What you already have" checklist
+//   journey: { <step key>: 'YYYY-MM-DD' }  steps Lino marked as done by hand (src/lib/journey.js)
 //   fileNo:  'LCF-2026-001'   set once the agreement is signed (api/_lib/fileNo.js)
 // }
 import { isDrawing } from './esign.js'
@@ -30,7 +33,7 @@ export function publicView(client) {
 
 const DETAIL_FIELDS = ['name', 'website', 'contact', 'email', 'serviceArea', 'startDate']
 const SERVICES = ['website', 'seo', 'backlinks', 'grow']
-const EDITABLE = new Set(['details', 'has', 'done', 'na', 'signoff', 'numbers', 'months', 'docs', 'worklog', 'payment', 'schedule'])
+const EDITABLE = new Set(['details', 'has', 'done', 'na', 'signoff', 'numbers', 'months', 'docs', 'worklog', 'payment', 'schedule', 'journey'])
 const FORBIDDEN = new Set(['__proto__', 'constructor', 'prototype'])
 const MAX_SIZE = 200_000
 
@@ -69,7 +72,12 @@ export function applyChanges(client, changes) {
       (typeof value === 'string' && (isOwnerDrawing ? isDrawing(value) : value.length <= 4000))
     if (!ok) throw new BadRequest('Invalid change value')
     if (path[0] === 'payment') checkPayment(path, value)
-    if (path[0] === 'schedule' && !(path.length === 2 && path[1] === 'depositOn' && (value === null || /^\d{4}-\d{2}-\d{2}$/.test(value)))) {
+    const isDate = value === null || /^\d{4}-\d{2}-\d{2}$/.test(value)
+    if (path[0] === 'schedule' && !(path.length === 2 && ['depositOn', 'launchOn'].includes(path[1]) && isDate)) {
+      throw new BadRequest('Invalid change path')
+    }
+    // Steps Lino marks as done by hand (see src/lib/journey.js).
+    if (path[0] === 'journey' && !(path.length === 2 && isDate)) {
       throw new BadRequest('Invalid change path')
     }
     // A client's e-signature is only written by the client signing

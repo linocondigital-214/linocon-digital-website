@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import PrivateShell, { SetupNotice, Notice } from '../components/progress/PrivateShell'
 import { AdminSignIn, AdminSignOut } from '../components/progress/AdminClientGate'
 import { LoginChip } from '../components/progress/ClientLogin'
+import { currentStep, journeySteps } from '../lib/journey'
 import { WorkLogForm, WorkLogList } from '../components/progress/WorkLog'
 import { ScheduleSection } from '../components/progress/Schedule'
 import { SERVICES, changeClient, createClient, fetchClients, forgetOldPassword, monthLabel, percent } from '../lib/clientProgress'
@@ -137,7 +138,7 @@ function ClientList({ clients, logins, paidOn, onAdded, onChanged, onSignedOut }
               </p>
             )}
             {shown.map((r) => (
-              <ClientRow key={r.client.id} row={r} login={logins?.[r.client.id]} />
+              <ClientRow key={r.client.id} row={r} login={logins?.[r.client.id]} paidOn={paidOn?.[r.client.id]} />
             ))}
           </div>
 
@@ -172,9 +173,11 @@ const DOC_TONE = {
   signed: 'border-blue text-blue',
 }
 
-function ClientRow({ row, login }) {
+function ClientRow({ row, login, paidOn }) {
   const { client: c, stage, phase, progress, month, docs, attention } = row
   const lastNote = logEntries([c])[0]
+  const steps = journeySteps({ ...c, paidOn }, { joined: Boolean(login?.account), invited: Boolean(login?.invite) })
+  const step = currentStep(steps)
 
   return (
     <article
@@ -185,6 +188,11 @@ function ClientRow({ row, login }) {
       <div className="min-w-0">
         <h3 className="font-display font-bold text-xl md:text-2xl break-words">{c.details.name}</h3>
         {c.details.website && <p className="text-sm text-text-tertiary break-all">{c.details.website}</p>}
+        {step && (
+          <p className={`text-sm font-semibold pt-2 ${step.turn === 'you' ? 'text-orange' : 'text-text-secondary'}`}>
+            Step {steps.indexOf(step) + 1} of {steps.length}: {step.name} ({step.turn === 'you' ? 'your turn' : "client's turn"})
+          </p>
+        )}
         {attention.length > 0 && (
           <ul className="mt-3 flex flex-col gap-1">
             {attention.map((a) => (

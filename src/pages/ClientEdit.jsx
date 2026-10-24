@@ -4,6 +4,7 @@ import PrivateShell from '../components/progress/PrivateShell'
 import AdminClientGate, { AdminSignIn, AdminSignOut } from '../components/progress/AdminClientGate'
 import ProgressBoard from '../components/progress/ProgressBoard'
 import ClientLogin from '../components/progress/ClientLogin'
+import { JourneyCard } from '../components/progress/Journey'
 import { WorkLogForm, WorkLogList } from '../components/progress/WorkLog'
 import { logEntries } from '../lib/clientOverview'
 import { isShared } from '../lib/clientDocs'
@@ -62,6 +63,7 @@ export default function ClientEdit() {
               Delete
             </button>
           </div>
+          {state.client && <JourneyCard client={state.client} onChange={onChange} />}
           {state.client && <ClientLogin client={state.client} />}
           {state.client && <ScheduleCard client={state.client} onChange={onChange} />}
           <ProgressBoard client={state.client} editable onChange={onChange} docBase={`/admin/${id}`} />

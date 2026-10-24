@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import PrivateShell, { Notice } from '../components/progress/PrivateShell'
 import ProgressBoard from '../components/progress/ProgressBoard'
+import { ClientSteps } from '../components/progress/Journey'
 import { fetchMyProgress, portalInvite, portalSignIn, portalSignOut } from '../lib/clientProgress'
 import usePageMeta from '../lib/usePageMeta'
 
@@ -44,7 +45,12 @@ export default function Portal() {
           <p>Please refresh the page in a moment.</p>
         </Notice>
       )}
-      {state.status === 'ready' && <ProgressBoard client={state.client} docBase="/clients" />}
+      {state.status === 'ready' && (
+        <>
+          <ClientSteps client={state.client} onClient={(client) => setState({ status: 'ready', client })} />
+          <ProgressBoard client={state.client} docBase="/clients" />
+        </>
+      )}
     </PrivateShell>
   )
 }

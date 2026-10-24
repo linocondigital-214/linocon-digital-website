@@ -50,7 +50,7 @@ export default function ClientLogin({ client }) {
   const pending = login?.invite
 
   return (
-    <section className="rounded-2xl border border-border bg-surface p-5 md:p-6 mb-10" aria-labelledby="client-login-heading">
+    <section id="client-login" className="rounded-2xl border border-border bg-surface p-5 md:p-6 mb-10 scroll-mt-24" aria-labelledby="client-login-heading">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <h2 id="client-login-heading" className="font-display font-bold text-xl">

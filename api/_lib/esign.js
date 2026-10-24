@@ -11,7 +11,7 @@ export const SIGNABLE = new Set(['package', 'proposal', 'agreement'])
 // prices), and for the package its own choices.
 export function docFingerprint(client, doc) {
   const docs = client.docs ?? {}
-  const SKIP = new Set(['status', 'sentAt', 'signedAt', 'esign', 'ownerName', 'ownerAt', 'ownerDrawing'])
+  const SKIP = new Set(['status', 'sentAt', 'signedAt', 'esign', 'ownerName', 'ownerAt', 'ownerDrawing', 'changes'])
   const strip = (d = {}) => Object.fromEntries(Object.entries(d).filter(([k]) => !SKIP.has(k)))
   const content =
     doc === 'package'
