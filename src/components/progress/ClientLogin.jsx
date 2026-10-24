@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { dateLabel, fetchClientLogin, inviteClientLogin, removeClientLogin } from '../../lib/clientProgress'
 import { agoLabel } from '../../lib/clientOverview'
-import EmailOptions from '../EmailOptions'
+import EmailOptions, { gmailLink } from '../EmailOptions'
+import { INVITE_SUBJECT, inviteHtml, inviteText } from '../../lib/inviteEmail'
 
 // The client's own login to linocondigital.com/clients, on their admin page.
 // Lino creates a one-time invite code and sends it to the client, who uses it
@@ -104,25 +105,42 @@ export default function ClientLogin({ client }) {
 
 function InviteCode({ client, code }) {
   const [copied, setCopied] = useState('')
-  const first = client.details.contact?.split(' ')[0]
-  const message = `Hi${first ? ` ${first}` : ''}, your private progress page with LinoCon Digital is ready.
+  const [showPlain, setShowPlain] = useState(false)
+  const html = inviteHtml(client, code)
+  const text = inviteText(client, code)
+  const preview = useRef(null)
+  const btn = 'h-11 px-5 rounded-full border border-border text-sm font-semibold hover:border-text-tertiary inline-flex items-center'
 
-1. Go to https://linocondigital.com/clients
-2. Tap "I have an invite code" and type: ${code.code}
-3. Enter your email and choose a password.
+  const flash = (what) => {
+    setCopied(what)
+    setTimeout(() => setCopied(''), 2500)
+  }
 
-The code works once and expires on ${dateLabel(code.expires)}. After that, sign in at the same page with your email and password.
+  // Copies the designed email so it pastes into Gmail with its look. Falls
+  // back to selecting the preview and copying it, which keeps the look too.
+  async function copyDesigned() {
+    try {
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }), 'text/plain': new Blob([text], { type: 'text/plain' }) }),
+      ])
+      return flash('designed')
+    } catch {
+      const range = document.createRange()
+      range.selectNodeContents(preview.current)
+      const selection = window.getSelection()
+      selection.removeAllRanges()
+      selection.addRange(range)
+      const ok = document.execCommand('copy')
+      selection.removeAllRanges()
+      if (ok) flash('designed')
+    }
+  }
 
-On your page you can follow our progress, and read and sign your proposal and service agreement.
-
-Lino
-LinoCon Digital`
-
-  const copy = (text, what) =>
+  const copyCode = () =>
     navigator.clipboard
-      ?.writeText(text)
-      .then(() => setCopied(what))
-      .catch(() => window.prompt('Copy this:', text))
+      ?.writeText(code.code)
+      .then(() => flash('code'))
+      .catch(() => window.prompt('Copy this:', code.code))
 
   return (
     <div className="mt-5 rounded-xl border border-blue bg-ink p-4 md:p-5">
@@ -131,26 +149,60 @@ LinoCon Digital`
       <p className="text-sm text-text-secondary pt-2">
         Send this to {client.details.name}. It works once and expires on {dateLabel(code.expires)}.
       </p>
-      <pre className="mt-4 whitespace-pre-wrap rounded-lg border border-border bg-surface p-4 text-sm text-text-secondary font-sans">{message}</pre>
-      <div className="pt-4">
-        <EmailOptions
-          to={client.details.email}
-          subject="Your LinoCon Digital client page: how to sign in"
-          body={message}
-          label="Email invite"
-          primary="h-11 px-5 rounded-full bg-gradient-brand text-ink text-sm font-bold flex items-center"
-          secondary="h-11 px-5 rounded-full border border-border text-sm font-semibold flex items-center hover:border-text-tertiary"
-        />
-        {!client.details.email && <p className="text-xs text-text-tertiary pt-2">No email saved for this client, so type it in Gmail.</p>}
+
+      <h3 className="font-bold pt-6">Send the welcome email</h3>
+      <ol className="mt-3 flex flex-col gap-3 text-sm">
+        <li className="flex flex-wrap items-center gap-3">
+          <span className="text-text-secondary w-5">1.</span>
+          <button type="button" onClick={copyDesigned} className="h-11 px-5 rounded-full bg-gradient-brand text-ink text-sm font-bold">
+            {copied === 'designed' ? 'Copied. Now open Gmail' : 'Copy the welcome email'}
+          </button>
+        </li>
+        <li className="flex flex-wrap items-center gap-3">
+          <span className="text-text-secondary w-5">2.</span>
+          <a href={gmailLink(client.details.email, INVITE_SUBJECT, '')} target="_blank" rel="noreferrer" className={btn}>
+            Open Gmail
+          </a>
+          <span className="text-text-secondary">The email address and subject are filled in.</span>
+        </li>
+        <li className="flex gap-3">
+          <span className="text-text-secondary w-5">3.</span>
+          <span className="text-text-secondary">
+            Click in the message box, press <b className="text-text">Ctrl+V</b> (<b className="text-text">Cmd+V</b> on a Mac), then Send.
+          </span>
+        </li>
+      </ol>
+      {!client.details.email && <p className="text-xs text-text-tertiary pt-2">No email saved for this client, so type it in Gmail.</p>}
+
+      <p className="text-xs font-bold uppercase tracking-wider text-text-secondary pt-6 pb-2">What your client will see</p>
+      <div className="rounded-lg overflow-hidden bg-[#f2f2f4] max-h-[560px] overflow-y-auto">
+        {/* Built from escaped values in src/lib/inviteEmail.js. */}
+        <div ref={preview} dangerouslySetInnerHTML={{ __html: html }} />
       </div>
-      <div className="flex flex-wrap gap-3 pt-3">
-        <button type="button" onClick={() => copy(message, 'message')} className="h-11 px-5 rounded-full border border-border text-sm font-semibold hover:border-text-tertiary">
-          {copied === 'message' ? 'Message copied' : 'Copy message'}
-        </button>
-        <button type="button" onClick={() => copy(code.code, 'code')} className="h-11 px-5 rounded-full border border-border text-sm font-semibold hover:border-text-tertiary">
+
+      <div className="flex flex-wrap gap-3 pt-4">
+        <button type="button" onClick={copyCode} className={btn}>
           {copied === 'code' ? 'Code copied' : 'Copy code only'}
         </button>
+        <button type="button" onClick={() => setShowPlain(!showPlain)} aria-expanded={showPlain} className={btn}>
+          Plain text email instead
+        </button>
       </div>
+      {showPlain && (
+        <div className="pt-4">
+          <pre className="whitespace-pre-wrap rounded-lg border border-border bg-surface p-4 text-sm text-text-secondary font-sans">{text}</pre>
+          <div className="pt-3">
+            <EmailOptions
+              to={client.details.email}
+              subject={INVITE_SUBJECT}
+              body={text}
+              label="Email it"
+              primary={btn}
+              secondary={btn}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
