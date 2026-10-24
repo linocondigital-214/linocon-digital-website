@@ -29,3 +29,13 @@ export function mailtoLink(subject, fields) {
     .join('\n')
   return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 }
+
+// Emails Lino when a client does something on their client page (sets up
+// their login, sends their answers, accepts, signs...). Best effort: what the
+// client did is saved either way and shows in /admin.
+export const notifyLino = (client, what) =>
+  sendLead(`Client update: ${client.details.name} ${what}`, {
+    Client: client.details.name,
+    Update: what,
+    Open: `https://linocondigital.com/admin/${client.id}`,
+  })
