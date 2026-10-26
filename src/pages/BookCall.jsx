@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Reveal from '../components/Reveal'
-import { sendLead } from '../lib/leads'
+import { CONTACT_EMAIL, sendLead } from '../lib/leads'
 import { track } from '../lib/analytics'
 
 const CAL_COM_LINK = 'linocondigital/strategy-call'
@@ -52,6 +52,13 @@ export default function BookCall() {
               See what to get ready
             </Link>{' '}
             before the call.
+          </p>
+          <p className="text-text-secondary mt-4 max-w-xl">
+            Prefer email? Write to us at{' '}
+            <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-4 whitespace-nowrap">
+              {CONTACT_EMAIL}
+            </a>
+            .
           </p>
         </Reveal>
 
