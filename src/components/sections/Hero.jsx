@@ -165,6 +165,10 @@ export default function Hero() {
               Book a strategy call
             </Link>
           </div>
+
+          <p className="text-sm text-text-secondary text-balance">
+            Based in Vancouver, BC. Working with small businesses across Canada and the US.
+          </p>
         </m.div>
 
         <div className="w-full max-w-3xl mx-auto lg:max-w-none">

@@ -34,7 +34,7 @@ const FAQS = [
   },
   {
     q: 'Do you work with businesses outside Canada?',
-    a: "Yes. LinoCon Digital works with businesses internationally. Our website creation, SEO setup, and backlink services are designed to support businesses wherever they operate. We'll consider your target market, industry, competitors, and search audience so the approach fits your business and location.",
+    a: "Yes. We're based in Vancouver, BC, and work remotely with small businesses across Canada and the United States. Calls, updates and approvals all happen online, so where you're located doesn't slow anything down. Our prices are in Canadian dollars. We'll consider your target market, industry, competitors, and search audience so the approach fits your business and location.",
   },
   {
     q: 'Do you provide ongoing SEO after the website is launched?',
