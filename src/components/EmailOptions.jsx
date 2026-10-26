@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { CONTACT_EMAIL } from '../lib/leads'
+import { GMAIL_ACCOUNT } from '../lib/leads'
 
 // Ways to send an email Lino wrote here. A mailto: link only works where an
 // email app is set up, which most phones have but many computers don't (Gmail
 // in the browser), so Gmail opens in a new tab with the email filled in, and
 // the text can be copied into anything else.
 export function gmailLink(to, subject, body) {
-  const params = { authuser: CONTACT_EMAIL, view: 'cm', fs: '1', to: to || '', su: subject, body }
+  const params = { authuser: GMAIL_ACCOUNT, view: 'cm', fs: '1', to: to || '', su: subject, body }
   return `https://mail.google.com/mail/?${Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&')}`
 }
 

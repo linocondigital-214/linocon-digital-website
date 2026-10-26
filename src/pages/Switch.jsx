@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { m } from 'framer-motion'
 import Reveal from '../components/Reveal'
 import { Eyebrow, Headline, SECTIONS } from '../components/PageSections'
-import { CONTACT_EMAIL, mailtoLink, sendLead } from '../lib/leads'
+import { GMAIL_ACCOUNT, mailtoLink, sendLead } from '../lib/leads'
 import { track } from '../lib/analytics'
 import usePageMeta from '../lib/usePageMeta'
 
@@ -195,7 +195,7 @@ function NoPasswords() {
       <h3 className="font-display font-bold text-xl md:text-2xl">Please don&rsquo;t send us passwords.</h3>
       <p className="text-text-secondary leading-relaxed">
         We&rsquo;ll never ask for them by email, text or form. Where an account lets you invite a helper,
-        invite <span className="font-bold text-text break-all sm:break-normal sm:whitespace-nowrap">{CONTACT_EMAIL}</span>. You stay the
+        invite <span className="font-bold text-text break-all sm:break-normal sm:whitespace-nowrap">{GMAIL_ACCOUNT}</span>. You stay the
         owner and can remove us any time. For anything that can&rsquo;t be shared that way, we&rsquo;ll do it
         together on a call.
       </p>

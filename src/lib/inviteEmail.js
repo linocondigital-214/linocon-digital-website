@@ -25,7 +25,7 @@ On your page you can tell us what you need, follow every step of your project, r
 
 Lino
 LinoCon Digital
-linocondigital@gmail.com · linocondigital.com`
+office@linocondigital.com · linocondigital.com`
 }
 
 export function inviteHtml(client, code) {

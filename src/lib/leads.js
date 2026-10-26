@@ -1,8 +1,12 @@
 // Form submissions are emailed through Web3Forms to linocondigital@gmail.com.
+// Visitors see CONTACT_EMAIL (Zoho, forwards into the Gmail). GMAIL_ACCOUNT is
+// the Google account: businesses add it as a manager, e-Transfers go to it,
+// and Gmail compose links open in it.
 // The access key is public by design (Web3Forms keys are meant for client-side
 // code). If a send fails, forms fall back to opening the visitor's email app.
 export const WEB3FORMS_ACCESS_KEY = 'a4cac5a0-c340-475d-b1a5-6c0fdc7dd992'
-export const CONTACT_EMAIL = 'linocondigital@gmail.com'
+export const CONTACT_EMAIL = 'office@linocondigital.com'
+export const GMAIL_ACCOUNT = 'linocondigital@gmail.com'
 
 const formsConfigured = !WEB3FORMS_ACCESS_KEY.startsWith('YOUR_')
 
