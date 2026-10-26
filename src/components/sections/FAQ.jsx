@@ -5,6 +5,10 @@ import Reveal from '../Reveal'
 // (links stripped to their label) feeds the FAQPage structured data for Google.
 const FAQS = [
   {
+    q: 'Who do you work with?',
+    a: "We work with small and growing businesses that want to be found online and win more customers. That includes trades and contractors, home services like cleaners and landscapers, shops, consultants, and other local service businesses. It doesn't matter if you're just starting out with no website yet, or you've been in business for years and your current site isn't bringing in work. If you're not sure we're the right fit, a [free strategy call](/book) is the easiest way to find out.",
+  },
+  {
     q: 'How much does a website cost?',
     a: "Every website is different, so we don't use a one-size-fits-all price. Your project is quoted based on the number of pages, design requirements, functionality, content, integrations, and SEO setup you need. We'll discuss your goals during a [free strategy call](/book), then provide a clear project quote before any work begins.",
   },
@@ -33,8 +37,16 @@ const FAQS = [
     a: "We start with a short strategy call to understand your business, goals, customers, and what you want your website to accomplish. If you have a logo, photos, written content, brand guidelines, or other materials, you can provide them. Don't have everything ready? We'll tell you what we need and guide you through the process. Already have a website and accounts? Here's [what to get ready](/switch#gather).",
   },
   {
+    q: 'Do you only work with businesses in Vancouver?',
+    a: "No. We're based in Vancouver, BC, but we work remotely, so we can help businesses anywhere in British Columbia and across Canada. Strategy calls, updates and approvals all happen online, so you get the same service whether you're down the street or in another province.",
+  },
+  {
     q: 'Do you work with businesses outside Canada?',
-    a: "Yes. We're based in Vancouver, BC, and work remotely with small businesses across Canada and the United States. Calls, updates and approvals all happen online, so where you're located doesn't slow anything down. Our prices are in Canadian dollars. We'll consider your target market, industry, competitors, and search audience so the approach fits your business and location.",
+    a: "Yes. Along with businesses across Canada, we work remotely with businesses in the United States. If you're somewhere else, [get in touch](/book) and we'll let you know if we're a good fit. We book calls at times that work for your time zone, and you can pay online by card. Our prices are in Canadian dollars, and your card provider converts the amount to your currency.",
+  },
+  {
+    q: 'Can you help my business show up in my own city?',
+    a: "Yes. Your SEO is built around where your customers are, not where we are. We look at the city or area you serve, the words local customers search for, and the businesses you compete with, so your website and Google Business Profile are set up to be found in your market.",
   },
   {
     q: 'Do you provide ongoing SEO after the website is launched?',
