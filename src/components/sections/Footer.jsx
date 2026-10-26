@@ -113,6 +113,9 @@ export default function Footer() {
                 Get found. Get chosen. Get <span className="text-gradient">growing.</span>
               </span>
               Websites, SEO and backlinks for businesses that want more customers.
+              <span className="block mt-2">
+                Based in Vancouver, BC. Working remotely with small businesses across Canada and the US. Prices in CAD.
+              </span>
             </p>
             <div className="flex flex-wrap items-center gap-2.5">
               <Link
