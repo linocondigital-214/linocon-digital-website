@@ -103,7 +103,7 @@ export function emailShell({ badge, rows, footer, date = new Date() }) {
   <tr><td height="4" style="height:4px;line-height:4px;font-size:0;background:${C.blue};background-image:linear-gradient(90deg, ${C.blue}, ${C.orange});">&nbsp;</td></tr>
 ${rows.join('\n')}
   <tr><td style="background:${C.ink};padding:18px 32px;font-family:${FONT};font-size:12px;line-height:18px;color:#9a9caa;">
-    <a href="${SITE}" style="color:#ffffff;text-decoration:none;font-weight:700;">linocondigital.com</a> &middot; <a href="mailto:linocondigital@gmail.com" style="color:#9a9caa;text-decoration:none;">linocondigital@gmail.com</a>${footer ? `<br>${footer}` : ''}
+    <a href="${SITE}" style="color:#ffffff;text-decoration:none;font-weight:700;">linocondigital.com</a> &middot; <a href="mailto:office@linocondigital.com" style="color:#9a9caa;text-decoration:none;">office@linocondigital.com</a>${footer ? `<br>${footer}` : ''}
   </td></tr>
 
 </table>

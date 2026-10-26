@@ -1,20 +1,21 @@
 // Sends the designed emails (welcome, package) straight to the client, so
 // they arrive with their look. Two ways, whichever is set up in Vercel:
-//   RESEND_API_KEY      Resend (resend.com), from lino@linocondigital.com once
-//                       the domain is verified there. Replies go to Gmail and
-//                       a copy goes to Gmail too.
+//   RESEND_API_KEY      Resend (resend.com), from office@linocondigital.com once
+//                       the domain is verified there. Replies go to office@
+//                       (Zoho, forwards to Gmail) and a copy goes to Gmail.
 //   GMAIL_APP_PASSWORD  a Google app password for linocondigital@gmail.com;
 //                       the email shows in Gmail's Sent folder.
 // Locally, without either, emails are only logged.
 import nodemailer from 'nodemailer'
 
 const GMAIL = 'linocondigital@gmail.com'
+const OFFICE = 'office@linocondigital.com'
 export const LINO_EMAIL = GMAIL
 const NAME = 'Lino at LinoCon Digital'
 const gmailUser = () => process.env.GMAIL_USER?.trim() || GMAIL
 const gmailPassword = () => process.env.GMAIL_APP_PASSWORD?.replace(/\s+/g, '')
 const resendKey = () => process.env.RESEND_API_KEY?.trim()
-const resendFrom = () => process.env.MAIL_FROM?.trim() || 'lino@linocondigital.com'
+const resendFrom = () => process.env.MAIL_FROM?.trim() || OFFICE
 
 export const mailReady = () => Boolean(resendKey() || gmailPassword() || process.env.LCD_MEMORY_STORE)
 
@@ -47,7 +48,7 @@ async function sendResend({ to, subject, html, text, copy }) {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${resendKey()}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: `${NAME} <${resendFrom()}>`, to: [to], ...(copy && { bcc: [GMAIL] }), reply_to: GMAIL, subject, html, text }),
+    body: JSON.stringify({ from: `${NAME} <${resendFrom()}>`, to: [to], ...(copy && { bcc: [GMAIL] }), reply_to: OFFICE, subject, html, text }),
   })
   if (res.ok) return
   const body = await res.json().catch(() => ({}))

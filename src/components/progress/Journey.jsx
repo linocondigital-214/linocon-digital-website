@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { WISH_CHOICES, WISH_WHEN, hasWebsite, whenLabel, wishLabel } from '../../../api/_lib/wishes.js'
 import { INTAKE } from '../../lib/clientChecklist'
 import { askDocChanges, cardPayLink, dateLabel, saidEtransfer, saveMyInfo, sendWishes, today } from '../../lib/clientProgress'
-import { CONTACT_EMAIL, notifyLino } from '../../lib/leads'
+import { GMAIL_ACCOUNT, notifyLino } from '../../lib/leads'
 import { currentStep, journeySteps } from '../../lib/journey'
 import { money } from '../../lib/packages'
 import { HasItem } from './ProgressBoard'
@@ -268,7 +268,7 @@ function PayInvoice({ owing, payment }) {
   return <div className="text-sm text-text-secondary pt-1">Pay {money(owing.total)} with the Pay now button at the top of this page, by card or Interac e-Transfer.</div>
 }
 
-const ETRANSFER_TO = CONTACT_EMAIL
+const ETRANSFER_TO = GMAIL_ACCOUNT
 
 // At the top of the client's page while an invoice is unpaid: Pay now, by
 // card (Stripe's page for the invoice) or by Interac e-Transfer.
@@ -519,8 +519,8 @@ function InfoForm({ client, onClient }) {
       <div className="mt-3 rounded-xl border border-orange/50 bg-orange/10 p-4 text-sm">
         <b>Never type passwords here.</b>{' '}
         {hasWebsite(client)
-          ? `For your website, domain and Google accounts, add ${CONTACT_EMAIL} as a manager or admin instead, and note here that you did.`
-          : `Where we need access to an account, add ${CONTACT_EMAIL} as a manager or admin, and note here that you did.`}
+          ? `For your website, domain and Google accounts, add ${GMAIL_ACCOUNT} as a manager or admin instead, and note here that you did.`
+          : `Where we need access to an account, add ${GMAIL_ACCOUNT} as a manager or admin, and note here that you did.`}
       </div>
       <div className="mt-5 grid md:grid-cols-2 gap-x-10 gap-y-8">
         {INTAKE.map((g) => (

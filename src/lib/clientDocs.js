@@ -7,7 +7,7 @@
 export const BUSINESS = {
   name: 'LinoCon Digital',
   place: 'Vancouver, British Columbia',
-  email: 'linocondigital@gmail.com',
+  email: 'office@linocondigital.com',
   website: 'linocondigital.com',
 }
 
