@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-const DEFAULT_TITLE = 'LinoCon Digital — Websites, SEO & Backlinks'
+const DEFAULT_TITLE = 'LinoCon Digital | Websites & SEO in Vancouver, BC, Canada'
 
 export default function usePageMeta(title, description) {
   useEffect(() => {
