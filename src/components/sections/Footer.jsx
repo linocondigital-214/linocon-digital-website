@@ -34,7 +34,7 @@ const COLUMNS = [
   },
 ]
 
-const SOCIALS = [
+export const SOCIALS = [
   {
     label: 'Facebook',
     href: 'https://www.facebook.com/linocondigital',
