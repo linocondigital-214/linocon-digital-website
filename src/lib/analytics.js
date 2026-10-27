@@ -7,6 +7,8 @@
 //   audit_click        a "Free audit" button was clicked
 //   email_click        an email link was clicked
 //   phone_click        a phone link was clicked
+//   save_contact_click "Save contact" was tapped on the /card business card
+//   card_share_click   "Share this card" was tapped on /card
 // Never pass names, emails, phone numbers or message text here: Google's
 // rules forbid personal data in Analytics.
 

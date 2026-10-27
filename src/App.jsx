@@ -18,6 +18,7 @@ const Books = lazy(() => import('./pages/Books'))
 const BooksDemo = lazy(() => import('./pages/BooksDemo'))
 const Refer = lazy(() => import('./pages/Refer'))
 const Switch = lazy(() => import('./pages/Switch'))
+const Card = lazy(() => import('./pages/Card'))
 const Portal = lazy(() => import('./pages/Portal'))
 const Admin = lazy(() => import('./pages/Admin'))
 const ClientEdit = lazy(() => import('./pages/ClientEdit'))
@@ -27,8 +28,8 @@ const ClientDocEdit = lazy(() => import('./pages/ClientDoc').then((m) => ({ defa
 const ClientDocView = lazy(() => import('./pages/ClientDoc').then((m) => ({ default: m.ClientDocView })))
 
 // Client progress, admin and finance pages are private: no site menu or footer.
-// The Books demo is full screen, so it skips them too.
-const isPrivatePath = (path) => /^\/(progress|clients|admin|finance|books\/demo)(\/|$)/.test(path)
+// The Books demo and the digital business card are full screen, so they skip them too.
+const isPrivatePath = (path) => /^\/(progress|clients|admin|finance|books\/demo|card)(\/|$)/.test(path)
 
 // /clients/<package|proposal|agreement> is the signed-in client's document. Lino's old
 // editor links (/clients/<client id>/...) now live under /admin.
@@ -133,6 +134,14 @@ function App() {
             element={
               <Suspense fallback={null}>
                 <Switch />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/card"
+            element={
+              <Suspense fallback={null}>
+                <Card />
               </Suspense>
             }
           />
