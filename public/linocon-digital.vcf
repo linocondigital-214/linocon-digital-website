@@ -1,7 +1,10 @@
 BEGIN:VCARD
 VERSION:3.0
-FN:LinoCon Digital
+N:Consulta;Lino;;;
+FN:Lino Consulta
 ORG:LinoCon Digital
+TITLE:Operations
+TEL;TYPE=WORK,VOICE:+1-778-288-8562
 EMAIL;TYPE=WORK:office@linocondigital.com
 URL:https://linocondigital.com
 ADR;TYPE=WORK:;;;Vancouver;BC;;Canada

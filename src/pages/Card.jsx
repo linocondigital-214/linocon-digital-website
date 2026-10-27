@@ -48,6 +48,10 @@ export default function Card() {
           <p className="text-xs font-bold tracking-widest uppercase text-text-secondary">
             Websites · SEO · Backlinks
           </p>
+          <p className="text-text">
+            <span className="font-display font-bold">Lino Consulta</span>
+            <span className="text-text-secondary"> · Operations</span>
+          </p>
         </div>
 
         <a
@@ -59,6 +63,7 @@ export default function Card() {
         </a>
 
         <div className="w-full flex flex-col gap-2.5 text-left">
+          <Row href="tel:+17782888562" label="Call or text" value="778-288-8562" />
           <Row href={`mailto:${CONTACT_EMAIL}`} label="Email" value={CONTACT_EMAIL} />
           <Row href="/" label="Website" value="linocondigital.com" internal />
           <Row href="/book" label="Book a free call" value="Pick a time that suits you" internal />
