@@ -155,9 +155,9 @@ export default function Footer() {
             <Link to="/disclaimer" className="text-[13px] text-text-secondary hover:text-text transition-colors">
               Disclaimer
             </Link>
-            <a href={`mailto:${CONTACT_EMAIL}`} className="text-[13px] text-text-secondary hover:text-text transition-colors">
+            <EmailUs className="text-[13px] text-text-secondary hover:text-text transition-colors">
               {CONTACT_EMAIL}
-            </a>
+            </EmailUs>
             <a
               href="#top"
               onClick={(e) => {

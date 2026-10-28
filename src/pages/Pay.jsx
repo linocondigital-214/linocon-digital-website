@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import Reveal from '../components/Reveal'
 import { CONTACT_EMAIL } from '../lib/leads'
 import usePageMeta from '../lib/usePageMeta'
+import EmailUs from '../components/EmailUs'
 
 // Public Stripe payment link for the Grow Plan (monthly). Payment happens on
 // Stripe's own page; the site never sees card or bank details.
@@ -48,9 +49,9 @@ export default function Pay() {
             <p className="text-sm text-text-secondary">
               Already a client? The <b className="text-text">Pay now</b> button is also on your private progress page.
               Can&rsquo;t find your invoice? Email{' '}
-              <a href={`mailto:${CONTACT_EMAIL}?subject=Please%20resend%20my%20invoice`} className="text-text! underline underline-offset-4">
+              <EmailUs subject="Please resend my invoice" className="text-text! underline underline-offset-4">
                 {CONTACT_EMAIL}
-              </a>{' '}
+              </EmailUs>{' '}
               and we&rsquo;ll resend it.
             </p>
           </Reveal>

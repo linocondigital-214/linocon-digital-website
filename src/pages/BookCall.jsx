@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Reveal from '../components/Reveal'
 import { CONTACT_EMAIL, sendLead } from '../lib/leads'
 import { track } from '../lib/analytics'
+import EmailUs from '../components/EmailUs'
 
 const CAL_COM_LINK = 'linocondigital/strategy-call'
 
@@ -55,9 +56,9 @@ export default function BookCall() {
           </p>
           <p className="text-text-secondary mt-4 max-w-xl">
             Prefer email? Write to us at{' '}
-            <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-4 whitespace-nowrap">
+            <EmailUs className="underline underline-offset-4 whitespace-nowrap">
               {CONTACT_EMAIL}
-            </a>
+            </EmailUs>
             .
           </p>
         </Reveal>
