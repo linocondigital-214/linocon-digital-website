@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import Reveal from '../components/Reveal'
 import { CONTACT_EMAIL } from '../lib/leads'
 import usePageMeta from '../lib/usePageMeta'
+import EmailUs from '../components/EmailUs'
 
 const UPDATED = 'October 16, 2026'
 
@@ -14,7 +15,7 @@ export default function Disclaimer() {
   )
 
   const email = (
-    <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+    <EmailUs className="text-text underline decoration-blue underline-offset-2">{CONTACT_EMAIL}</EmailUs>
   )
 
   return (

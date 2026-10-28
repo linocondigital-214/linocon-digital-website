@@ -4,6 +4,7 @@ import { SOCIALS } from '../components/sections/Footer'
 import { CONTACT_EMAIL } from '../lib/leads'
 import { track } from '../lib/analytics'
 import usePageMeta from '../lib/usePageMeta'
+import EmailUs from '../components/EmailUs'
 
 // Digital business card, full screen with no site menu. The printed card's
 // QR code and the card PDFs live in the project files (business-card/).
@@ -64,7 +65,13 @@ export default function Card() {
 
         <div className="w-full flex flex-col gap-2.5 text-left">
           <Row href="tel:+17782888562" label="Call or text" value="778-288-8562" />
-          <Row href={`mailto:${CONTACT_EMAIL}`} label="Email" value={CONTACT_EMAIL} />
+          <EmailUs
+            wrapperClassName="relative block"
+            className="block w-full text-left rounded-2xl border border-white/10 px-4 py-3 hover:bg-white/5 transition-colors"
+          >
+            <span className="block text-xs font-bold tracking-widest uppercase text-text-secondary">Email</span>
+            <span className="block mt-0.5 text-text">{CONTACT_EMAIL}</span>
+          </EmailUs>
           <Row href="/" label="Website" value="linocondigital.com" internal />
           <Row href="/book" label="Book a free call" value="Pick a time that suits you" internal />
           <Row label="Based in Vancouver, BC" value="Working across Canada & the US" />
