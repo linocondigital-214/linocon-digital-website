@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Logo } from '../Logo'
+import EmailUs from '../EmailUs'
 import { CONTACT_EMAIL } from '../../lib/leads'
 import { SERVICES, servicePath } from '../../lib/services'
 import { BOOKS } from '../../lib/books'
@@ -124,12 +125,7 @@ export default function Footer() {
               >
                 Book a free call
               </Link>
-              <a
-                href={`mailto:${CONTACT_EMAIL}`}
-                className="flex items-center h-9 px-4 rounded-full border border-white/15 text-[13px] font-bold hover:bg-white/5 transition-colors"
-              >
-                Email us
-              </a>
+              <EmailUs className="flex items-center h-9 px-4 rounded-full border border-white/15 text-[13px] font-bold hover:bg-white/5 transition-colors" />
             </div>
             <SocialLinks />
           </div>

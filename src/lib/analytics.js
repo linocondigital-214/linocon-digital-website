@@ -41,7 +41,7 @@ function linkEvent(href) {
 function handleClick(e) {
   const link = e.target.closest?.('a[href]')
   if (!link) return
-  const event = linkEvent(link.getAttribute('href'))
+  const event = link.dataset.track || linkEvent(link.getAttribute('href'))
   if (!event) return
   track(event, {
     // innerText skips the hidden half of buttons with phone/desktop labels.
