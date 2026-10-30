@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 // and measuring the hidden horizontal track forced a full-page layout that
 // froze mid-range phones for a few hundred milliseconds on load.
 export default function useMediaQuery(query) {
-  const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
+  const [matches, setMatches] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches)
 
   useEffect(() => {
     const mql = window.matchMedia(query)

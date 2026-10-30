@@ -4,11 +4,16 @@ import Reveal from '../components/Reveal'
 import { CONTACT_EMAIL, sendLead } from '../lib/leads'
 import { track } from '../lib/analytics'
 import EmailUs from '../components/EmailUs'
+import usePageMeta from '../lib/usePageMeta'
 
 const CAL_COM_LINK = 'linocondigital/strategy-call'
 
 export default function BookCall() {
   const [status, setStatus] = useState('form') // 'form' | 'submitting' | 'scheduling'
+  usePageMeta(
+    'Book a Free Strategy Call',
+    "Book a free strategy call with LinoCon Digital. Tell us about your business and we'll show you what's holding your website and Google rankings back.",
+  )
 
   async function handleSubmit(e) {
     e.preventDefault()
