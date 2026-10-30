@@ -2,7 +2,7 @@
 
 Marketing site for LinoCon Digital — websites, SEO setup, and backlinks.
 
-Live at https://linocondigital.com. Code lives in GitHub `linocondigital-214/linocon-digital-website` and deploys from `main` through the LinoCon Vercel account (moved from maplesheetco in October 2026).
+Live at https://linocondigital.com. Code lives in GitHub `linocondigital-214/linocon-digital-website` and deploys from `main` through the LinoCon Vercel account (moved from maplesheetco on October 30, 2026).
 
 ## Stack
 
