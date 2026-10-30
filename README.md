@@ -20,3 +20,5 @@ npm run dev
 ```bash
 npm run build
 ```
+
+After Vite builds the site, `scripts/prerender.mjs` saves every page listed in `public/sitemap.xml` as its own HTML file (for example `dist/services/seo-setup/index.html`), with that page's title, description, canonical link, share tags and text already in it. Google reads these straight away instead of waiting for the JavaScript. Pages not in the sitemap (admin, clients, finance) load the normal way. Adding a page to the sitemap is all it takes to prerender it.
