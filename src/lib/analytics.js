@@ -9,6 +9,8 @@
 //   phone_click        a phone link was clicked
 //   save_contact_click "Save contact" was tapped on the /card business card
 //   card_share_click   "Share this card" was tapped on /card
+//   begin_checkout     a Stripe payment link was clicked (Grow Plan on /pay,
+//                      Pay now on a client's progress page)
 // Never pass names, emails, phone numbers or message text here: Google's
 // rules forbid personal data in Analytics.
 
@@ -30,6 +32,7 @@ function linkEvent(href) {
   if (!href) return null
   if (href.startsWith('mailto:')) return 'email_click'
   if (href.startsWith('tel:')) return 'phone_click'
+  if (/^https:\/\/(buy|checkout|invoice)\.stripe\.com\//.test(href)) return 'begin_checkout'
   const path = href.replace(/^https?:\/\/[^/]+/, '')
   if (path === '/book' || path.startsWith('/book?') || path.startsWith('/book#')) return 'book_call_click'
   if (path === '#audit' || path === '/#audit') return 'audit_click'
@@ -37,7 +40,7 @@ function linkEvent(href) {
 }
 
 // One listener for the whole site, so every current and future button or
-// link to /book, #audit, mailto: or tel: is counted without extra code.
+// link to /book, #audit, mailto:, tel: or a Stripe payment page is counted without extra code.
 function handleClick(e) {
   const link = e.target.closest?.('a[href]')
   if (!link) return
