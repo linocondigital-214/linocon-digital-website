@@ -182,7 +182,7 @@ export default function Nav() {
           <Logo />
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-6 xl:gap-8 whitespace-nowrap">
+        <nav className="hidden lg:flex items-center gap-4 xl:gap-8 whitespace-nowrap">
           <Link
             to="/"
             onClick={() => window.scrollTo(0, 0)}
@@ -205,6 +205,12 @@ export default function Nav() {
               {l.label}
             </a>
           ))}
+          <Link
+            to="/about"
+            className="text-sm font-semibold text-text-secondary hover:text-text transition-colors"
+          >
+            About
+          </Link>
           <Link
             to="/articles"
             className="text-sm font-semibold text-text-secondary hover:text-text transition-colors"
@@ -298,6 +304,9 @@ export default function Nav() {
               {l.label}
             </a>
           ))}
+          <Link to="/about" className="py-4 text-lg font-semibold border-b border-border">
+            About
+          </Link>
           <Link to="/articles" className="py-4 text-lg font-semibold">
             Articles
           </Link>
