@@ -7,6 +7,7 @@ import Bundles from '../components/sections/Bundles'
 import Work from '../components/sections/Work'
 import Included from '../components/sections/Included'
 import Process from '../components/sections/Process'
+import Founder from '../components/sections/Founder'
 import Audit from '../components/sections/Audit'
 import FAQ from '../components/sections/FAQ'
 import CTA from '../components/sections/CTA'
@@ -29,6 +30,7 @@ export default function Home() {
       <Included />
       <Process />
       <Work />
+      <Founder />
       <Audit />
       <FAQ />
       <CTA />
