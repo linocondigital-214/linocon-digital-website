@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import Reveal from '../components/Reveal'
 import usePageMeta from '../lib/usePageMeta'
+import FounderSignature from '../components/FounderSignature'
 
 // "Our story": why Lino started LinoCon Digital, in Lino's own (polished) words.
 export default function About() {
@@ -40,7 +41,9 @@ export default function About() {
           <p className="font-display font-bold text-2xl md:text-3xl text-text !mt-10">
             Get found. Get chosen. Get <span className="text-gradient">growing.</span>
           </p>
-          <p className="text-text-secondary">&mdash; Lino Consulta, founder of LinoCon Digital</p>
+        </Reveal>
+        <Reveal className="mt-8">
+          <FounderSignature size="lg" />
         </Reveal>
 
         <Reveal className="mt-16 rounded-3xl border border-border bg-white/[0.03] p-8 md:p-10">
