@@ -11,6 +11,7 @@ const Articles = lazy(() => import('./pages/Articles'))
 const Article = lazy(() => import('./pages/Article'))
 const Service = lazy(() => import('./pages/Service'))
 const ProcessStep = lazy(() => import('./pages/ProcessStep'))
+const About = lazy(() => import('./pages/About'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Disclaimer = lazy(() => import('./pages/Disclaimer'))
 const Pay = lazy(() => import('./pages/Pay'))
@@ -86,6 +87,14 @@ function App() {
             element={
               <Suspense fallback={null}>
                 <Articles />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/about"
+            element={
+              <Suspense fallback={null}>
+                <About />
               </Suspense>
             }
           />
