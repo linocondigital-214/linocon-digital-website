@@ -40,7 +40,7 @@ export default function About() {
           <p className="font-display font-bold text-2xl md:text-3xl text-text !mt-10">
             Get found. Get chosen. Get <span className="text-gradient">growing.</span>
           </p>
-          <p className="text-text-secondary">&mdash; Lino, founder of LinoCon Digital</p>
+          <p className="text-text-secondary">&mdash; Lino Consulta, founder of LinoCon Digital</p>
         </Reveal>
 
         <Reveal className="mt-16 rounded-3xl border border-border bg-white/[0.03] p-8 md:p-10">

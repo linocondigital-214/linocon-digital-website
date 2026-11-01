@@ -87,5 +87,28 @@ export function pageSchema(url) {
       ],
     }
   }
+  if (url === '/about') {
+    return {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'AboutPage',
+          name: 'Our story',
+          url: SITE + url,
+          about: ORG,
+          mainEntity: { '@id': `${SITE}/about#founder` },
+        },
+        {
+          '@type': 'Person',
+          '@id': `${SITE}/about#founder`,
+          name: 'Lino Consulta',
+          jobTitle: 'Founder',
+          url: SITE + url,
+          worksFor: ORG,
+        },
+        breadcrumbs({ name: 'Our story', path: url }),
+      ],
+    }
+  }
   return null
 }
