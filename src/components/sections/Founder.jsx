@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import Reveal from '../Reveal'
+import FounderSignature from '../FounderSignature'
 
 // Short "Meet the founder" teaser on the homepage, linking to the full story on /about.
 export default function Founder() {
@@ -18,7 +19,7 @@ export default function Founder() {
             show up on Google. We build your website, help it rank, and grow your name online, so
             you can focus on growing your business.
           </p>
-          <p className="text-text-secondary">&mdash; Lino Consulta, founder of LinoCon Digital</p>
+          <FounderSignature />
           <Link
             to="/about"
             className="flex items-center gap-2 h-12 px-6 rounded-full border border-white/20 text-sm font-bold hover:bg-white/5 transition-colors"

@@ -104,6 +104,7 @@ export function pageSchema(url) {
           name: 'Lino Consulta',
           jobTitle: 'Founder',
           url: SITE + url,
+          image: `${SITE}/images/lino-consulta-640.webp`,
           worksFor: ORG,
         },
         breadcrumbs({ name: 'Our story', path: url }),
