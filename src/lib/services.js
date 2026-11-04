@@ -31,7 +31,7 @@ export const SERVICES = [
     metaTitle: 'SEO Setup for Small Businesses',
     metaDescription:
       'Complete technical and on-page SEO that helps search engines understand what you do, who you serve, and which searches your business should appear for.',
-    article: 'small-business-seo-first-90-days',
+    article: 'what-is-seo-setup',
   },
   {
     slug: 'backlink-building',
@@ -46,7 +46,6 @@ export const SERVICES = [
     metaTitle: 'Backlink Building for Small Businesses',
     metaDescription:
       "Relevant, quality backlinks that strengthen your website's authority and support your broader SEO strategy. Quality over volume, no link farms, no guaranteed-ranking promises.",
-    article: 'what-are-backlinks',
   },
 ]
 
