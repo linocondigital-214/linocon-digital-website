@@ -2,7 +2,7 @@
 
 Articles live in `src/content/articles/`. Each Markdown (`.md`) file is one article, and the file name becomes its web address:
 
-`what-are-backlinks.md` → `linocondigital.com/articles/what-are-backlinks`
+`what-is-seo-setup.md` → `linocondigital.com/articles/what-is-seo-setup`
 
 ## Add a new article
 
@@ -21,7 +21,7 @@ Articles live in `src/content/articles/`. Each Markdown (`.md`) file is one arti
 
 Articles with a future `date` are hidden and appear on their own at that date and time, with no redeploy needed. So you can push several weeks of articles at once.
 
-To check a scheduled article before it goes live, add `?preview` to its address, for example `/articles/what-are-backlinks?preview`.
+To check a scheduled article before it goes live, add `?preview` to its address, for example `/articles/what-is-seo-setup?preview`.
 
 ## Weekly routine
 
