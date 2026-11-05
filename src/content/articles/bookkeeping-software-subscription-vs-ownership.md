@@ -99,7 +99,7 @@ LinoCon Digital is preparing [LinoCon Books](/books), a bookkeeping app planned 
 
 The planned model involves payments over 12 months. After that term, a small ongoing hosting fee would apply if the customer chooses to keep the app hosted with LinoCon Digital. The intended approach is for the customer to own the app after completing the payment period and to be able to take it elsewhere if they leave, subject to the final contract, technical handover terms, and third-party dependencies.
 
-Planned features include a dashboard for money in and money out, profit and GST tracking; branded invoices; [expense tracking](/articles/invoicing-and-expense-tracking) with receipt photos; GST-period reports; and exports intended to help prepare records for an accountant. These are planned features and details may be refined before launch.
+Planned features include a dashboard for money in and money out, profit and GST tracking; branded invoices; expense tracking with receipt photos; GST-period reports; and exports intended to help prepare records for an accountant. These are planned features and details may be refined before launch.
 
 Because LinoCon Books is planned for 2027 and is not yet available, businesses should review the final feature list, ownership definition, hosting terms, support scope, security practices, and migration process when those details are published. The goal is to make the arrangement understandable before a customer commits.
 

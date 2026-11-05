@@ -1,17 +1,17 @@
 ---
-title: "Introducing LinoCon Books: Your Own Bookkeeping App, Not Another Subscription"
+title: "Coming Soon: LinoCon Books, Your Own Bookkeeping App, Not Another Subscription"
 description: "A first look at LinoCon Digital's planned 2027 bookkeeping app for small businesses, and the ownership-focused model behind it."
 date: 2026-12-15T09:00:00-08:00
 category: LinoCon Books
 image: /articles/introducing-linocon-books
-imageAlt: The planned LinoCon Books dashboard on a laptop and phone, with a December 15, 2026 badge and a list of its planned features.
+imageAlt: The planned LinoCon Books dashboard on a laptop and phone, with a list of its planned features.
 ---
 
 Small business owners have enough to manage: customers, projects, invoices, expenses, deadlines, and the daily work of keeping the business moving. Financial records are part of that work, but the tools used to manage them can sometimes feel like one more complicated system to maintain.
 
 LinoCon Digital is developing [LinoCon Books](/books), a bookkeeping app planned for 2027. The idea is straightforward: provide a small business with a branded bookkeeping app configured on its own domain, with a payment model designed around a defined 12-month term rather than an indefinite software subscription.
 
-LinoCon Books is not available yet. This article introduces the planned concept and explains what small businesses should consider when evaluating bookkeeping software and ownership-oriented alternatives. Final features, pricing, terms, and availability may change before launch.
+**LinoCon Books is coming soon.** It is not available yet. This article introduces the planned concept and explains what small businesses should consider when evaluating bookkeeping software and ownership-oriented alternatives. Final features, pricing, terms, and availability may change before launch.
 
 ## What is LinoCon Books?
 
@@ -121,7 +121,7 @@ The planned reports may help organize information, but they do not replace profe
 
 ## Conclusion
 
-Good bookkeeping starts with accurate records and a process you can maintain. [Invoicing, expense tracking](/articles/invoicing-and-expense-tracking), receipt storage, tax reporting, and accountant-ready exports can all help make that process more manageable when they fit the way your business works.
+Good bookkeeping starts with accurate records and a process you can maintain. Invoicing, expense tracking, receipt storage, tax reporting, and accountant-ready exports can all help make that process more manageable when they fit the way your business works.
 
 LinoCon Books is being developed for a planned 2027 launch with a clear concept: a branded bookkeeping app configured on the customer's own domain, a 12-month payment plan, and an ownership-oriented model with an ongoing hosting fee if the customer chooses to remain hosted with LinoCon Digital. The final details will matter, so prospective users should review the published terms before making a decision.
 
