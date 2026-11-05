@@ -20,6 +20,7 @@ const BooksDemo = lazy(() => import('./pages/BooksDemo'))
 const Refer = lazy(() => import('./pages/Refer'))
 const Switch = lazy(() => import('./pages/Switch'))
 const Card = lazy(() => import('./pages/Card'))
+const WhoWeWorkWith = lazy(() => import('./pages/WhoWeWorkWith'))
 const Portal = lazy(() => import('./pages/Portal'))
 const Admin = lazy(() => import('./pages/Admin'))
 const ClientEdit = lazy(() => import('./pages/ClientEdit'))
@@ -143,6 +144,14 @@ function App() {
             element={
               <Suspense fallback={null}>
                 <Switch />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/who-we-work-with"
+            element={
+              <Suspense fallback={null}>
+                <WhoWeWorkWith />
               </Suspense>
             }
           />

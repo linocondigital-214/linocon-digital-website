@@ -19,6 +19,7 @@ const COLUMNS = [
     title: 'Company',
     links: [
       { to: '/about', label: 'Our story' },
+      { to: '/who-we-work-with', label: 'Who we work with' },
       { href: '/#work', label: 'Our work' },
       { href: '/#process', label: 'How we work' },
       { href: '/#faq', label: 'FAQ' },

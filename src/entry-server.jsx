@@ -87,6 +87,20 @@ export function pageSchema(url) {
       ],
     }
   }
+  if (url === '/who-we-work-with') {
+    return {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'WebPage',
+          name: 'Who we work with',
+          url: SITE + url,
+          about: ORG,
+        },
+        breadcrumbs({ name: 'Who we work with', path: url }),
+      ],
+    }
+  }
   if (url === '/about') {
     return {
       '@context': 'https://schema.org',
