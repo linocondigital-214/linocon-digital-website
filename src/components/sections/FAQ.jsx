@@ -38,7 +38,7 @@ const FAQS = [
   },
   {
     q: 'Do you only work with businesses in Vancouver?',
-    a: "No. We're based in Vancouver, BC, but we work remotely, so we can help businesses anywhere in British Columbia and across Canada. Strategy calls, updates and approvals all happen online, so you get the same service whether you're down the street or in another province.",
+    a: "No. We're based in Vancouver, BC, but we work remotely, so we can help businesses anywhere in British Columbia, across Canada and in the US. Strategy calls, updates and approvals all happen online, so you get the same service whether you're down the street, in another province or in another country. See [who we work with](/who-we-work-with).",
   },
   {
     q: 'Do you work with businesses outside Canada?',
