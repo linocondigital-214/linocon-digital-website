@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Reveal from '../components/Reveal'
-import { CONTACT_EMAIL, sendLead } from '../lib/leads'
+import { CONTACT_EMAIL, OFFICE_PHONE, OFFICE_PHONE_TEL, sendLead } from '../lib/leads'
 import { track } from '../lib/analytics'
 import EmailUs from '../components/EmailUs'
 import usePageMeta from '../lib/usePageMeta'
@@ -60,10 +60,14 @@ export default function BookCall() {
             before the call.
           </p>
           <p className="text-text-secondary mt-4 max-w-xl">
-            Prefer email? Write to us at{' '}
+            Prefer email or phone? Write to us at{' '}
             <EmailUs className="underline underline-offset-4 whitespace-nowrap">
               {CONTACT_EMAIL}
-            </EmailUs>
+            </EmailUs>{' '}
+            or call{' '}
+            <a href={OFFICE_PHONE_TEL} className="underline underline-offset-4 whitespace-nowrap">
+              {OFFICE_PHONE}
+            </a>
             .
           </p>
         </Reveal>

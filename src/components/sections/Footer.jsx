@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Logo } from '../Logo'
 import EmailUs from '../EmailUs'
-import { CONTACT_EMAIL } from '../../lib/leads'
+import { CONTACT_EMAIL, OFFICE_PHONE, OFFICE_PHONE_TEL } from '../../lib/leads'
 import { SERVICES, servicePath } from '../../lib/services'
 import { BOOKS } from '../../lib/books'
 
@@ -160,6 +160,9 @@ export default function Footer() {
             <EmailUs className="text-[13px] text-text-secondary hover:text-text transition-colors">
               {CONTACT_EMAIL}
             </EmailUs>
+            <a href={OFFICE_PHONE_TEL} className="text-[13px] text-text-secondary hover:text-text transition-colors whitespace-nowrap">
+              {OFFICE_PHONE}
+            </a>
             <a
               href="#top"
               onClick={(e) => {
