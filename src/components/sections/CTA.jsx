@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { m, useScroll, useReducedMotion } from 'framer-motion'
 import { useScrollRange } from '../../lib/scroll'
-import { CONTACT_EMAIL } from '../../lib/leads'
+import { CONTACT_EMAIL, OFFICE_PHONE, OFFICE_PHONE_TEL } from '../../lib/leads'
 import EmailUs from '../EmailUs'
 
 export default function CTA() {
@@ -40,10 +40,14 @@ export default function CTA() {
           </a>
         </div>
         <p className="text-base text-text-secondary">
-          Prefer email? Write to us at{' '}
+          Prefer email or phone? Write to us at{' '}
           <EmailUs className="font-semibold text-text underline underline-offset-4 whitespace-nowrap">
             {CONTACT_EMAIL}
-          </EmailUs>
+          </EmailUs>{' '}
+          or call{' '}
+          <a href={OFFICE_PHONE_TEL} className="font-semibold text-text underline underline-offset-4 whitespace-nowrap">
+            {OFFICE_PHONE}
+          </a>
         </p>
       </m.div>
     </section>

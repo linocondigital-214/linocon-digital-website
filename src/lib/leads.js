@@ -7,6 +7,10 @@
 export const WEB3FORMS_ACCESS_KEY = 'a4cac5a0-c340-475d-b1a5-6c0fdc7dd992'
 export const CONTACT_EMAIL = 'office@linocondigital.com'
 export const GMAIL_ACCOUNT = 'linocondigital@gmail.com'
+// Office line (Vancouver local). Shown everywhere visitors see a phone number,
+// and matches Google Business Profile, Bing and the schema in index.html.
+export const OFFICE_PHONE = '236-592-3014'
+export const OFFICE_PHONE_TEL = 'tel:+12365923014'
 
 const formsConfigured = !WEB3FORMS_ACCESS_KEY.startsWith('YOUR_')
 

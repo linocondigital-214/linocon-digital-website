@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import Mark from '../components/Logo'
 import { SOCIALS } from '../components/sections/Footer'
-import { CONTACT_EMAIL } from '../lib/leads'
+import { CONTACT_EMAIL, OFFICE_PHONE, OFFICE_PHONE_TEL } from '../lib/leads'
 import { track } from '../lib/analytics'
 import usePageMeta from '../lib/usePageMeta'
 import EmailUs from '../components/EmailUs'
@@ -64,7 +64,8 @@ export default function Card() {
         </a>
 
         <div className="w-full flex flex-col gap-2.5 text-left">
-          <Row href="tel:+17782888562" label="Call or text" value="778-288-8562" />
+          <Row href={OFFICE_PHONE_TEL} label="Office" value={OFFICE_PHONE} />
+          <Row href="tel:+17782888562" label="Mobile · call or text" value="778-288-8562" />
           <EmailUs
             wrapperClassName="relative block"
             className="block w-full text-left rounded-2xl border border-white/10 px-4 py-3 hover:bg-white/5 transition-colors"
