@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { m } from 'framer-motion'
 import { Buttons, Headline, PageCTA, PageSections } from '../components/PageSections'
 import usePageMeta from '../lib/usePageMeta'
-import { AREAS, areaPath } from '../lib/areaPages'
+import { AREAS, areaLabel, areaPath } from '../lib/areaPages'
 
 // Where LinoCon works and who it helps: Vancouver base, remote across Canada
 // and the US. Backs up the areaServed schema (index.html and
@@ -33,12 +33,12 @@ const SECTIONS = [
   {
     type: 'cards',
     eyebrow: 'Areas we serve',
-    heading: 'Close to home in Metro Vancouver.',
-    intro: 'Each of these cities has its own page about how we help local businesses get found there.',
+    heading: 'Close to home in the Lower Mainland.',
+    intro: 'Each of these cities and areas has its own page about how we help local businesses get found there.',
     items: AREAS.map((a) => ({
-      title: a.city,
+      title: areaLabel(a),
       body: `Website design and SEO for small businesses in ${a.city}, BC.`,
-      link: { to: areaPath(a), label: `Web design in ${a.city}` },
+      link: { to: areaPath(a), label: `Web design in ${areaLabel(a)}` },
     })),
   },
   {

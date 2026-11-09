@@ -101,8 +101,8 @@ export function pageSchema(url) {
           url: SITE + url,
           provider: ORG,
           areaServed: {
-            '@type': 'City',
-            name: area.city,
+            '@type': area.schemaType || 'City',
+            name: area.label || area.city,
             containedInPlace: { '@type': 'AdministrativeArea', name: 'British Columbia' },
           },
         },
@@ -114,7 +114,7 @@ export function pageSchema(url) {
             acceptedAnswer: { '@type': 'Answer', text: q.body },
           })),
         },
-        breadcrumbs({ name: `Web design in ${area.city}`, path: url }),
+        breadcrumbs({ name: `Web design in ${area.label || area.city}`, path: url }),
       ],
     }
   }
