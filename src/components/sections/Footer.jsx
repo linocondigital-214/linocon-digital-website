@@ -4,6 +4,7 @@ import EmailUs from '../EmailUs'
 import { CONTACT_EMAIL, OFFICE_PHONE, OFFICE_PHONE_TEL } from '../../lib/leads'
 import { SERVICES, servicePath } from '../../lib/services'
 import { BOOKS } from '../../lib/books'
+import { AREAS, areaPath } from '../../lib/areaPages'
 
 const COLUMNS = [
   {
@@ -26,6 +27,13 @@ const COLUMNS = [
       { to: '/articles', label: 'Articles' },
       { to: '/refer', label: 'Refer a friend' },
       { to: '/pay', label: 'Pay an invoice' },
+    ],
+  },
+  {
+    title: 'Areas we serve',
+    links: [
+      ...AREAS.map((a) => ({ to: areaPath(a), label: a.city })),
+      { to: '/who-we-work-with', label: 'Canada and the US' },
     ],
   },
   {
@@ -132,7 +140,7 @@ export default function Footer() {
             <SocialLinks />
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {COLUMNS.map((col) => (
               <div key={col.title} className="flex flex-col gap-2.5">
                 <span className="text-xs font-bold tracking-widest uppercase text-text-tertiary">

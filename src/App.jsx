@@ -5,6 +5,7 @@ import CursorGlow from './components/CursorGlow'
 import Footer from './components/sections/Footer'
 import Home from './pages/Home'
 import useCanonical from './lib/useCanonical'
+import { AREAS, areaPath } from './lib/areaPages'
 
 const BookCall = lazy(() => import('./pages/BookCall'))
 const Articles = lazy(() => import('./pages/Articles'))
@@ -21,6 +22,7 @@ const Refer = lazy(() => import('./pages/Refer'))
 const Switch = lazy(() => import('./pages/Switch'))
 const Card = lazy(() => import('./pages/Card'))
 const WhoWeWorkWith = lazy(() => import('./pages/WhoWeWorkWith'))
+const Area = lazy(() => import('./pages/Area'))
 const Portal = lazy(() => import('./pages/Portal'))
 const Admin = lazy(() => import('./pages/Admin'))
 const ClientEdit = lazy(() => import('./pages/ClientEdit'))
@@ -155,6 +157,17 @@ function App() {
               </Suspense>
             }
           />
+          {AREAS.map((a) => (
+            <Route
+              key={a.slug}
+              path={areaPath(a)}
+              element={
+                <Suspense fallback={null}>
+                  <Area area={a} />
+                </Suspense>
+              }
+            />
+          ))}
           <Route
             path="/card"
             element={
