@@ -4,7 +4,7 @@ import EmailUs from '../EmailUs'
 import { CONTACT_EMAIL, OFFICE_PHONE, OFFICE_PHONE_TEL } from '../../lib/leads'
 import { SERVICES, servicePath } from '../../lib/services'
 import { BOOKS } from '../../lib/books'
-import { AREAS, areaPath } from '../../lib/areaPages'
+import { AREAS, areaLabel, areaPath } from '../../lib/areaPages'
 
 const COLUMNS = [
   {
@@ -32,7 +32,7 @@ const COLUMNS = [
   {
     title: 'Areas we serve',
     links: [
-      ...AREAS.map((a) => ({ to: areaPath(a), label: a.city })),
+      ...AREAS.filter((a) => a.footer !== false).map((a) => ({ to: areaPath(a), label: areaLabel(a) })),
       { to: '/who-we-work-with', label: 'Canada and the US' },
     ],
   },

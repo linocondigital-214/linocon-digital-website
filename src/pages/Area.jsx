@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { m } from 'framer-motion'
 import { Buttons, Headline, PageCTA, PageSections } from '../components/PageSections'
 import usePageMeta from '../lib/usePageMeta'
-import { AREAS, areaPath } from '../lib/areaPages'
+import { AREAS, areaLabel, areaPath, getArea } from '../lib/areaPages'
 import { SERVICES, servicePath } from '../lib/services'
 
 // One city page, e.g. /web-design-burnaby. Content lives in lib/areaPages.js.
@@ -13,7 +13,8 @@ export default function Area({ area }) {
     window.scrollTo(0, 0)
   }, [area.slug])
 
-  const others = AREAS.filter((a) => a.slug !== area.slug)
+  // Region pages list the places they cover; city pages list everywhere else.
+  const others = area.covers ? area.covers.map(getArea).filter(Boolean) : AREAS.filter((a) => a.slug !== area.slug)
 
   const sections = [
     {
@@ -26,7 +27,7 @@ export default function Area({ area }) {
     {
       type: 'cards',
       eyebrow: 'What we do',
-      heading: `Three services for ${area.city} businesses.`,
+      heading: `Three services for businesses in ${area.city}.`,
       intro: 'Pick one, or combine them so your website, your SEO and your links all work together.',
       items: SERVICES.map((s) => ({ title: s.name, body: s.body, link: { to: servicePath(s), label: `About ${s.name}` } })),
     },
@@ -51,18 +52,18 @@ export default function Area({ area }) {
     {
       type: 'cards',
       eyebrow: 'Common questions',
-      heading: `Questions from ${area.city} business owners.`,
+      heading: `Questions from business owners in ${area.city}.`,
       items: area.faq,
     },
     {
       type: 'cards',
-      eyebrow: 'Other areas we serve',
-      heading: 'Also working across Metro Vancouver.',
+      eyebrow: area.region ? 'Places we serve' : 'Other areas we serve',
+      heading: area.region ? `Cities and areas near you.` : 'Also working across the Lower Mainland.',
       intro: 'And remotely with small businesses anywhere in Canada and the US.',
       items: others.map((a) => ({
-        title: a.city,
+        title: areaLabel(a),
         body: `Website design and SEO for small businesses in ${a.city}.`,
-        link: { to: areaPath(a), label: `Web design in ${a.city}` },
+        link: { to: areaPath(a), label: `Web design in ${areaLabel(a)}` },
       })),
       link: { to: '/who-we-work-with', label: 'Who we work with' },
     },
@@ -93,7 +94,7 @@ export default function Area({ area }) {
       <PageSections sections={sections} />
       <PageCTA
         cta={{
-          heading: `Let’s get your ${area.city} business found.`,
+          heading: `Let’s get your business found in ${area.city}.`,
           body: 'Start with a free website audit or book a strategy call at a time that suits you.',
         }}
       />
