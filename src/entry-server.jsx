@@ -6,6 +6,7 @@ import App from './App.jsx'
 import { collectPageMeta } from './lib/usePageMeta'
 import { getService } from './lib/services'
 import { getArticle } from './lib/articles'
+import { getArea } from './lib/areaPages'
 
 // Used only at build time by scripts/prerender.mjs: renders one public page to
 // plain HTML so Google gets the page's own title, description and text in the
@@ -84,6 +85,36 @@ export function pageSchema(url) {
           mainEntityOfPage: SITE + url,
         },
         breadcrumbs({ name: 'Articles', path: '/articles' }, { name: a.title, path: url }),
+      ],
+    }
+  }
+  const area = getArea(section)
+  if (area && !slug) {
+    return {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Service',
+          name: `Website design and SEO in ${area.city}, BC`,
+          serviceType: 'Website design and SEO',
+          description: area.metaDescription,
+          url: SITE + url,
+          provider: ORG,
+          areaServed: {
+            '@type': 'City',
+            name: area.city,
+            containedInPlace: { '@type': 'AdministrativeArea', name: 'British Columbia' },
+          },
+        },
+        {
+          '@type': 'FAQPage',
+          mainEntity: area.faq.map((q) => ({
+            '@type': 'Question',
+            name: q.title,
+            acceptedAnswer: { '@type': 'Answer', text: q.body },
+          })),
+        },
+        breadcrumbs({ name: `Web design in ${area.city}`, path: url }),
       ],
     }
   }

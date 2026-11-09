@@ -120,9 +120,15 @@ function Cards({ s }) {
           >
             <h3 className="font-display font-bold text-xl md:text-2xl leading-snug">{item.title}</h3>
             <p className="text-text-secondary leading-relaxed">{item.body}</p>
+            {item.link && <TextLink link={item.link} />}
           </Reveal>
         ))}
       </div>
+      {s.link && (
+        <Reveal className="mt-8">
+          <TextLink link={s.link} />
+        </Reveal>
+      )}
     </>
   )
 }
