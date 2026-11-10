@@ -3,7 +3,7 @@
 // page's own title, description, canonical address and text already in it.
 // Vercel serves these files first; anything else still falls back to the
 // normal index.html, so the site keeps working exactly as before.
-import { readFile, writeFile, mkdir, rm } from 'node:fs/promises'
+import { readFile, readdir, writeFile, mkdir, rm } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { build } from 'vite'
@@ -22,7 +22,34 @@ const { render, pageSchema } = await import(path.join(ssrOut, 'entry-server.js')
 
 const template = await readFile(path.join(dist, 'index.html'), 'utf8')
 const sitemap = await readFile(path.join(root, 'public/sitemap.xml'), 'utf8')
-const routes = [...sitemap.matchAll(/<loc>https:\/\/linocondigital\.com([^<]*)<\/loc>/g)].map((m) => m[1] || '/')
+
+// Articles with a future date (or draft: true) are left out of the sitemap Google
+// reads and are not saved as HTML, so Google never sees an "Article not found"
+// page. The site rebuilds each morning (.github/workflows/rebuild.yml), which
+// adds each article on its publish day.
+const articleDir = path.join(root, 'src/content/articles')
+const upcoming = new Set()
+for (const name of await readdir(articleDir)) {
+  if (!name.endsWith('.md')) continue
+  const raw = await readFile(path.join(articleDir, name), 'utf8')
+  const front = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? ''
+  const field = (key) => front.match(new RegExp(`^${key}:\\s*["']?([^"'\\r\\n]*)`, 'm'))?.[1].trim()
+  const date = Date.parse(field('date') || '1970-01-01')
+  if (field('draft') === 'true' || !(date <= Date.now())) upcoming.add(`/articles/${name.replace(/\.md$/, '')}`)
+}
+
+// Pages that still work for visitors but are kept out of Google search.
+const NOINDEX = new Set(['/card'])
+
+const routeOf = (loc) => loc.replace(SITE, '') || '/'
+const liveSitemap = sitemap.replace(/\s*<url>\s*<loc>([^<]*)<\/loc>[\s\S]*?<\/url>/g, (block, loc) =>
+  upcoming.has(routeOf(loc)) || NOINDEX.has(routeOf(loc)) ? '' : block,
+)
+await writeFile(path.join(dist, 'sitemap.xml'), liveSitemap)
+
+const routes = [...sitemap.matchAll(/<loc>https:\/\/linocondigital\.com([^<]*)<\/loc>/g)]
+  .map((m) => m[1] || '/')
+  .filter((route) => !upcoming.has(route))
 
 const escapeAttr = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')
 const escapeText = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -40,6 +67,7 @@ for (const route of routes) {
     let page = template
       .replace(/<title>[^<]*<\/title>/, `<title>${escapeText(title)}</title>`)
       .replace('</head>', `  <link rel="canonical" href="${url}" />\n  </head>`)
+    if (NOINDEX.has(route)) page = page.replace('</head>', '  <meta name="robots" content="noindex" />\n  </head>')
     page = setMeta(page, 'property', 'og:title', title)
     page = setMeta(page, 'property', 'og:url', url)
     page = setMeta(page, 'name', 'twitter:title', title)
@@ -68,3 +96,4 @@ for (const route of routes) {
 
 await rm(ssrOut, { recursive: true, force: true })
 console.log(`prerender: ${routes.length - failed} of ${routes.length} pages saved as HTML`)
+if (upcoming.size) console.log(`prerender: ${upcoming.size} upcoming article(s) left out until their date`)

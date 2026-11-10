@@ -21,6 +21,8 @@ Articles live in `src/content/articles/`. Each Markdown (`.md`) file is one arti
 
 Articles with a future `date` are hidden and appear on their own at that date and time, with no redeploy needed. So you can push several weeks of articles at once.
 
+The site also rebuilds itself every morning at about 9:15 AM Pacific (`.github/workflows/rebuild.yml`). That rebuild adds the day's article to the sitemap and saves it as its own page for Google. Until then, upcoming articles stay out of the sitemap so Google never sees an "Article not found" page. Keep every article in `public/sitemap.xml` as before.
+
 To check a scheduled article before it goes live, add `?preview` to its address, for example `/articles/what-is-seo-setup?preview`.
 
 ## Weekly routine

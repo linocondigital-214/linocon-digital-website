@@ -4,6 +4,10 @@ import { Buttons, Headline, PageCTA, PageSections } from '../components/PageSect
 import usePageMeta from '../lib/usePageMeta'
 import { AREAS, areaLabel, areaPath, getArea } from '../lib/areaPages'
 import { SERVICES, servicePath } from '../lib/services'
+import { articles } from '../lib/articles'
+
+// Guides shown on every city page, if they are already published.
+const READING = ['small-business-website-cost-canada', 'what-is-seo-setup', 'essential-small-business-website-pages']
 
 // One city page, e.g. /web-design-burnaby. Content lives in lib/areaPages.js.
 export default function Area({ area }) {
@@ -15,6 +19,8 @@ export default function Area({ area }) {
 
   // Region pages list the places they cover; city pages list everywhere else.
   const others = area.covers ? area.covers.map(getArea).filter(Boolean) : AREAS.filter((a) => a.slug !== area.slug)
+
+  const reading = READING.map((slug) => articles.find((a) => a.slug === slug)).filter(Boolean)
 
   const sections = [
     {
@@ -49,6 +55,17 @@ export default function Area({ area }) {
         { title: 'Grow', body: 'We keep improving your SEO and send you updates by email.' },
       ],
     },
+    ...(reading.length
+      ? [
+          {
+            type: 'cards',
+            eyebrow: 'Helpful reading',
+            heading: 'Free guides for small business owners.',
+            items: reading.map((a) => ({ title: a.title, body: a.description, link: { to: `/articles/${a.slug}`, label: 'Read the guide' } })),
+            link: { to: '/articles', label: 'All articles' },
+          },
+        ]
+      : []),
     {
       type: 'cards',
       eyebrow: 'Common questions',
