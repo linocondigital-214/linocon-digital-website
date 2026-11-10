@@ -13,6 +13,16 @@ export default function Article() {
     window.scrollTo(0, 0)
   }, [slug])
 
+  // A missing or not-yet-published article tells Google not to save the page.
+  useEffect(() => {
+    if (article) return
+    const tag = document.createElement('meta')
+    tag.name = 'robots'
+    tag.content = 'noindex'
+    document.head.appendChild(tag)
+    return () => tag.remove()
+  }, [article])
+
   if (!article) {
     return (
       <section className="min-h-screen pt-40 pb-28">
