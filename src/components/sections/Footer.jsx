@@ -68,7 +68,7 @@ export const SOCIALS = [
   },
   {
     label: 'Yelp',
-    href: 'https://www.yelp.com/biz/linocon-digital-surrey',
+    href: 'https://www.yelp.com/biz/linocon-digital-vancouver',
     path: 'M12 1.5l3.09 6.26 6.91 1.01-5 4.87 1.18 6.88L12 17.27l-6.18 3.25L7 13.64 2 8.77l6.91-1.01L12 1.5z',
   },
 ]
