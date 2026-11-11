@@ -4,6 +4,7 @@ import ProgressBoard from '../components/progress/ProgressBoard'
 import { ClientSteps, PayNow } from '../components/progress/Journey'
 import { fetchMyProgress, portalInvite, portalSignIn, portalSignOut } from '../lib/clientProgress'
 import usePageMeta from '../lib/usePageMeta'
+import { GOOGLE_REVIEW_URL } from '../lib/leads'
 
 // /clients: each client signs in with their own email and password and sees
 // only their own progress. Their first sign-in uses the invite code Lino sent
@@ -52,9 +53,33 @@ export default function Portal() {
           <PayNow client={state.client} onClient={(client) => setState({ status: 'ready', client })} />
           <ClientSteps client={state.client} onClient={(client) => setState({ status: 'ready', client })} />
           <ProgressBoard client={state.client} docBase="/clients" />
+          <ReviewAsk />
         </>
       )}
     </PrivateShell>
+  )
+}
+
+// Shown to every signed-in client, whatever stage they are at (Google does not
+// allow asking only happy clients) and with nothing offered in return.
+function ReviewAsk() {
+  return (
+    <section className="no-print mt-10 rounded-2xl border border-border bg-surface p-6 md:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <h2 className="font-display font-bold text-xl">How are we doing?</h2>
+        <p className="text-text-secondary mt-1 text-sm">
+          A short Google review helps other businesses find us. It only takes a minute.
+        </p>
+      </div>
+      <a
+        href={GOOGLE_REVIEW_URL}
+        target="_blank"
+        rel="noopener"
+        className="shrink-0 inline-flex items-center justify-center h-11 px-5 rounded-full border border-white/15 text-sm font-bold hover:bg-white/5 transition-colors"
+      >
+        Leave us a review
+      </a>
+    </section>
   )
 }
 

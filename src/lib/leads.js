@@ -11,6 +11,9 @@ export const GMAIL_ACCOUNT = 'linocondigital@gmail.com'
 // and matches Google Business Profile, Bing and the schema in index.html.
 export const OFFICE_PHONE = '236-592-3014'
 export const OFFICE_PHONE_TEL = 'tel:+12365923014'
+// Google Business Profile "Ask for reviews" link. Google's rules: everyone may
+// be asked (no asking only happy clients) and nothing is offered in return.
+export const GOOGLE_REVIEW_URL = 'https://g.page/r/CaSpLpGc64Z-EBM/review'
 
 const formsConfigured = !WEB3FORMS_ACCESS_KEY.startsWith('YOUR_')
 

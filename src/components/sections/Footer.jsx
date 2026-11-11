@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Logo } from '../Logo'
 import EmailUs from '../EmailUs'
-import { CONTACT_EMAIL, OFFICE_PHONE, OFFICE_PHONE_TEL } from '../../lib/leads'
+import { CONTACT_EMAIL, GOOGLE_REVIEW_URL, OFFICE_PHONE, OFFICE_PHONE_TEL } from '../../lib/leads'
 import { SERVICES, servicePath } from '../../lib/services'
 import { BOOKS } from '../../lib/books'
 import { AREAS, areaLabel, areaPath } from '../../lib/areaPages'
@@ -27,6 +27,7 @@ const COLUMNS = [
       { to: '/articles', label: 'Articles' },
       { to: '/refer', label: 'Refer a friend' },
       { to: '/pay', label: 'Pay an invoice' },
+      { href: GOOGLE_REVIEW_URL, label: 'Leave us a review', external: true },
     ],
   },
   {
