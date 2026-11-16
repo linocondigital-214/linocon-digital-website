@@ -5,6 +5,7 @@ import CursorGlow from './components/CursorGlow'
 import Footer from './components/sections/Footer'
 import Home from './pages/Home'
 import useCanonical from './lib/useCanonical'
+import usePrivatePage from './lib/usePrivatePage'
 import { AREAS, areaPath } from './lib/areaPages'
 
 const BookCall = lazy(() => import('./pages/BookCall'))
@@ -23,6 +24,7 @@ const Switch = lazy(() => import('./pages/Switch'))
 const Card = lazy(() => import('./pages/Card'))
 const WhoWeWorkWith = lazy(() => import('./pages/WhoWeWorkWith'))
 const Area = lazy(() => import('./pages/Area'))
+const NotFound = lazy(() => import('./pages/NotFound'))
 const Portal = lazy(() => import('./pages/Portal'))
 const Admin = lazy(() => import('./pages/Admin'))
 const ClientEdit = lazy(() => import('./pages/ClientEdit'))
@@ -53,6 +55,7 @@ function App() {
   const { pathname } = useLocation()
   const isPrivate = isPrivatePath(pathname)
   useCanonical(pathname)
+  usePrivatePage(pathname)
 
   return (
     <>
@@ -240,6 +243,14 @@ function App() {
             element={
               <Suspense fallback={null}>
                 <Article />
+              </Suspense>
+            }
+          />
+          <Route
+            path="*"
+            element={
+              <Suspense fallback={null}>
+                <NotFound />
               </Suspense>
             }
           />

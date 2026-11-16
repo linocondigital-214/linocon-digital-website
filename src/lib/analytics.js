@@ -11,8 +11,30 @@
 //   card_share_click   "Share this card" was tapped on /card
 //   begin_checkout     a Stripe payment link was clicked (Grow Plan on /pay,
 //                      Pay now on a client's progress page)
+//   review_click       the "Leave us a Google review" link was clicked
+//   page_not_found     someone reached an address the site doesn't have
+//                      (page_path says which, to find broken links)
+//
+// Analytics only runs on linocondigital.com (not on vercel.app previews), and
+// never on /admin or /finance. Browsers that have opened /admin or /finance
+// (Lino's own) send traffic_type=internal, so GA4's "Internal Traffic" data
+// filter can leave Lino's own visits out of the reports.
 // Never pass names, emails, phone numbers or message text here: Google's
 // rules forbid personal data in Analytics.
+
+export const GA_ID = 'G-HS2MYMBVX9'
+const INTERNAL_KEY = 'linocon_internal'
+
+// Marks this browser as Lino's own (see index.html, which reads it on load).
+export function markInternalVisitor() {
+  try {
+    if (localStorage.getItem(INTERNAL_KEY) === '1') return
+    localStorage.setItem(INTERNAL_KEY, '1')
+  } catch {
+    return
+  }
+  if (typeof window.gtag === 'function') window.gtag('set', { traffic_type: 'internal' })
+}
 
 export function track(event, params = {}) {
   if (typeof window.gtag === 'function') window.gtag('event', event, params)
@@ -33,6 +55,7 @@ function linkEvent(href) {
   if (href.startsWith('mailto:')) return 'email_click'
   if (href.startsWith('tel:')) return 'phone_click'
   if (/^https:\/\/(buy|checkout|invoice)\.stripe\.com\//.test(href)) return 'begin_checkout'
+  if (/^https:\/\/g\.page\/r\/[^/]+\/review/.test(href)) return 'review_click'
   const path = href.replace(/^https?:\/\/[^/]+/, '')
   if (path === '/book' || path.startsWith('/book?') || path.startsWith('/book#')) return 'book_call_click'
   if (path === '#audit' || path === '/#audit') return 'audit_click'
