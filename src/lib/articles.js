@@ -36,6 +36,8 @@ const all = Object.entries(files)
       description: data.description || '',
       category: data.category || 'Guides',
       date: data.date || '1970-01-01',
+      // Optional: the day an article was last changed a lot, for Google.
+      updated: data.updated || '',
       image: data.image || '',
       imageAlt: data.imageAlt || '',
       draft: data.draft === 'true',

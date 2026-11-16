@@ -1,4 +1,9 @@
 User-agent: *
 Allow: /
+# Private pages for LinoCon and its clients, and the site's behind-the-scenes
+# addresses. Nothing here is meant for search results.
+Disallow: /admin
+Disallow: /finance
+Disallow: /api/
 
 Sitemap: https://linocondigital.com/sitemap.xml

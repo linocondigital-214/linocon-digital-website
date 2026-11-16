@@ -64,6 +64,20 @@
               "addressRegion": "BC",
               "addressCountry": "CA"
             },
+            "openingHoursSpecification": [
+              {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                "opens": "09:00",
+                "closes": "17:00"
+              },
+              {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Saturday", "Sunday"],
+                "opens": "10:00",
+                "closes": "16:00"
+              }
+            ],
             "areaServed": [
               { "@type": "City", "name": "Vancouver" },
               { "@type": "AdministrativeArea", "name": "British Columbia" },
@@ -91,7 +105,17 @@
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
-      gtag('config', 'G-HS2MYMBVX9');
+      // Count only real visitors on the live site: previews (vercel.app) and
+      // Lino's admin/finance pages send nothing, and Lino's own browsers are
+      // tagged "internal" so GA4's Internal Traffic filter can leave them out.
+      // See src/lib/analytics.js.
+      (function () {
+        var id = 'G-HS2MYMBVX9', internal = false;
+        try { internal = localStorage.getItem('linocon_internal') === '1'; } catch (e) {}
+        window.__lcAnalyticsOff = location.hostname !== 'linocondigital.com';
+        if (window.__lcAnalyticsOff || /^\/(admin|finance)(\/|$)/.test(location.pathname)) window['ga-disable-' + id] = true;
+        gtag('config', id, internal ? { traffic_type: 'internal' } : {});
+      })();
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
