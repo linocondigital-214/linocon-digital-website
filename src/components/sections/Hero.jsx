@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { m, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import HeroVideo from '../HeroVideo'
+import BackgroundVideo from '../BackgroundVideo'
 
 const img = (name) => `${import.meta.env.BASE_URL}images/${name}`
 
@@ -116,7 +116,7 @@ export default function Hero() {
   return (
     <section id="top" className="relative overflow-hidden pt-28 md:pt-36 lg:pt-40 pb-16 md:pb-24">
       {/* Moving background: flowing light in the brand colours. */}
-      <HeroVideo />
+      <BackgroundVideo name="hero" />
 
       <div className="relative max-w-7xl mx-auto px-6 md:px-10 grid lg:grid-cols-[45fr_55fr] gap-12 lg:gap-14 items-center">
         {/* Slide only, no fade: the headline is the page's largest text, and
