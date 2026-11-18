@@ -3,10 +3,9 @@ import { m, useScroll, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useScrollRange } from '../../lib/scroll'
 import Reveal from '../Reveal'
+import BackgroundVideo from '../BackgroundVideo'
 import useMediaQuery from '../../lib/useMediaQuery'
 import { PROCESS_STEPS as STEPS, stepPath } from '../../lib/process'
-
-const img = (name) => `${import.meta.env.BASE_URL}images/${name}`
 
 // Same gradient button as the "Explore" buttons in the Services section.
 function LearnMore({ s }) {
@@ -27,26 +26,27 @@ function LearnMore({ s }) {
 function StepCard({ s }) {
   return (
     <div className="relative isolate overflow-hidden flex flex-col gap-5 rounded-3xl bg-surface border border-border p-8 md:p-10 min-h-[440px] md:min-h-0 md:w-[min(520px,40vw)] md:h-[420px] shrink-0">
-      <img
-        src={img(`${s.image}-1040.webp`)}
-        srcSet={`${img(`${s.image}-600.webp`)} 600w, ${img(`${s.image}-1040.webp`)} 1040w`}
-        sizes="(min-width: 768px) 520px, 100vw"
-        width="1040"
-        height="840"
-        alt=""
-        loading="lazy"
-        decoding="async"
-        className="absolute inset-0 -z-20 w-full h-full object-cover object-right"
+      {/* A short looping video of the step (lazy: loads when scrolled near). */}
+      <BackgroundVideo
+        name={s.image}
+        lazy
+        tint=""
+        fadeTop={false}
+        fadeBottom={false}
+        big={1040}
+        small={600}
+        posterBig={1040}
+        posterSmall={600}
+        className="-z-20"
       />
-      {/* Dark fade so the text stays readable over busy, bright images:
-          heaviest behind the text at the top left, lighter where the
-          picture's subject sits at the bottom right. */}
+      {/* Dark fade so the text stays readable: heaviest behind the text at
+          the top left, lighter where the video's subject sits bottom right. */}
       <div
         aria-hidden="true"
         className="absolute inset-0 -z-10"
         style={{
           background:
-            'linear-gradient(180deg, rgba(11,11,16,0.88) 0%, rgba(11,11,16,0.74) 45%, rgba(11,11,16,0.2) 100%), linear-gradient(90deg, rgba(11,11,16,0.55) 0%, rgba(11,11,16,0) 70%)',
+            'linear-gradient(180deg, rgba(11,11,16,0.55) 0%, rgba(11,11,16,0.3) 50%, rgba(11,11,16,0) 100%), linear-gradient(90deg, rgba(11,11,16,0.45) 0%, rgba(11,11,16,0) 60%)',
         }}
       />
       <div className="h-[3px] w-16 rounded-full bg-gradient-brand" />

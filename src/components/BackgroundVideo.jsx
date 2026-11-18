@@ -7,6 +7,8 @@ import { useReducedMotion } from 'framer-motion'
 //   hero   flowing blue-to-orange light, behind the top headline
 //   found  grey dots (sites nobody finds) lit up one by one, behind the
 //          "Most small business websites look fine…" statement
+//   process-audit|plan|build|grow  one per card in "A system, not a
+//          scramble." (about 130 KB each, 60 KB on phones)
 //
 // Kept light on purpose:
 // - the still poster shows first, so the page never waits on a video;
@@ -24,9 +26,21 @@ function wantsVideo() {
   return true
 }
 
-const pickSrc = (name) => `${base}${name}-${window.matchMedia('(min-width: 768px)').matches ? 1600 : 960}.mp4`
 
-export default function BackgroundVideo({ name, lazy = false, tint = 'bg-ink/15', fadeTop = true }) {
+// Sizes: the video is <name>-<big|small>.mp4 and the poster
+// <name>-poster-<posterBig|posterSmall>.webp; phones get the small ones.
+export default function BackgroundVideo({
+  name,
+  lazy = false,
+  tint = 'bg-ink/15',
+  fadeTop = true,
+  fadeBottom = true,
+  big = 1600,
+  small = 960,
+  posterBig = 1920,
+  posterSmall = 960,
+  className = '',
+}) {
   const reduce = useReducedMotion()
   const box = useRef(null)
   const ref = useRef(null)
@@ -36,7 +50,7 @@ export default function BackgroundVideo({ name, lazy = false, tint = 'bg-ink/15'
   // When to load: after the page has loaded, or (lazy) when scrolled near.
   useEffect(() => {
     if (reduce || !wantsVideo()) return
-    const pick = () => setSrc(pickSrc(name))
+    const pick = () => setSrc(`${base}${name}-${window.matchMedia('(min-width: 768px)').matches ? big : small}.mp4`)
     if (lazy) {
       const io = new IntersectionObserver(
         ([e]) => {
@@ -45,7 +59,7 @@ export default function BackgroundVideo({ name, lazy = false, tint = 'bg-ink/15'
             io.disconnect()
           }
         },
-        { rootMargin: '600px 0px' },
+        { rootMargin: '600px' },
       )
       io.observe(box.current)
       return () => io.disconnect()
@@ -56,7 +70,7 @@ export default function BackgroundVideo({ name, lazy = false, tint = 'bg-ink/15'
     }
     window.addEventListener('load', pick, { once: true })
     return () => window.removeEventListener('load', pick)
-  }, [reduce, lazy, name])
+  }, [reduce, lazy, name, big, small])
 
   // Play only while on screen.
   useEffect(() => {
@@ -71,11 +85,11 @@ export default function BackgroundVideo({ name, lazy = false, tint = 'bg-ink/15'
   }, [src])
 
   return (
-    <div ref={box} aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div ref={box} aria-hidden="true" className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`}>
       <picture>
-        <source media="(min-width: 768px)" srcSet={`${base}${name}-poster-1920.webp`} />
+        <source media="(min-width: 768px)" srcSet={`${base}${name}-poster-${posterBig}.webp`} />
         <img
-          src={`${base}${name}-poster-960.webp`}
+          src={`${base}${name}-poster-${posterSmall}.webp`}
           alt=""
           width="1920"
           height="1080"
@@ -100,8 +114,8 @@ export default function BackgroundVideo({ name, lazy = false, tint = 'bg-ink/15'
         />
       )}
       {/* Keeps the words readable and blends the edges into the page. */}
-      <div className={`absolute inset-0 ${tint}`} />
-      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-b from-transparent to-ink" />
+      {tint && <div className={`absolute inset-0 ${tint}`} />}
+      {fadeBottom && <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-b from-transparent to-ink" />}
       {fadeTop && <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-ink/80 to-transparent" />}
     </div>
   )
