@@ -1,35 +1,29 @@
 import { Link } from 'react-router-dom'
 import Reveal from '../Reveal'
+import { BUNDLES, bundlePath } from '../../lib/bundles'
 
-// Founding-client bundles. Prices are Lino's, in CAD; the matching Stripe
-// products are listed in the project's stripe/invoice-wording.md.
-const BUNDLES = [
-  {
-    name: 'Launch Bundle',
-    tagline: 'Website Creation + SEO Setup',
-    price: '10% off',
-    unit: 'both, booked together',
-    note: 'Website priced to your project after a free strategy call.',
-    points: ['Custom, mobile-first website', 'Enquiry forms and call booking built in', 'Technical and on-page SEO setup', 'Search Console and analytics tracking'],
-  },
-  {
-    name: 'Grow Bundle',
-    tagline: 'Grow Plan + Backlink Building',
-    price: '$499.99',
-    unit: '/ month',
-    note: 'Instead of $599.98 / month on their own.',
-    points: ['Monthly website care and SEO improvements', 'Google Business Profile upkeep', 'Relevant, quality backlinks. No link farms', 'Monthly progress update'],
-    featured: true,
-  },
-  {
-    name: 'All-in Starter',
-    tagline: 'Launch Bundle + 3 months of Grow',
-    price: '10% off',
-    unit: 'your launch, plus 3 months of Grow at $499.99 / month',
-    note: 'Launch your site, then grow it from day one.',
-    points: ['Everything in the Launch Bundle', 'First 3 months of the Grow Bundle', 'Month-by-month progress page', 'Continue month to month after that'],
-  },
-]
+// Founding-client bundles: the data (shared with each bundle's own page and
+// the footer) lives in lib/bundles.js.
+const CARDS = BUNDLES.filter((b) => !b.comingSoon)
+const COMPLETE = BUNDLES.find((b) => b.comingSoon)
+
+// "Learn more" opens the bundle's own page.
+function LearnMore({ b }) {
+  return (
+    <Link to={bundlePath(b)} className="group inline-flex items-center gap-2 text-sm font-bold text-text">
+      Learn more<span className="sr-only"> about the {b.name}</span>
+      <Arrow />
+    </Link>
+  )
+}
+
+function Arrow() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" className="transition-transform group-hover:translate-x-1">
+      <path d="M3 7h8M7.5 3.5L11 7l-3.5 3.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
 
 function Check() {
   return (
@@ -43,7 +37,7 @@ function Check() {
 // LinoCon Complete: everything plus LinoCon Books. Coming soon, so it links
 // to the Books waitlist instead of a payment.
 function Complete() {
-  const points = ['Launch Bundle: website + SEO setup', 'Grow Bundle: monthly growth + backlinks', 'LinoCon Books: your own bookkeeping app', 'Books Care included while you stay on Grow']
+  const b = COMPLETE
   return (
     <Reveal
       y={40}
@@ -54,27 +48,30 @@ function Complete() {
       </span>
       <div className="flex flex-col gap-5">
         <div>
-          <h3 className="font-display font-bold text-2xl md:text-3xl">LinoCon Complete</h3>
+          <h3 className="font-display font-bold text-2xl md:text-3xl">{b.name}</h3>
           <p className="text-text-secondary mt-1">Everything your business needs online, plus your own books.</p>
         </div>
         <div>
           <p className="flex flex-wrap items-baseline gap-x-2">
-            <span className="font-display font-bold text-4xl md:text-5xl">$549.99</span>
-            <span className="text-text-secondary">/ month for 12 months</span>
+            <span className="font-display font-bold text-4xl md:text-5xl">{b.price}</span>
+            <span className="text-text-secondary">{b.unit}</span>
           </p>
-          <p className="text-sm text-text-secondary mt-2">
-            Then $499.99 / month, and the bookkeeping app is yours. Plus your Launch Bundle invoice.
-          </p>
+          <p className="text-sm text-text-secondary mt-2">{b.note}</p>
         </div>
-        <Link
-          to="/books#waitlist"
-          className="flex items-center justify-center h-13 px-6 rounded-full border border-white/20 hover:bg-white/5 transition-colors text-base font-bold w-full sm:w-fit"
-        >
-          Join the waitlist
-        </Link>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+          <Link
+            to="/books#waitlist"
+            className="flex items-center justify-center h-13 px-6 rounded-full border border-white/20 hover:bg-white/5 transition-colors text-base font-bold w-full sm:w-fit"
+          >
+            Join the waitlist
+          </Link>
+          <div className="text-center sm:text-left">
+            <LearnMore b={b} />
+          </div>
+        </div>
       </div>
       <ul className="grid sm:grid-cols-2 gap-3">
-        {points.map((p) => (
+        {b.points.map((p) => (
           <li key={p} className="flex items-start gap-3 rounded-2xl border border-border bg-ink/40 px-5 py-4 text-text-secondary leading-snug">
             <Check />
             {p}
@@ -100,7 +97,7 @@ export default function Bundles() {
         </Reveal>
 
         <div className="grid md:grid-cols-3 gap-4 md:gap-5">
-          {BUNDLES.map((b, i) => (
+          {CARDS.map((b, i) => (
             <Reveal
               key={b.name}
               delay={i * 0.08}
@@ -133,14 +130,19 @@ export default function Bundles() {
                   </li>
                 ))}
               </ul>
-              <Link
-                to="/book"
-                className={`flex items-center justify-center h-13 px-6 rounded-full text-base font-bold ${
-                  b.featured ? 'bg-gradient-brand text-ink!' : 'border border-white/20 hover:bg-white/5 transition-colors'
-                }`}
-              >
-                Book a strategy call
-              </Link>
+              <div className="flex flex-col gap-4">
+                <Link
+                  to="/book"
+                  className={`flex items-center justify-center h-13 px-6 rounded-full text-base font-bold ${
+                    b.featured ? 'bg-gradient-brand text-ink!' : 'border border-white/20 hover:bg-white/5 transition-colors'
+                  }`}
+                >
+                  Book a strategy call
+                </Link>
+                <div className="text-center">
+                  <LearnMore b={b} />
+                </div>
+              </div>
             </Reveal>
           ))}
         </div>
