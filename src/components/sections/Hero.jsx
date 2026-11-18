@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { m, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import HeroVideo from '../HeroVideo'
 
 const img = (name) => `${import.meta.env.BASE_URL}images/${name}`
 
@@ -114,10 +115,8 @@ function GrowthStory() {
 export default function Hero() {
   return (
     <section id="top" className="relative overflow-hidden pt-28 md:pt-36 lg:pt-40 pb-16 md:pb-24">
-      {/* Soft glows drawn as radial gradients rather than blur() filters:
-          same look, but a big blur is slow for phone GPUs to repaint. */}
-      <div className="pointer-events-none absolute -top-64 -left-64 w-[800px] h-[800px] rounded-full opacity-20 bg-[radial-gradient(closest-side,var(--color-blue),transparent)]" />
-      <div className="pointer-events-none absolute -top-12 -right-72 w-[880px] h-[880px] rounded-full opacity-15 bg-[radial-gradient(closest-side,var(--color-orange),transparent)]" />
+      {/* Moving background: flowing light in the brand colours. */}
+      <HeroVideo />
 
       <div className="relative max-w-7xl mx-auto px-6 md:px-10 grid lg:grid-cols-[45fr_55fr] gap-12 lg:gap-14 items-center">
         {/* Slide only, no fade: the headline is the page's largest text, and

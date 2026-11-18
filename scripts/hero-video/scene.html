@@ -1,0 +1,47 @@
+<!doctype html><html><body style="margin:0;background:#0b0b10"><canvas id="c" width="1920" height="1080"></canvas>
+<script>
+const c=document.getElementById('c'),x=c.getContext('2d'),W=1920,H=1080,TAU=Math.PI*2;
+// seeded random
+let s=7;const r=()=>(s=(s*16807)%2147483647)/2147483647;
+const dust=Array.from({length:140},()=>({x:r()*W,y:r()*H,a:r(),sp:1+Math.floor(r()*2),ph:r()*TAU,sz:0.6+r()*1.8}));
+function ribbon(p,cy,amp,len,hueShift,lines,alpha,speed){
+  for(let k=0;k<lines;k++){
+    const g=x.createLinearGradient(0,0,W,0);
+    g.addColorStop(0,`rgba(46,107,255,0)`);
+    g.addColorStop(0.2+hueShift*0.1,`rgba(46,107,255,${alpha})`);
+    g.addColorStop(0.55,`rgba(140,90,240,${alpha*0.9})`);
+    g.addColorStop(0.85-hueShift*0.1,`rgba(255,106,61,${alpha})`);
+    g.addColorStop(1,`rgba(255,106,61,0)`);
+    x.strokeStyle=g;x.lineWidth=1.5;x.beginPath();
+    const off=k/lines;
+    for(let i=0;i<=120;i++){
+      const u=i/120,X=u*W;
+      const y=cy+Math.sin(u*TAU*len+p*speed*TAU+off*2.2)*amp*(0.6+0.4*Math.sin(p*TAU+off*TAU))
+             +Math.sin(u*TAU*0.5+p*TAU+off*1.3)*amp*0.6+ (off-0.5)*amp*0.9;
+      i?x.lineTo(X,y):x.moveTo(X,y);
+    }
+    x.stroke();
+  }
+}
+window.draw=function(p){ // p in [0,1)
+  x.globalCompositeOperation='source-over';x.fillStyle='#0b0b10';x.fillRect(0,0,W,H);
+  // drifting glows
+  const glow=(gx,gy,rad,col)=>{const g=x.createRadialGradient(gx,gy,0,gx,gy,rad);g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,W,H);};
+  x.globalCompositeOperation='lighter';
+  glow(W*0.28+Math.cos(p*TAU)*160,H*0.35+Math.sin(p*TAU)*90,720,'rgba(46,107,255,0.32)');
+  glow(W*0.78+Math.sin(p*TAU)*180,H*0.62+Math.cos(p*TAU)*100,760,'rgba(255,106,61,0.26)');
+  glow(W*0.55+Math.cos(p*TAU*2)*90,H*0.5,520,'rgba(140,90,240,0.10)');
+  ribbon(p,H*0.56,230,0.9,0,70,0.32,1);
+  ribbon(p,H*0.42,120,1.3,1,46,0.2,-1);
+  // dust
+  for(const d of dust){
+    const tw=0.5+0.5*Math.sin(p*TAU*d.sp+d.ph);
+    const yy=(d.y - p*H*0.25*d.sp + H*2)%H;
+    x.fillStyle=`rgba(243,241,238,${0.08+0.35*tw*d.a})`;
+    x.beginPath();x.arc(d.x+Math.sin(p*TAU+d.ph)*20,yy,d.sz,0,TAU);x.fill();
+  }
+  // vignette
+  x.globalCompositeOperation='source-over';
+  const v=x.createRadialGradient(W/2,H/2,H*0.3,W/2,H/2,W*0.75);v.addColorStop(0,'rgba(11,11,16,0)');v.addColorStop(1,'rgba(11,11,16,0.85)');x.fillStyle=v;x.fillRect(0,0,W,H);
+};
+</script></body></html>
