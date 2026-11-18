@@ -10,6 +10,7 @@ import Reveal from '../Reveal'
 import useMediaQuery from '../../lib/useMediaQuery'
 import { Link } from 'react-router-dom'
 import { ServiceImage } from '../visuals'
+import ServiceStage from '../ServiceStage'
 import { SERVICES as CORE_SERVICES, servicePath } from '../../lib/services'
 import { BOOKS_SERVICE } from '../../lib/books'
 
@@ -130,7 +131,9 @@ function StickyStory() {
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               className="flex justify-center"
             >
-              <ImageLink s={s} />
+              <ServiceStage s={s} desktop>
+                <ImageLink s={s} />
+              </ServiceStage>
             </m.div>
           </AnimatePresence>
         </div>
@@ -141,7 +144,7 @@ function StickyStory() {
 
 function Stacked() {
   return SERVICES.map((s) => (
-    <div key={s.title} className="max-w-6xl mx-auto px-6 flex flex-col gap-10 py-20 border-t border-border">
+    <div key={s.title} className="max-w-6xl mx-auto px-6 flex flex-col gap-10 py-20 border-t border-border overflow-x-clip">
       <Reveal className="flex flex-col items-start gap-5">
         <Kicker s={s} />
         <h3 className="font-display font-bold text-3xl leading-tight">{s.title}</h3>
@@ -149,9 +152,9 @@ function Stacked() {
         <Points points={s.points} />
         <LearnMore s={s} />
       </Reveal>
-      <Reveal className="flex justify-center" delay={0.1}>
+      <ServiceStage s={s}>
         <ImageLink s={s} />
-      </Reveal>
+      </ServiceStage>
     </div>
   ))
 }

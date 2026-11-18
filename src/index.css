@@ -249,3 +249,14 @@ a {
     break-inside: avoid;
   }
 }
+
+/* Homepage service "stage" (ServiceStage.jsx): turning glow, orbiting
+   spark and floating point cards. Transforms only, so they stay cheap. */
+@keyframes stage-spin { to { transform: rotate(360deg); } }
+@keyframes stage-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.stage-spin { animation: stage-spin 22s linear infinite; will-change: transform; }
+.stage-orbit { animation: stage-spin 9s linear infinite; will-change: transform; }
+.stage-float { animation: stage-float 4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .stage-spin, .stage-orbit, .stage-float { animation: none; }
+}
