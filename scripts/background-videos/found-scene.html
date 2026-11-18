@@ -1,0 +1,64 @@
+<!doctype html><html><body style="margin:0;background:#0b0b10"><canvas id="c" width="1920" height="1080"></canvas>
+<script>
+// "Found": a dark field of grey dots (websites nobody sees). Signals in the
+// brand colours travel in and light some of them up. p from 0 to 1 loops.
+const c=document.getElementById('c'),x=c.getContext('2d'),W=1920,H=1080,TAU=Math.PI*2;
+let s=11;const r=()=>(s=(s*16807)%2147483647)/2147483647;
+const COLS=40,ROWS=22,GX=W/(COLS+1),GY=H/(ROWS+1);
+const dots=[];for(let j=1;j<=ROWS;j++)for(let i=1;i<=COLS;i++)dots.push({x:i*GX,y:j*GY,ph:r()*TAU,lit:0});
+// targets: favour the right and lower parts, away from the centre text block
+const pulses=[];
+for(let k=0;k<12;k++){
+  const d=dots[Math.floor(r()*dots.length)];
+  const side=Math.floor(r()*4);
+  const sx=side===0?-60:side===1?W+60:r()*W, sy=side===2?-60:side===3?H+60:r()*H;
+  const cx=(sx+d.x)/2+(r()-0.5)*700, cy=(sy+d.y)/2+(r()-0.5)*500;
+  pulses.push({d,sx,sy,cx,cy,off:k/12+r()*0.04,speed:1+Math.floor(r()*2)});
+}
+const bez=(a,b,cc,t)=>(1-t)*(1-t)*a+2*(1-t)*t*cc+t*t*b;
+const col=(t,a)=>{const R=46+(255-46)*t,G=107+(106-107)*t,B=255+(61-255)*t;return `rgba(${R|0},${G|0},${B|0},${a})`};
+window.draw=function(p){
+  x.globalCompositeOperation='source-over';x.fillStyle='#0b0b10';x.fillRect(0,0,W,H);
+  for(const d of dots)d.lit=0;
+  const state=pulses.map(q=>{const u=((p*q.speed+q.off)%1);return {q,u};});
+  for(const {q,u} of state){ if(u>0.4&&u<0.95){ const b=u<0.5?(u-0.4)/0.1:1-(u-0.5)/0.45; q.d.lit=Math.max(q.d.lit,b);} }
+  // dot field
+  for(const d of dots){
+    const tw=0.5+0.5*Math.sin(p*TAU*2+d.ph);
+    x.fillStyle=`rgba(166,162,156,${0.1+0.08*tw})`;
+    x.beginPath();x.arc(d.x,d.y,2,0,TAU);x.fill();
+  }
+  x.globalCompositeOperation='lighter';
+  for(const {q,u} of state){
+    if(u<0.4){ // travelling
+      const t=u/0.4, ease=t*t*(3-2*t);
+      for(let k=0;k<70;k++){
+        const tt=Math.max(0,ease-k*0.004);
+        const px=bez(q.sx,q.d.x,q.cx,tt),py=bez(q.sy,q.d.y,q.cy,tt);
+        const a=(1-k/70)*0.5;
+        x.fillStyle=col(tt,a);x.beginPath();x.arc(px,py,k?2.2*(1-k/70)+0.5:4,0,TAU);x.fill();
+      }
+      const hx=bez(q.sx,q.d.x,q.cx,ease),hy=bez(q.sy,q.d.y,q.cy,ease);
+      const g=x.createRadialGradient(hx,hy,0,hx,hy,40);g.addColorStop(0,col(ease,0.45));g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(hx-40,hy-40,80,80);
+    }
+    if(u>=0.4&&u<0.95){ // arrived: ripple + glow
+      const t=(u-0.4)/0.55;
+      x.strokeStyle=col(1-t,0.6*(1-t));x.lineWidth=2;x.beginPath();x.arc(q.d.x,q.d.y,8+t*110,0,TAU);x.stroke();
+      if(t>0.15){const t2=(t-0.15)/0.85;x.strokeStyle=col(t2,0.4*(1-t2));x.beginPath();x.arc(q.d.x,q.d.y,8+t2*70,0,TAU);x.stroke();}
+    }
+  }
+  // lit dots + links between lit dots that are close
+  const lit=dots.filter(d=>d.lit>0.01);
+  for(let i=0;i<lit.length;i++)for(let j=i+1;j<lit.length;j++){
+    const a=lit[i],b=lit[j],dd=Math.hypot(a.x-b.x,a.y-b.y);
+    if(dd<700){x.strokeStyle=`rgba(140,90,240,${0.35*Math.min(a.lit,b.lit)*(1-dd/700)})`;x.lineWidth=1.2;x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);x.stroke();}
+  }
+  for(const d of lit){
+    const g=x.createRadialGradient(d.x,d.y,0,d.x,d.y,70);g.addColorStop(0,`rgba(255,140,90,${0.5*d.lit})`);g.addColorStop(0.3,`rgba(46,107,255,${0.25*d.lit})`);g.addColorStop(1,'rgba(0,0,0,0)');
+    x.fillStyle=g;x.fillRect(d.x-70,d.y-70,140,140);
+    x.fillStyle=`rgba(255,255,255,${0.9*d.lit})`;x.beginPath();x.arc(d.x,d.y,3.2,0,TAU);x.fill();
+  }
+  x.globalCompositeOperation='source-over';
+  const v=x.createRadialGradient(W/2,H/2,H*0.35,W/2,H/2,W*0.75);v.addColorStop(0,'rgba(11,11,16,0)');v.addColorStop(1,'rgba(11,11,16,0.8)');x.fillStyle=v;x.fillRect(0,0,W,H);
+};
+</script></body></html>

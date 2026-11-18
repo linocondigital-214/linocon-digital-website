@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { m, useScroll, useReducedMotion } from 'framer-motion'
 import { useScrollRange } from '../../lib/scroll'
+import BackgroundVideo from '../BackgroundVideo'
 
 const TEXT =
   'Most small business websites look fine and sell nothing. Nobody finds them on Google, and the few who do leave without calling. We fix both.'
@@ -24,8 +25,10 @@ export default function Statement() {
 
   return (
     <section ref={ref} className={reduce ? 'py-32' : 'relative h-[200vh]'}>
-      <div className={`${reduce ? '' : 'sticky top-0 h-svh'} flex items-center`}>
-        <p className="max-w-5xl mx-auto px-6 md:px-10 font-display font-bold text-3xl sm:text-4xl md:text-6xl leading-[1.15] tracking-tight">
+      <div className={`${reduce ? '' : 'sticky top-0 h-svh'} relative flex items-center overflow-hidden`}>
+        {/* Grey dots (sites nobody finds) that light up one by one. */}
+        <BackgroundVideo name="found" lazy tint="bg-ink/10" />
+        <p className="relative max-w-5xl mx-auto px-6 md:px-10 font-display font-bold text-3xl sm:text-4xl md:text-6xl leading-[1.15] tracking-tight">
           {words.map((w, i) =>
             reduce ? (
               <span key={i} className={i >= highlightFrom ? 'text-gradient' : undefined}>
