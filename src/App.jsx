@@ -12,6 +12,7 @@ const BookCall = lazy(() => import('./pages/BookCall'))
 const Articles = lazy(() => import('./pages/Articles'))
 const Article = lazy(() => import('./pages/Article'))
 const Service = lazy(() => import('./pages/Service'))
+const Bundle = lazy(() => import('./pages/Bundle'))
 const ProcessStep = lazy(() => import('./pages/ProcessStep'))
 const About = lazy(() => import('./pages/About'))
 const Privacy = lazy(() => import('./pages/Privacy'))
@@ -80,6 +81,15 @@ function App() {
               </Suspense>
             }
           />
+          <Route
+            path="/bundles/:slug"
+            element={
+              <Suspense fallback={null}>
+                <Bundle />
+              </Suspense>
+            }
+          />
+          <Route path="/bundles" element={<Navigate to="/#bundles" replace />} />
           <Route
             path="/process/:slug"
             element={

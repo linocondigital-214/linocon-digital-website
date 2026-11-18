@@ -264,7 +264,7 @@ function Plans() {
         <Reveal className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-5 text-text-secondary leading-relaxed">
           <span className="font-bold text-text">Better in a bundle: </span>
           add Books to a Launch Bundle for $39.99 / month, or get it with your website, SEO and backlinks in{' '}
-          <a href="/#bundles" className="font-bold text-text underline decoration-blue underline-offset-4">
+          <a href="/bundles/linocon-complete" className="font-bold text-text underline decoration-blue underline-offset-4">
             LinoCon Complete
           </a>
           .

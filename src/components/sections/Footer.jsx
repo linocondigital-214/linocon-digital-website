@@ -4,6 +4,7 @@ import EmailUs from '../EmailUs'
 import { CONTACT_EMAIL, GOOGLE_REVIEW_URL, OFFICE_PHONE, OFFICE_PHONE_TEL } from '../../lib/leads'
 import { SERVICES, servicePath } from '../../lib/services'
 import { BOOKS } from '../../lib/books'
+import { BUNDLES, bundlePath } from '../../lib/bundles'
 import { AREAS, areaLabel, areaPath } from '../../lib/areaPages'
 
 const COLUMNS = [
@@ -12,6 +13,7 @@ const COLUMNS = [
     links: [
       ...SERVICES.map((s) => ({ to: servicePath(s), label: s.name })),
       { to: BOOKS.path, label: BOOKS.comingSoon ? `${BOOKS.name} (coming soon)` : BOOKS.name },
+      ...BUNDLES.map((b) => ({ to: bundlePath(b), label: b.comingSoon ? `${b.name} (coming soon)` : b.name })),
       { href: '/#audit', label: 'Free website audit' },
       { to: '/switch', label: 'Switching to LinoCon' },
     ],

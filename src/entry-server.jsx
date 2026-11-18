@@ -7,6 +7,8 @@ import { collectPageMeta } from './lib/usePageMeta'
 import { getService } from './lib/services'
 import { getArticle } from './lib/articles'
 import { getArea } from './lib/areaPages'
+import { getBundle } from './lib/bundles'
+import { BUNDLE_PAGES } from './lib/bundlePages'
 
 // Used only at build time by scripts/prerender.mjs: renders one public page to
 // plain HTML so Google gets the page's own title, description and text in the
@@ -65,6 +67,54 @@ export function pageSchema(url) {
           ],
         },
         breadcrumbs({ name: s.name, path: url }),
+      ],
+    }
+  }
+  if (section === 'bundles' && slug) {
+    const b = getBundle(slug)
+    const page = BUNDLE_PAGES[slug]
+    if (!b || !page) return null
+    // Only bundles with a fixed monthly price get an offer; the others are
+    // quoted per project.
+    const offer = b.monthly && {
+      '@type': 'Offer',
+      price: b.monthly,
+      priceCurrency: 'CAD',
+      availability: b.comingSoon ? 'https://schema.org/PreOrder' : 'https://schema.org/InStock',
+      url: SITE + url,
+      priceSpecification: {
+        '@type': 'UnitPriceSpecification',
+        price: b.monthly,
+        priceCurrency: 'CAD',
+        unitCode: 'MON',
+        referenceQuantity: { '@type': 'QuantitativeValue', value: 1, unitCode: 'MON' },
+      },
+    }
+    return {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Service',
+          name: b.name,
+          serviceType: b.tagline,
+          description: b.metaDescription,
+          url: SITE + url,
+          provider: ORG,
+          areaServed: [
+            { '@type': 'Country', name: 'Canada' },
+            { '@type': 'Country', name: 'United States' },
+          ],
+          ...(offer && { offers: offer }),
+        },
+        {
+          '@type': 'FAQPage',
+          mainEntity: page.faq.map((q) => ({
+            '@type': 'Question',
+            name: q.title,
+            acceptedAnswer: { '@type': 'Answer', text: q.body },
+          })),
+        },
+        breadcrumbs({ name: b.name, path: url }),
       ],
     }
   }
