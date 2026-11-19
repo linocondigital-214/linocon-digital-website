@@ -24,6 +24,7 @@ const Refer = lazy(() => import('./pages/Refer'))
 const Switch = lazy(() => import('./pages/Switch'))
 const Card = lazy(() => import('./pages/Card'))
 const WhoWeWorkWith = lazy(() => import('./pages/WhoWeWorkWith'))
+const UsBusinesses = lazy(() => import('./pages/UsBusinesses'))
 const Area = lazy(() => import('./pages/Area'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 const Portal = lazy(() => import('./pages/Portal'))
@@ -167,6 +168,14 @@ function App() {
             element={
               <Suspense fallback={null}>
                 <WhoWeWorkWith />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/us-businesses"
+            element={
+              <Suspense fallback={null}>
+                <UsBusinesses />
               </Suspense>
             }
           />

@@ -174,6 +174,20 @@ export function pageSchema(url) {
       ],
     }
   }
+  if (url === '/us-businesses') {
+    return {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'WebPage',
+          name: 'Websites and SEO for US small businesses',
+          url: SITE + url,
+          about: ORG,
+        },
+        breadcrumbs({ name: 'US businesses', path: url }),
+      ],
+    }
+  }
   if (url === '/who-we-work-with') {
     return {
       '@context': 'https://schema.org',

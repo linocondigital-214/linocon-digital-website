@@ -37,6 +37,7 @@ const COLUMNS = [
     links: [
       ...AREAS.filter((a) => a.footer !== false).map((a) => ({ to: areaPath(a), label: areaLabel(a) })),
       { to: '/who-we-work-with', label: 'Canada and the US' },
+      { to: '/us-businesses', label: 'US businesses' },
     ],
   },
   {
