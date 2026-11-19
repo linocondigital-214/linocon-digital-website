@@ -4,7 +4,7 @@ description: Thinking of hiring a web designer in another city or country? Ask t
 date: 2026-12-03T09:00:00-08:00
 category: Websites
 image: /articles/hiring-a-remote-web-designer-us-small-business
-imageAlt: A small business owner on a video call with a web designer, with a checklist of questions to ask before hiring.
+imageAlt: A US small business owner on a video call with a remote web designer, with a remote designer checklist on the desk.
 ---
 
 More and more small businesses in the United States work with web designers they never meet in person. The designer might be in the next state, across the country, or across the border in Canada. Everything from the first call to the final launch can happen online.

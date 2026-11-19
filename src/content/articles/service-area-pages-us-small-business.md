@@ -4,7 +4,7 @@ description: If you serve customers in several US cities or towns, service area 
 date: 2026-12-10T09:00:00-08:00
 category: SEO
 image: /articles/service-area-pages-us-small-business
-imageAlt: A map with several city pins connected to one small business website, showing pages for each area the business serves.
+imageAlt: A laptop showing a business website with service area pages for several US cities, under a glowing US map with location pins.
 ---
 
 Many small businesses in the United States serve more than one place. A plumber might cover a whole county. A cleaning company might work across several suburbs. A landscaper might travel to three or four nearby towns.
