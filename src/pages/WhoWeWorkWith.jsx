@@ -27,6 +27,7 @@ const SECTIONS = [
       {
         title: 'The United States',
         body: 'We work with US businesses too. We book calls at times that suit your time zone, and you pay online by card.',
+        link: { to: '/us-businesses', label: 'Working with US businesses' },
       },
     ],
   },
