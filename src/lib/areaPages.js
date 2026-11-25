@@ -5,7 +5,8 @@
 // with page, the routes in App.jsx and the schema in entry-server.jsx all read
 // from this list. Add each new city to public/sitemap.xml too. Region pages
 // (region: true) link to the cities they cover; footer: false keeps a city
-// out of the footer list so it stays short.
+// out of the footer list so it stays short. fixFirst = three local, practical
+// "where to start" tips, written for that city only.
 export const AREAS = [
   {
     slug: 'web-design-vancouver',
@@ -24,6 +25,11 @@ export const AREAS = [
         'We set up your website so Google knows exactly what you do and which parts of Vancouver you serve, whether you have a shop customers walk into or you travel to them.',
       ],
     },
+    fixFirst: [
+      { title: 'Name your neighbourhood', body: 'Say on your website which neighbourhood you’re in, like Kitsilano or Mount Pleasant, and which ones you serve. “Vancouver” alone is a very crowded search.' },
+      { title: 'Answer the parking question', body: 'Vancouver customers often check parking or the nearest SkyTrain or bus stop before they visit. Put it on your contact page and in your Google Business Profile.' },
+      { title: 'Make calling one tap', body: 'Most local searches happen on a phone. Your number, hours and directions should be easy to tap near the top of the page.' },
+    ],
     who: [
       'Cafés, restaurants and food businesses',
       'Trades and home services',
@@ -64,6 +70,11 @@ export const AREAS = [
         'We make it clear which parts of Burnaby you serve, so you appear when people nearby search for what you do. That includes your website, your Google Business Profile and the details that keep them consistent.',
       ],
     },
+    fixFirst: [
+      { title: 'Say Burnaby, not just Vancouver', body: 'Many Burnaby businesses describe themselves as “Vancouver”. If your address is in Burnaby, your website should say so, so it matches your Google Business Profile.' },
+      { title: 'Use the landmarks people know', body: 'Customers find their way by Metrotown, Brentwood, Lougheed or the nearest SkyTrain station. Mentioning yours helps people, and Google, place you.' },
+      { title: 'Check your Google service area', body: 'If you travel to customers, make sure your Google Business Profile lists the parts of Burnaby and nearby cities you really cover.' },
+    ],
     who: [
       'Shops and restaurants near Metrotown and Brentwood',
       'Trades, contractors and home services',
@@ -104,6 +115,11 @@ export const AREAS = [
         'We plan your pages around the areas you actually serve, so Google can match you with nearby searches. If you also work in Langley, Delta or White Rock, we include those too.',
       ],
     },
+    fixFirst: [
+      { title: 'Pick your neighbourhoods', body: 'Newton, Guildford, Fleetwood, Cloverdale and South Surrey feel like different towns. Name the ones you serve, instead of only “Surrey”.' },
+      { title: 'Say which languages you speak', body: 'Surrey has customers who speak many languages. If you or your team speak Punjabi, Hindi or another language, say so on your website and Google profile.' },
+      { title: 'Include the cities next door', body: 'If you also work in Langley, Delta or White Rock, list them once, clearly, on the page about where you work.' },
+    ],
     who: [
       'Trades, contractors and renovation companies',
       'Moving, cleaning and home services',
@@ -144,6 +160,11 @@ export const AREAS = [
         'We set up your pages, page titles and Google Business Profile so Google can match you with people searching nearby. If you have customers in Vancouver, Delta or the airport area too, we include those.',
       ],
     },
+    fixFirst: [
+      { title: 'Show the languages you serve in', body: 'Many Richmond customers prefer Cantonese, Mandarin or another language. If you can serve them in it, say so clearly, even if your site stays in English.' },
+      { title: 'Help people find the door', body: 'Busy plazas along No. 3 Road can be hard to navigate. Add your unit number, parking tips and the nearest Canada Line station.' },
+      { title: 'Separate Steveston from City Centre', body: 'If you’re in Steveston, say so. People searching there want something close by, not a 20-minute drive away.' },
+    ],
     who: [
       'Restaurants, bakeries and food businesses',
       'Shops and retailers in City Centre and Steveston',
@@ -184,6 +205,11 @@ export const AREAS = [
         'We set up your website and Google Business Profile so Google knows you’re in Coquitlam and which nearby places you also serve, like Port Coquitlam, Port Moody and Burnaby.',
       ],
     },
+    fixFirst: [
+      { title: 'Name your part of Coquitlam', body: 'Burke Mountain, Westwood Plateau, Austin Heights and Maillardville are searched by name. Say which one you’re in.' },
+      { title: 'Mention the nearest Evergreen station', body: 'If customers can reach you by SkyTrain, say which station is closest. It helps people coming from Burnaby and Vancouver.' },
+      { title: 'Cover the Tri-Cities naturally', body: 'If you also serve Port Coquitlam and Port Moody, mention them once on your website, not in a long list of city names.' },
+    ],
     who: [
       'Shops and restaurants near Coquitlam Centre',
       'Trades, renovation and home services',
@@ -225,6 +251,11 @@ export const AREAS = [
         'We make sure Google sees you as a Port Coquitlam business, from downtown near Shaughnessy Street to Citadel Heights and Riverwood, and that it knows you also serve Coquitlam, Port Moody and Pitt Meadows if you do.',
       ],
     },
+    fixFirst: [
+      { title: 'Put your profile in the right city', body: 'Make sure your Google Business Profile and website both say Port Coquitlam, not Coquitlam. Mixing them up confuses Google.' },
+      { title: 'Use “PoCo” too', body: 'Locals search both ways. Using “PoCo” once or twice in your wording helps you match those searches.' },
+      { title: 'List the towns you drive to', body: 'Many PoCo trades also work in Pitt Meadows, Maple Ridge and Coquitlam. Say so, so you show up there too.' },
+    ],
     who: [
       'Trades, contractors and home services',
       'Auto, repair and industrial businesses',
@@ -266,6 +297,11 @@ export const AREAS = [
         'We build a fast, phone-friendly website and set up your Google Business Profile so you show up in those searches, with your hours, photos and location easy to see.',
       ],
     },
+    fixFirst: [
+      { title: 'Keep weekend hours up to date', body: 'Visitors come on weekends for Brewers Row, Rocky Point and the trails. If your hours change by season, update Google first.' },
+      { title: 'Add real photos', body: 'People decide from photos on their phone. Recent pictures of your space, food or work do more than any stock image.' },
+      { title: 'Mention the nearest station', body: 'Moody Centre and Inlet Centre stations bring people in from across the region. Say which one you’re near.' },
+    ],
     who: [
       'Breweries, cafés and restaurants',
       'Shops and studios in Newport Village and Suter Brook',
@@ -319,6 +355,11 @@ export const AREAS = [
         'We plan your pages around the places you actually serve, whether that’s one neighbourhood or the whole region, and keep your Google Business Profile in step with your website.',
       ],
     },
+    fixFirst: [
+      { title: 'One profile, clear area pages', body: 'You usually need one Google Business Profile for your real address, plus a clear page for each main city you serve.' },
+      { title: 'Don’t list every city', body: 'A footer with 20 city names doesn’t help. A short list of the places you really serve works better for people and Google.' },
+      { title: 'Keep your details the same everywhere', body: 'Your business name, address and phone should match on your website, Google, Yelp and directories.' },
+    ],
     who: [
       'Service businesses that travel across several cities',
       'Trades, contractors and home services',
@@ -363,6 +404,11 @@ export const AREAS = [
         'We set up your pages for the towns you serve, from Langley and Aldergrove to Abbotsford, Mission, Chilliwack, Agassiz and Hope.',
       ],
     },
+    fixFirst: [
+      { title: 'Name your town', body: 'Say Abbotsford, Chilliwack or Mission, not just “Fraser Valley”. People search for the town they live in.' },
+      { title: 'Check your map pin', body: 'Rural addresses can land in the wrong spot on Google Maps. Open your listing and make sure the pin is on your door or gate.' },
+      { title: 'Update seasonal hours', body: 'Farm stands, wineries and seasonal businesses should update Google hours every season, so nobody drives out to a closed gate.' },
+    ],
     who: [
       'Farms, farm stores and agri-businesses',
       'Trades, contractors and home services',

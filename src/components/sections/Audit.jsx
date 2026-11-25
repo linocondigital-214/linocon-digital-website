@@ -3,6 +3,17 @@ import Reveal from '../Reveal'
 import { mailtoLink, sendLead } from '../../lib/leads'
 import { track } from '../../lib/analytics'
 
+// "What do you need help with?" choices. The answer comes through in the
+// audit email so the reply can start in the right place.
+const NEEDS = [
+  'Not sure yet',
+  'A new website',
+  'Fix or redesign my website',
+  'Show up on Google (SEO)',
+  'Backlinks',
+  'Website and SEO together',
+]
+
 const SUBJECT = 'Free Website & SEO Audit Request — LinoCon Digital'
 
 export default function Audit() {
@@ -11,7 +22,12 @@ export default function Audit() {
   async function handleSubmit(e) {
     e.preventDefault()
     const form = e.target
-    const fields = { website: form.website.value, email: form.email.value }
+    const fields = {
+      website: form.website.value,
+      email: form.email.value,
+      location: form.location.value || 'Not given',
+      need: form.need.value,
+    }
     setStatus('sending')
     if (await sendLead(SUBJECT, fields)) {
       track('generate_lead', { form_name: 'free_audit', lead_delivery: 'web_form' })
@@ -41,6 +57,7 @@ export default function Audit() {
               Send us your website and we&#39;ll reply with the top fixes holding back your
               Google rankings and enquiries. Free, with no obligation.
             </p>
+            <p className="text-base font-semibold text-text">We reply within one business day.</p>
           </div>
 
           {status === 'sent' || status === 'mailto' ? (
@@ -74,6 +91,27 @@ export default function Audit() {
                 placeholder="you@yourbusiness.com"
                 className="h-14 rounded-xl bg-ink/60 border border-border px-5 text-base outline-none focus:border-blue transition-colors"
               />
+              <label className="sr-only" htmlFor="audit-location">Where are you based?</label>
+              <input
+                id="audit-location"
+                name="location"
+                type="text"
+                placeholder="Where are you based? (e.g. Surrey, BC)"
+                className="h-14 rounded-xl bg-ink/60 border border-border px-5 text-base outline-none focus:border-blue transition-colors"
+              />
+              <label className="sr-only" htmlFor="audit-need">What do you need help with?</label>
+              <select
+                id="audit-need"
+                name="need"
+                defaultValue="Not sure yet"
+                className="h-14 rounded-xl bg-ink/60 border border-border px-4 text-base outline-none [color-scheme:dark] focus:border-blue transition-colors"
+              >
+                {NEEDS.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
               <button
                 type="submit"
                 disabled={status === 'sending'}
