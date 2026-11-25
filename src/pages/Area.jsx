@@ -30,6 +30,17 @@ export default function Area({ area }) {
       body: area.local.body,
       link: { to: '/services/seo-setup', label: 'See SEO Setup' },
     },
+    ...(area.fixFirst
+      ? [
+          {
+            type: 'cards',
+            eyebrow: `Where to start in ${area.city}`,
+            heading: 'Three things to fix first, even before you hire anyone.',
+            intro: 'Most of these are free and take less than an hour.',
+            items: area.fixFirst,
+          },
+        ]
+      : []),
     {
       type: 'cards',
       eyebrow: 'What we do',
@@ -66,6 +77,12 @@ export default function Area({ area }) {
           },
         ]
       : []),
+    {
+      type: 'note',
+      eyebrow: 'An honest note',
+      heading: 'You might not need us yet.',
+      body: 'If your customers already find you by word of mouth and you’re booked up, a complete Google Business Profile may be all you need for now, and it’s free. On the free call we’ll tell you honestly whether a website or SEO would pay off for your business.',
+    },
     {
       type: 'cards',
       eyebrow: 'Common questions',

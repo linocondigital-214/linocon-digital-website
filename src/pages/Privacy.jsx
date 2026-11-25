@@ -44,7 +44,7 @@ export default function Privacy() {
           <h2>What we collect</h2>
           <ul>
             <li>
-              <strong>When you ask for a free audit:</strong> your website address and email.
+              <strong>When you ask for a free audit:</strong> your website address, your email and, if you choose to tell us, where you are based and what you need help with.
             </li>
             <li>
               <strong>When you join the LinoCon Books waitlist:</strong> your name, email, business

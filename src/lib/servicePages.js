@@ -130,6 +130,12 @@ export const SERVICE_PAGES = {
         ],
       },
       { type: 'proof', eyebrow: 'Our work', heading: 'Recent websites we’ve built.' },
+      {
+        type: 'note',
+        eyebrow: 'An honest note',
+        heading: 'You might not need a new website.',
+        body: 'If your current website is fast, works well on phones and already brings in enquiries, a rebuild may be money you don’t need to spend. Often a few SEO fixes are enough. And if you’re just testing a new idea, a complete Google Business Profile is free and can be a good place to start. The free audit tells you which one fits.',
+      },
     ],
     cta: {
       heading: 'Ready for a website that works harder for your business?',
@@ -299,6 +305,12 @@ export const SERVICE_PAGES = {
         heading: 'No guaranteed rankings. A strong foundation instead.',
         body: 'SEO is a long-term discipline. Rankings, traffic and conversions depend on competition, search behaviour, website quality, content, authority and other factors. We provide a strong foundation and strategic optimization, not guaranteed rankings.',
       },
+      {
+        type: 'note',
+        eyebrow: 'An honest note',
+        heading: 'Some of this you can do yourself, for free.',
+        body: 'Filling in your Google Business Profile completely, adding real photos and asking happy customers for reviews all cost nothing, and they help a lot. If that’s all your business needs right now, we’ll tell you. SEO Setup is for when your website itself is holding you back.',
+      },
     ],
     cta: {
       heading: 'Find out what your website is missing.',
@@ -444,6 +456,12 @@ export const SERVICE_PAGES = {
         eyebrow: 'What backlink building does not promise',
         heading: 'No guaranteed rankings, traffic or revenue.',
         body: 'No responsible backlink service should guarantee a specific Google ranking, traffic increase or revenue result. Search performance depends on competition, content, technical SEO, search intent, website quality, authority and many other factors.',
+      },
+      {
+        type: 'note',
+        eyebrow: 'An honest note',
+        heading: 'If your website isn’t ready, we’ll say so first.',
+        body: 'Links work best when the website they point to is fast, clear and set up properly for search. If yours isn’t there yet, we’ll suggest starting with the website or SEO Setup instead, rather than selling you links that won’t help yet.',
       },
       {
         type: 'checklist',
