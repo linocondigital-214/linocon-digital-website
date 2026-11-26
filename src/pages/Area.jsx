@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { m } from 'framer-motion'
 import { Buttons, Headline, PageCTA, PageSections } from '../components/PageSections'
+import SampleResult from '../components/SampleResult'
 import usePageMeta from '../lib/usePageMeta'
 import { AREAS, areaLabel, areaPath, getArea } from '../lib/areaPages'
 import { SERVICES, servicePath } from '../lib/services'
@@ -123,6 +124,7 @@ export default function Area({ area }) {
           </h1>
           <p className="text-lg md:text-xl leading-relaxed text-text-secondary text-balance max-w-3xl">{area.intro}</p>
           <Buttons center />
+          <SampleResult city={area.city} index={AREAS.indexOf(area)} />
         </m.div>
       </section>
       <PageSections sections={sections} />

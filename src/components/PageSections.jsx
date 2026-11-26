@@ -280,6 +280,7 @@ function Process({ s }) {
       <Reveal className="mb-12">
         <Eyebrow>{s.eyebrow}</Eyebrow>
         <Heading>{s.heading}</Heading>
+        {s.intro && <p className="text-lg text-text-secondary leading-relaxed max-w-3xl mt-5">{s.intro}</p>}
       </Reveal>
       <ol
         className={`grid sm:grid-cols-2 gap-4 md:gap-5 gap-y-10 ${
@@ -293,9 +294,20 @@ function Process({ s }) {
             </span>
             <h3 className="font-display font-bold text-2xl">{st.title}</h3>
             <p className="text-text-secondary leading-relaxed">{st.body}</p>
+            {st.you && (
+              <p className="text-sm leading-relaxed text-text-secondary">
+                <span className="font-bold text-text">Your part: </span>
+                {st.you}
+              </p>
+            )}
           </Reveal>
         ))}
       </ol>
+      {s.note && (
+        <Reveal className="mt-10 rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-5 text-text-secondary leading-relaxed max-w-4xl">
+          {s.note}
+        </Reveal>
+      )}
     </>
   )
 }

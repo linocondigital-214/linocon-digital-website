@@ -68,6 +68,46 @@ export const SERVICE_PAGES = {
         ],
       },
       {
+        type: 'process',
+        eyebrow: 'Step by step',
+        heading: 'What happens, from first call to launch.',
+        intro:
+          'Every website follows the same six steps. You always know what we’re working on and what we need from you.',
+        steps: [
+          {
+            title: 'Free call',
+            body: 'We talk about your business, your customers and what the website needs to do.',
+            you: 'Tell us about your business. No preparation needed.',
+          },
+          {
+            title: 'Plan and quote',
+            body: 'You get a written plan with the pages, the price and a target launch date.',
+            you: 'Read it, ask questions, and sign online when you’re happy.',
+          },
+          {
+            title: 'Content and photos',
+            body: 'We plan the words for each page and help you gather what’s missing.',
+            you: 'Send your logo, photos and any details we ask for.',
+          },
+          {
+            title: 'Design and build',
+            body: 'We design the site for phones first, build it and set up the SEO basics.',
+            you: 'Follow the progress on your own client page.',
+          },
+          {
+            title: 'Review',
+            body: 'You see the whole site before anyone else does, and we make your changes.',
+            you: 'Click through it on your phone and computer, and tell us what to change.',
+          },
+          {
+            title: 'Launch',
+            body: 'The site goes live, we connect Google tools and check that everything works.',
+            you: 'Share it with your customers.',
+          },
+        ],
+        note: 'How long it takes depends on the size of the site and how quickly content comes in. A simple business website moves much faster than a large one. Your plan shows a target launch date before you sign, so you know what to expect.',
+      },
+      {
         type: 'flow',
         eyebrow: 'Built for the visitor journey',
         heading: 'A website should guide visitors somewhere useful.',
