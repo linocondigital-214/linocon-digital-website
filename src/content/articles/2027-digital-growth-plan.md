@@ -4,7 +4,7 @@ description: A practical year-end guide to setting priorities, strengthening you
 date: 2026-12-29T09:00:00-08:00
 category: Growth
 image: /articles/2027-digital-growth-plan
-imageAlt: Someone working on a laptop showing a 2027 website checkup, beside a notebook of 2027 website goals.
+imageAlt: "A laptop and phone showing the LinoCon Digital website, beside a notebook with a 2027 website plan, SEO growth plan, business systems setup and growth goals."
 ---
 
 A new year is a useful opportunity to step back and assess your business: not just what you want to sell, but how customers find you, how they decide to trust you, and how smoothly your business runs behind the scenes. You do not need to change everything at once. A focused digital growth plan helps you identify the most important gaps, set realistic priorities, and invest in improvements you can maintain.
